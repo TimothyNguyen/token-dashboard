@@ -4,9 +4,9 @@ set -uo pipefail
 baseline=${1:?Usage: scripts/recheck_sparkline_browser.sh BASELINE OUTPUT BACKEND_CAMPAIGN}
 output_dir=${2:?Specify a separate output directory}
 backend_dir=${3:?Specify the completed controlled backend campaign}
-python_bin=${TOKDASH_BENCH_PYTHON:-python3}
-browser_python=${TOKDASH_BROWSER_PYTHON:-/home/howard/anaconda3/envs/webapptest/bin/python}
-browser_repeats=${TOKDASH_BROWSER_BENCH_REPEATS:-64}
+python_bin=${TOKEN_DASHBOARD_BENCH_PYTHON:-python3}
+browser_python=${TOKEN_DASHBOARD_BROWSER_PYTHON:-/home/howard/anaconda3/envs/webapptest/bin/python}
+browser_repeats=${TOKEN_DASHBOARD_BROWSER_BENCH_REPEATS:-64}
 mkdir -p "$output_dir"
 printf 'Running complete tests for the updated frontend.\n'
 if ! PYTHONPATH=src "$python_bin" -m pytest > "$output_dir/pytest.log" 2>&1; then

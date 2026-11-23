@@ -12,10 +12,10 @@ drifted back into agreement would silently stop testing anything.
 """
 from __future__ import annotations
 
-import tokdash.compute as C
+import token_dashboard.compute as C
 import pytest
-from tokdash.compute import _merge_parsed_usage, compute_usage, parse_entries_json
-from tokdash.usage_store import UsageEntryStore, build_source_signature, model_rank_key
+from token_dashboard.compute import _merge_parsed_usage, compute_usage, parse_entries_json
+from token_dashboard.usage_store import UsageEntryStore, build_source_signature, model_rank_key
 
 # Token order and cost order are exact reverses of each other here.
 #   tokens: workhorse 10k > codex-heavy 8k > mid 7k > boutique 4k

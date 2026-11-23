@@ -5,14 +5,14 @@ baseline=${1:?Usage: scripts/check_sparkline_affinity.sh BASELINE OUTPUT COMPLET
 output_dir=${2:?Specify a separate output directory}
 complete_dir=${3:?Specify the completed full campaign}
 cpu=${4:-0}
-python_bin=${TOKDASH_BENCH_PYTHON:-python3}
-browser_python=${TOKDASH_BROWSER_PYTHON:-/home/howard/anaconda3/envs/webapptest/bin/python}
-browser_repeats=${TOKDASH_BROWSER_BENCH_REPEATS:-64}
+python_bin=${TOKEN_DASHBOARD_BENCH_PYTHON:-python3}
+browser_python=${TOKEN_DASHBOARD_BROWSER_PYTHON:-/home/howard/anaconda3/envs/webapptest/bin/python}
+browser_repeats=${TOKEN_DASHBOARD_BROWSER_BENCH_REPEATS:-64}
 
 # Optional kernel notification lets this follow an owned running campaign
 # without polling it or overlapping its timed workload.
-if [[ -n ${TOKDASH_BENCH_WAIT_PID:-} ]]; then
-    if ! "$python_bin" - "$TOKDASH_BENCH_WAIT_PID" <<'PY'
+if [[ -n ${TOKEN_DASHBOARD_BENCH_WAIT_PID:-} ]]; then
+    if ! "$python_bin" - "$TOKEN_DASHBOARD_BENCH_WAIT_PID" <<'PY'
 import ctypes, errno, os, select, sys
 pid = int(sys.argv[1])
 open_descriptor = getattr(os, "pidfd_open", None)
@@ -44,8 +44,8 @@ mkdir -p "$output_dir"
 cp "$complete_dir/pytest.log" "$output_dir/pytest.log"
 status=0
 for workload in regular dense; do
-    rows=${TOKDASH_BENCH_REGULAR_ROWS:-300}
-    if [[ $workload == dense ]]; then rows=${TOKDASH_BENCH_DENSE_ROWS:-1500}; fi
+    rows=${TOKEN_DASHBOARD_BENCH_REGULAR_ROWS:-300}
+    if [[ $workload == dense ]]; then rows=${TOKEN_DASHBOARD_BENCH_DENSE_ROWS:-1500}; fi
     printf 'Starting controlled %s comparison: both workers on CPU %s.\n' "$workload" "$cpu"
     if "$python_bin" scripts/benchmark_sparkline_aggregation.py --baseline "$baseline" \
         --cpu "$cpu" --rows-per-day "$rows" --repeats 96 --output "$output_dir/$workload" \

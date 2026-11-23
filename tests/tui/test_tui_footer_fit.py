@@ -27,7 +27,7 @@ import pytest
 
 textual = pytest.importorskip("textual", reason="the TUI tests need textual")
 
-from tokdash.tui.data import FetchOutcome  # noqa: E402
+from token_dashboard.tui.data import FetchOutcome  # noqa: E402
 from support.tui import (  # noqa: E402
     NARROW,
     USAGE,

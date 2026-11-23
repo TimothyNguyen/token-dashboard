@@ -18,13 +18,13 @@ _src = str(Path(__file__).resolve().parent.parent / "src")
 if _src not in sys.path:
     sys.path.insert(0, _src)
 
-from tokdash.sources.coding_tools import BaseParser, CodingToolsUsageTracker  # noqa: E402
+from token_dashboard.sources.coding_tools import BaseParser, CodingToolsUsageTracker  # noqa: E402
 
 
 def _clear_caches():
     """Reset all parser-level caches to simulate a cold start."""
     BaseParser._entry_cache.clear()
-    from tokdash.sources.coding_tools import _sig_cache, OpenCodeParser
+    from token_dashboard.sources.coding_tools import _sig_cache, OpenCodeParser
     _sig_cache.clear()
     OpenCodeParser._query_cache.clear()
     OpenCodeParser._query_cache_sig = ()
@@ -68,7 +68,7 @@ def main():
 
     # --- compute_usage_with_comparison (calls collect twice internally) ---
     _clear_caches()
-    from tokdash.compute import compute_usage_with_comparison
+    from token_dashboard.compute import compute_usage_with_comparison
     print("\n5) compute_usage_with_comparison('today') - cold:")
     t0 = time.perf_counter()
     result = compute_usage_with_comparison("today")

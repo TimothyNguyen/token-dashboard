@@ -7,9 +7,9 @@
   (Product management > Product identity) and must match it exactly - a mismatch is
   rejected at upload, not at certification:
 
-    @@IDENTITY_NAME@@          Package/Identity/Name,          e.g. 12345Tokdash.TokdashCompanion
+    @@IDENTITY_NAME@@          Package/Identity/Name,          e.g. 12345TokenDashboard.TokenDashboardCompanion
     @@PUBLISHER@@              Package/Identity/Publisher,     e.g. CN=01234567-89ab-cdef-0123-456789abcdef
-    @@PUBLISHER_DISPLAY_NAME@@ Publisher display name,         e.g. Tokdash
+    @@PUBLISHER_DISPLAY_NAME@@ Publisher display name,         e.g. TokenDashboard
 
   @@VERSION@@ is FOUR parts: companion/VERSION plus a revision pinned to 0, so 1.0.0
   becomes 1.0.0.0. The Store reserves the revision field and rejects any package that
@@ -28,9 +28,9 @@
     Version="@@VERSION@@"
     ProcessorArchitecture="x64" />
   <Properties>
-    <DisplayName>Tokdash Companion</DisplayName>
+    <DisplayName>TokenDashboard Companion</DisplayName>
     <PublisherDisplayName>@@PUBLISHER_DISPLAY_NAME@@</PublisherDisplayName>
-    <Description>Native usage and quota companion for the local Tokdash service.</Description>
+    <Description>Native usage and quota companion for the local TokenDashboard service.</Description>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
   <Resources>
@@ -48,7 +48,7 @@
   </Dependencies>
   <Capabilities>
     <!-- Full-trust desktop app. This is the only capability declared: the companion talks
-         to a user-configured Tokdash endpoint and to GitHub's public releases API, both of
+         to a user-configured TokenDashboard endpoint and to GitHub's public releases API, both of
          which a full-trust process reaches without a network capability. It reads no
          credentials and enumerates no ports. Partner Center asks for a justification for
          runFullTrust at submission. -->
@@ -56,17 +56,17 @@
   </Capabilities>
   <Applications>
     <Application
-      Id="TokdashCompanion"
-      Executable="TokdashCompanion.exe"
+      Id="TokenDashboardCompanion"
+      Executable="TokenDashboardCompanion.exe"
       uap10:RuntimeBehavior="packagedClassicApp"
       uap10:TrustLevel="mediumIL">
       <uap:VisualElements
-        DisplayName="Tokdash Companion"
-        Description="Native usage and quota companion for Tokdash."
+        DisplayName="TokenDashboard Companion"
+        Description="Native usage and quota companion for TokenDashboard."
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
-        <uap:DefaultTile ShortName="Tokdash" />
+        <uap:DefaultTile ShortName="TokenDashboard" />
       </uap:VisualElements>
       <Extensions>
         <!-- Launch at login stays opt-in and disabled by default, matching the portable
@@ -76,12 +76,12 @@
              a diagnostic log marker only and changes no behavior, so nothing is lost. -->
         <uap5:Extension
           Category="windows.startupTask"
-          Executable="TokdashCompanion.exe"
+          Executable="TokenDashboardCompanion.exe"
           EntryPoint="Windows.FullTrustApplication">
           <uap5:StartupTask
-            TaskId="TokdashCompanionStartup"
+            TaskId="TokenDashboardCompanionStartup"
             Enabled="false"
-            DisplayName="Tokdash Companion" />
+            DisplayName="TokenDashboard Companion" />
         </uap5:Extension>
       </Extensions>
     </Application>

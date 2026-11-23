@@ -9,8 +9,8 @@ from contextlib import closing
 from pathlib import Path
 
 from test_lazy_speed_cache import corpus
-from tokdash import speed_cache as cache, compute
-from tokdash.sources.coding_tools import CodingToolsUsageTracker
+from token_dashboard import speed_cache as cache, compute
+from token_dashboard.sources.coding_tools import CodingToolsUsageTracker
 
 
 def test_migration_removes_legacy_usage_speed_json(corpus):

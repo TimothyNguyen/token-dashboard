@@ -1,6 +1,6 @@
 """The usage-DB schema remediation must survive the trip to the dashboard.
 
-The backend fails fast with an actionable message ("run `tokdash update`"), but
+The backend fails fast with an actionable message ("run `token_dashboard update`"), but
 that only helps if the UI shows it. Previously `fetchSelectedServers` swallowed
 every rejection and returned [], and each caller substituted a generic
 `loadFailed` -- so a user saw "不可用：Local / 数据加载失败" and had nothing to act
@@ -19,9 +19,9 @@ from support.frontend import extract_js_function, index_source, needs_node, run_
 
 # What the backend actually puts in the HTTP 500 body (api.py -> str(exc)).
 SCHEMA_DETAIL = (
-    "usage database schema 11 at /home/u/.tokdash/usage.sqlite3 is newer than "
-    "this Tokdash supports (<= 9); run `tokdash update` and restart any other "
-    "Tokdash processes using this data directory"
+    "usage database schema 11 at /home/u/.token_dashboard/usage.sqlite3 is newer than "
+    "this TokenDashboard supports (<= 9); run `token_dashboard update` and restart any other "
+    "TokenDashboard processes using this data directory"
 )
 
 
@@ -100,7 +100,7 @@ def test_sole_server_failure_propagates_the_schema_message(tmp_path: Path) -> No
     assert out["message"] == SCHEMA_DETAIL
     assert out["status"] == 500
     # ...and it reaches the status line the user actually reads.
-    assert "tokdash update" in out["statusText"]
+    assert "token_dashboard update" in out["statusText"]
     assert "loadFailed" in out["statusText"]
 
 
@@ -120,7 +120,7 @@ def test_all_servers_failing_propagates_the_first_rejection(tmp_path: Path) -> N
     assert out["message"] == SCHEMA_DETAIL
     # Every failed server keeps its own reason for the per-server tooltip.
     assert {row["id"] for row in out["failedTooltips"]} == {"local", "remote"}
-    assert any("tokdash update" in (row["message"] or "") for row in out["failedTooltips"])
+    assert any("token_dashboard update" in (row["message"] or "") for row in out["failedTooltips"])
 
 
 @needs_node
@@ -170,7 +170,7 @@ def test_status_text_keeps_detail_but_not_for_503(tmp_path: Path) -> None:
         },
     )
     schema_text, overload_text, empty_text = out
-    assert "tokdash update" in schema_text
+    assert "token_dashboard update" in schema_text
     # 503 is the transient signal: it keeps its own wording and gains no detail.
     assert overload_text == "temporaryOverload"
     assert "retry shortly" not in overload_text
@@ -310,7 +310,7 @@ def test_quota_total_failure_shows_the_schema_remediation(tmp_path: Path) -> Non
     )
     # Previously this path threw a generic loadFailed and only console.error'd it,
     # leaving the Quota tab blank with no remediation on screen.
-    assert "tokdash update" in out["statusText"]
+    assert "token_dashboard update" in out["statusText"]
     assert out["statusColor"] == "#DC2626"
     # The indicator must be refreshed after serverRuntimeStatus is updated.
     assert out["indicatorCalls"] >= 1 and out["renderCalls"] >= 1
@@ -329,7 +329,7 @@ def test_quota_total_failure_keeps_the_first_rejection(tmp_path: Path) -> None:
             ]
         },
     )
-    assert "tokdash update" in out["statusText"]
+    assert "token_dashboard update" in out["statusText"]
     assert {row["id"] for row in out["failed"]} == {"local", "remote"}
 
 
@@ -426,7 +426,7 @@ def test_quota_refresh_button_surfaces_the_schema_remediation(tmp_path: Path) ->
         tmp_path,
         {"servers": [{"id": "local", "label": "Local", "fails": True, "status": 500, "message": SCHEMA_DETAIL}]},
     )
-    assert "tokdash update" in out["statusText"]
+    assert "token_dashboard update" in out["statusText"]
     assert "failed" in out["refreshStates"]
     assert out["loadQuotaCalls"] == 0
 
@@ -545,7 +545,7 @@ def test_successful_write_with_failed_reload_keeps_the_fetch_error(tmp_path: Pat
     out = _run_write(tmp_path, {"reloadFails": True, "message": SCHEMA_DETAIL}, writer, call)
     assert out["postCalls"] == 1, "the settings write itself must still be sent"
     # The remediation survives instead of being replaced by a write ack.
-    assert "tokdash update" in out["statusText"]
+    assert "token_dashboard update" in out["statusText"]
     assert out["statusColor"] == "#DC2626"
     assert "quotaActionSaved" not in out["statusText"]
     assert out["quotaLoaded"] is False

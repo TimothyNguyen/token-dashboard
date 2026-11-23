@@ -10,7 +10,7 @@ branch of `select_service`.
 """
 from __future__ import annotations
 
-from tokdash.onboard import launchd, plan, service_base, systemd, winsched
+from token_dashboard.onboard import launchd, plan, service_base, systemd, winsched
 
 
 # --- select_service: auto ---------------------------------------------------------
@@ -100,7 +100,7 @@ def test_auto_other_os_kind_deferred():
     )
     assert sel.result == {"type": "none", "reason": "deferred"}
     assert sel.blockers == []
-    assert sel.notes == ["Background service setup for freebsd is not available yet; use `tokdash serve`."]
+    assert sel.notes == ["Background service setup for freebsd is not available yet; use `token_dashboard serve`."]
 
 
 # --- select_service: explicit --service on the "wrong" OS -------------------------
@@ -201,7 +201,7 @@ def test_explicit_launchd_unavailable_on_macos_blocks_not_notes():
     )
     assert sel.result == {"type": "none", "reason": "launchctl is unavailable"}
     assert sel.blockers == [
-        "launchctl is unavailable; re-run with --no-service or run `tokdash serve` yourself."
+        "launchctl is unavailable; re-run with --no-service or run `token_dashboard serve` yourself."
     ]
     assert sel.notes == []
 
@@ -223,7 +223,7 @@ def test_explicit_winsched_unavailable_on_windows_blocks_not_notes():
     )
     assert sel.result == {"type": "none", "reason": "Task Scheduler (schtasks) is unavailable"}
     assert sel.blockers == [
-        "Task Scheduler (schtasks) is unavailable; re-run with --no-service or run `tokdash serve` yourself."
+        "Task Scheduler (schtasks) is unavailable; re-run with --no-service or run `token_dashboard serve` yourself."
     ]
     assert sel.notes == []
 

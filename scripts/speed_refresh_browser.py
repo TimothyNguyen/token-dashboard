@@ -27,7 +27,7 @@ Server CPU is read from /proc, not from the client: a request that got behind
 another one in the queue looks cheap to the browser and expensive to the machine.
 
 Writes output/agent-speed/benchmarks/refresh_browser_latest.json. Nothing outside
-the work directory and that JSON is touched, and no live Tokdash data is read.
+the work directory and that JSON is touched, and no live TokenDashboard data is read.
 """
 
 from __future__ import annotations
@@ -71,7 +71,7 @@ def free_port() -> int:
 
 
 class Server:
-    """A tokdash server on the fixture corpus, with its CPU accounted separately."""
+    """A token_dashboard server on the fixture corpus, with its CPU accounted separately."""
 
     def __init__(self, corpus: Path, data: Path, xdg: Path, python: str, src: Path = ROOT / "src", parsers='kimi,omp'):
         self.port = free_port()
@@ -82,7 +82,7 @@ class Server:
         env = dict(os.environ, **speed_fixtures.isolated_env(corpus, data, xdg))
         env["PYTHONPATH"] = str(src)
         self.proc = subprocess.Popen(
-            [python, str(ROOT / "scripts" / "bench_tokdash_server.py"),
+            [python, str(ROOT / "scripts" / "bench_token_dashboard_server.py"),
              "--src", str(src), "--host", "127.0.0.1", "--port", str(self.port),
              "--parsers", parsers],
             cwd=str(ROOT), env=env, stdout=self.log, stderr=subprocess.STDOUT)
@@ -166,7 +166,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--workdir", default="output/output-speed-refresh")
     ap.add_argument("--out", default=str(OUT_PATH))
-    ap.add_argument("--server-python", default=os.environ.get('TOKDASH_BENCH_PYTHON', sys.executable))
+    ap.add_argument("--server-python", default=os.environ.get('TOKEN_DASHBOARD_BENCH_PYTHON', sys.executable))
     ap.add_argument("--src", type=Path, default=ROOT / "src")
     ap.add_argument("--expanded-calls", type=int, default=0)
     ap.add_argument("--rounds", type=int, default=5, help="measured speed-table loads")

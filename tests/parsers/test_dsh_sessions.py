@@ -9,9 +9,9 @@ from pathlib import Path
 import pytest
 from zstandard import ZstdCompressor
 
-from tokdash import sessions
-from tokdash.pricing import PricingDatabase
-from tokdash.sessions import SESSION_TOOLS, get_session_detail, get_sessions_data, reload_pricing_db
+from token_dashboard import sessions
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sessions import SESSION_TOOLS, get_session_detail, get_sessions_data, reload_pricing_db
 
 # Fixed past instants so ``period="all"`` and date windows behave predictably.
 DAY1_MS = int(datetime(2026, 6, 1, 12, 0, 0, tzinfo=timezone.utc).timestamp() * 1000)
@@ -54,7 +54,7 @@ def _write_session(home: Path, session_id: str, rows) -> Path:
 def _isolated_dsh_home(monkeypatch, tmp_path):
     home = tmp_path / "dsh-home"
     monkeypatch.setenv("DSH_HOME", str(home))
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     reload_pricing_db()
     yield home
     reload_pricing_db()
@@ -242,7 +242,7 @@ def test_split_cache_write_repricing_without_reparse(_isolated_dsh_home, monkeyp
 
 
 def test_api_routes_serve_dsh(_isolated_dsh_home, monkeypatch):
-    from tokdash import api
+    from token_dashboard import api
 
     home = _isolated_dsh_home
     _seed_session(home)
@@ -263,15 +263,15 @@ def test_api_routes_serve_dsh(_isolated_dsh_home, monkeypatch):
 
 
 def test_cli_sync_primes_dsh_session_records(_isolated_dsh_home, monkeypatch):
-    """`tokdash sync` warms session records for every tool whose session reads
+    """`token_dashboard sync` warms session records for every tool whose session reads
     route through the persistent store (sessions._raw_sessions_for_tool)."""
-    from tokdash import cli
+    from token_dashboard import cli
 
     called = []
-    monkeypatch.setattr("tokdash.compute._sync_usage_store", lambda tracker: None)
-    monkeypatch.setattr("tokdash.sources.openclaw.get_usage_for_days", lambda days: {})
+    monkeypatch.setattr("token_dashboard.compute._sync_usage_store", lambda tracker: None)
+    monkeypatch.setattr("token_dashboard.sources.openclaw.get_usage_for_days", lambda days: {})
     monkeypatch.setattr(
-        "tokdash.sessions.get_sessions_data",
+        "token_dashboard.sessions.get_sessions_data",
         lambda tool, period: called.append(tool) or {"sessions": []},
     )
     cli._sync_usage_database()
@@ -293,7 +293,7 @@ def _write_copied_session(home: Path, session_id: str, rows, project_dir: str, n
 
 
 def _overview_tokens_in() -> int:
-    from tokdash.sources.coding_tools import BaseParser, DSHParser, _sig_cache
+    from token_dashboard.sources.coding_tools import BaseParser, DSHParser, _sig_cache
 
     _sig_cache.clear()
     BaseParser._entry_cache.clear()
@@ -383,12 +383,12 @@ def test_overview_and_sessions_agree_on_compaction_usage(_isolated_dsh_home):
 
 @pytest.mark.parametrize("stored", [False, True], ids=["live", "stored"])
 def test_overview_and_sessions_keep_retry_usage_in_duplicate_copies(_isolated_dsh_home, monkeypatch, stored):
-    from tokdash.compute import _collect_parser_file
-    from tokdash.sources.coding_tools import DSHParser
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.compute import _collect_parser_file
+    from token_dashboard.sources.coding_tools import DSHParser
+    from token_dashboard.usage_store import UsageEntryStore
 
     home = _isolated_dsh_home
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1" if stored else "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1" if stored else "0")
     rows = [
         {
             "type": "request/context", "seq": 1, "time": DAY1_MS,
@@ -442,7 +442,7 @@ def _dsh_warnings(caplog, kind: str) -> list:
     return [
         record
         for record in caplog.records
-        if record.name == "tokdash.sources.dsh_log" and f"[{kind}]" in record.getMessage()
+        if record.name == "token_dashboard.sources.dsh_log" and f"[{kind}]" in record.getMessage()
     ]
 
 
@@ -450,10 +450,10 @@ def test_sessions_panel_reports_seed_unprovable(_isolated_dsh_home, caplog):
     """After a restart the store does not re-read an unchanged log, so the panel
     can be the only surface that decodes it. A seeded session with no inherited
     marker drops out of the panel, and that must be said, as Overview says it."""
-    from tokdash.sources.dsh_log import reset_dsh_diagnostics
+    from token_dashboard.sources.dsh_log import reset_dsh_diagnostics
 
     reset_dsh_diagnostics()
-    caplog.set_level(logging.WARNING, logger="tokdash.sources.dsh_log")
+    caplog.set_level(logging.WARNING, logger="token_dashboard.sources.dsh_log")
     _write_session(
         _isolated_dsh_home,
         "s7",
@@ -470,10 +470,10 @@ def test_sessions_panel_reports_seed_unprovable(_isolated_dsh_home, caplog):
 def test_frame_loss_is_reported_once_across_both_surfaces(_isolated_dsh_home, caplog):
     """One damaged file is one problem. Both surfaces report it in one wording,
     so the once-per-problem registry names it once rather than once per surface."""
-    from tokdash.sources.dsh_log import reset_dsh_diagnostics
+    from token_dashboard.sources.dsh_log import reset_dsh_diagnostics
 
     reset_dsh_diagnostics()
-    caplog.set_level(logging.WARNING, logger="tokdash.sources.dsh_log")
+    caplog.set_level(logging.WARNING, logger="token_dashboard.sources.dsh_log")
     rows = [_header("s8")] + [
         _assistant_message(seq, seq, 1, {"inputTokens": 100 * seq, "outputTokens": 1}, DAY1_MS + seq)
         for seq in (1, 2, 3)

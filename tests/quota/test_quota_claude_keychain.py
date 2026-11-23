@@ -10,7 +10,7 @@ import sys
 
 import pytest
 
-from tokdash.sources.quota import claude
+from token_dashboard.sources.quota import claude
 
 _BLOB = {
     "claudeAiOauth": {
@@ -159,10 +159,10 @@ def test_keychain_read_end_to_end_with_real_security_binary(tmp_path):
     # Seeds a throwaway keychain with the Claude Code service name and reads it back
     # through the production helper — verifies the actual security(1) interaction
     # (arg handling, -w output shape, JSON parse) on the macOS CI runner.
-    kc = str(tmp_path / "tokdash-test.keychain-db")
-    subprocess.run(["security", "create-keychain", "-p", "tokdash-test", kc], check=True)
+    kc = str(tmp_path / "token-dashboard-test.keychain-db")
+    subprocess.run(["security", "create-keychain", "-p", "token-dashboard-test", kc], check=True)
     try:
-        subprocess.run(["security", "unlock-keychain", "-p", "tokdash-test", kc], check=True)
+        subprocess.run(["security", "unlock-keychain", "-p", "token-dashboard-test", kc], check=True)
         subprocess.run(
             [
                 "security",
@@ -170,7 +170,7 @@ def test_keychain_read_end_to_end_with_real_security_binary(tmp_path):
                 "-s",
                 claude.CLAUDE_KEYCHAIN_SERVICE,
                 "-a",
-                "tokdash-ci",
+                "token-dashboard-ci",
                 "-w",
                 json.dumps(_BLOB),
                 kc,

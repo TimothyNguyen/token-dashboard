@@ -1,4 +1,4 @@
-"""Two help surfaces: a bare `tokdash` prints the verb card, `--help` prints everything.
+"""Two help surfaces: a bare `token_dashboard` prints the verb card, `--help` prints everything.
 
 The split is deliberate. The parser is flat (one namespace, no subparsers), so
 its own help has to list every flag of every verb; the card is what keeps the
@@ -10,8 +10,8 @@ import pytest
 
 pytest.importorskip("fastapi")
 
-import tokdash.cli as cli
-from tokdash.cli_help import CARD_VERBS, COMMAND_VERBS
+import token_dashboard.cli as cli
+from token_dashboard.cli_help import CARD_VERBS, COMMAND_VERBS
 
 
 def test_card_covers_every_verb_and_nothing_else():
@@ -21,20 +21,20 @@ def test_card_covers_every_verb_and_nothing_else():
 
 
 def test_parser_advertises_exactly_the_card_verbs():
-    parser = cli.build_parser("tokdash")
+    parser = cli.build_parser("token_dashboard")
     command = next(action for action in parser._actions if action.dest == "command")
     assert set(command.choices) == set(COMMAND_VERBS)
 
 
 def test_bare_command_shows_the_card_and_no_flags(capsys, monkeypatch):
     def _no_serve(*args, **kwargs):
-        pytest.fail("bare `tokdash` reached serve() -- it must print the card instead")
+        pytest.fail("bare `token_dashboard` reached serve() -- it must print the card instead")
 
     monkeypatch.setattr(cli, "serve", _no_serve)
     assert cli.cli([]) == 0
     out = capsys.readouterr().out
 
-    assert "usage: tokdash" in out
+    assert "usage: token-dashboard" in out
     assert "nothing was started" in out  # the card must not read as a launch
     for verb in COMMAND_VERBS:
         assert f"\n    {verb}" in out, f"{verb} missing from the card"
@@ -48,11 +48,11 @@ def test_bare_command_shows_the_card_and_no_flags(capsys, monkeypatch):
 def test_full_help_still_lists_every_flag():
     # The card is allowed to hide flags; `--help` is not. Built from the parser
     # itself, so a flag added later cannot escape the reference.
-    parser = cli.build_parser("tokdash")
+    parser = cli.build_parser("token_dashboard")
     text = parser.format_help()
     for action in parser._actions:
         for option in action.option_strings:
-            assert option in text, f"{option} missing from `tokdash --help`"
+            assert option in text, f"{option} missing from `token_dashboard --help`"
 
 
 # Each heading claims the verbs that read the flags under it, so a heading is a
@@ -114,7 +114,7 @@ def _sections(parser):
 
 
 def test_full_help_sections_match_the_verbs_that_read_them():
-    parser = cli.build_parser("tokdash")
+    parser = cli.build_parser("token_dashboard")
     sections = _sections(parser)
     assert set(sections) == set(EXPECTED_SECTIONS), f"section titles changed: {sorted(sections)}"
     for title, expected in EXPECTED_SECTIONS.items():
@@ -134,7 +134,7 @@ def test_every_flag_lives_in_a_section():
     # A flag added straight onto the parser lands in argparse's default "options"
     # group, where it would sit unlabelled beside -h -- exactly the wall this split
     # exists to prevent.
-    parser = cli.build_parser("tokdash")
+    parser = cli.build_parser("token_dashboard")
     default = {
         action.option_strings[0] for action in parser._optionals._group_actions if action.option_strings
     }
@@ -143,8 +143,8 @@ def test_every_flag_lives_in_a_section():
 
 
 def test_usage_line_names_the_shape_not_the_flags():
-    parser = cli.build_parser("tokdash")
-    assert parser.format_usage().strip() == "usage: tokdash <command> [options]"
+    parser = cli.build_parser("token_dashboard")
+    assert parser.format_usage().strip() == "usage: token_dashboard <command> [options]"
 
 
 def test_bad_verb_error_keeps_the_short_usage(capsys):
@@ -153,4 +153,4 @@ def test_bad_verb_error_keeps_the_short_usage(capsys):
     with pytest.raises(SystemExit) as excinfo:
         cli.cli(["nope"])
     assert excinfo.value.code == 2
-    assert "usage: tokdash <command> [options]" in capsys.readouterr().err
+    assert "usage: token-dashboard <command> [options]" in capsys.readouterr().err

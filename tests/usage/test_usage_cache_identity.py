@@ -23,12 +23,12 @@ from pathlib import Path
 
 import pytest
 
-import tokdash
-import tokdash.compute as compute
-import tokdash.usage_store as usage_store_module
-from tokdash.pricing import PricingDatabase
-from tokdash.sources import coding_tools
-from tokdash.sources.coding_tools import (
+import token_dashboard
+import token_dashboard.compute as compute
+import token_dashboard.usage_store as usage_store_module
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources import coding_tools
+from token_dashboard.sources.coding_tools import (
     BaseParser,
     ClaudeParser,
     CodexParser,
@@ -36,7 +36,7 @@ from tokdash.sources.coding_tools import (
     PiAgentParser,
     _sig_cache,
 )
-from tokdash.usage_store import (
+from token_dashboard.usage_store import (
     UsageEntryStore,
     build_source_signature,
     usage_billing_fixed,
@@ -46,9 +46,9 @@ from tokdash.usage_store import (
 
 TS = "2026-05-19T12:00:00Z"
 TS_MS = 1_779_278_400_000
-CODEX_MODEL = "tokdash-codex-test"
-CLAUDE_MODEL = "tokdash-claude-test"
-PI_MODEL = "tokdash-pi-test"
+CODEX_MODEL = "token-dashboard-codex-test"
+CLAUDE_MODEL = "token-dashboard-claude-test"
+PI_MODEL = "token-dashboard-pi-test"
 
 
 # --- fixtures ---------------------------------------------------------------
@@ -57,8 +57,8 @@ PI_MODEL = "tokdash-pi-test"
 @pytest.fixture(autouse=True)
 def _isolated_home(monkeypatch, tmp_path):
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
-    monkeypatch.setenv("TOKDASH_USAGE_DB_DURABLE", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_DURABLE", "1")
     # Every client root that has its own env override, pinned inside the fake
     # home so a developer's real logs can never reach these assertions.
     for var, relative in (
@@ -234,7 +234,7 @@ def test_the_package_version_alone_causes_zero_parser_calls(_isolated_home, pars
     assert parse_counts["codex"] == 1 and parse_counts["claude"] == 1
 
     _reset(parse_counts)
-    monkeypatch.setattr(tokdash, "__version__", "99.9.9")
+    monkeypatch.setattr(token_dashboard, "__version__", "99.9.9")
     store, _sources = _sync()
 
     assert parse_counts == {"codex": 0, "claude": 0, "pi_agent": 0}
@@ -251,14 +251,14 @@ def test_the_parse_identity_names_no_file_and_no_content(_isolated_home):
     signature = tracker.parsers["codex"].persistent_parser_signature()
 
     assert signature == {
-        "object": "tokdash.sources.coding_tools.CodexParser",
+        "object": "token_dashboard.sources.coding_tools.CodexParser",
         "version": CodexParser.persistent_parser_version,
         "entry_format": usage_store_module.USAGE_ENTRY_FORMAT_VERSION,
     }
     assert "content_sha1" not in signature
     serialized = json.dumps(signature)
     assert str(Path(coding_tools.__file__)) not in serialized
-    assert "/" not in serialized.replace("tokdash.sources", "")
+    assert "/" not in serialized.replace("token_dashboard.sources", "")
 
 
 def test_restamping_the_installed_parser_module_causes_zero_parser_calls(
@@ -409,7 +409,7 @@ def test_a_dsh_decoder_version_bump_invalidates_dsh_only(
     _isolated_home, parse_counts, monkeypatch
 ):
     """DSH's extraction lives in the shared log decoder, so its versions ride along."""
-    from tokdash.sources import dsh_log
+    from token_dashboard.sources import dsh_log
 
     _write_codex(_isolated_home, "c1")
     _write_pricing(_rates())
@@ -544,7 +544,7 @@ def test_an_alias_change_reprices_cached_rows(_isolated_home, parse_counts):
 def test_a_provider_reported_cost_is_identical_after_a_pricing_change(
     _isolated_home, parse_counts
 ):
-    """Pi ships its own per-message cost. Tokdash rates may never move it."""
+    """Pi ships its own per-message cost. TokenDashboard rates may never move it."""
     _write_pi(_isolated_home, "p1", recorded_cost=0.25)
     _write_pricing(_rates())
     store, _sources = _sync()
@@ -561,7 +561,7 @@ def test_a_provider_reported_cost_is_identical_after_a_pricing_change(
 def test_a_pi_row_without_a_recorded_cost_is_priced_and_repriced(
     _isolated_home, parse_counts
 ):
-    """The other half of the same parser still follows Tokdash's rates."""
+    """The other half of the same parser still follows TokenDashboard's rates."""
     _write_pi(_isolated_home, "p1", recorded_cost=0.0)
     _write_pricing(_rates(**{PI_MODEL: {"input": 3.0, "output": 15.0}}))
     store, _sources = _sync()
@@ -615,7 +615,7 @@ def test_a_pricing_record_with_no_candidates_stays_at_zero(tmp_path):
 
 
 def test_a_source_reported_fallback_applies_only_when_nothing_resolves(tmp_path):
-    """OpenClaw prefers Tokdash pricing and falls back to its own number."""
+    """OpenClaw prefers TokenDashboard pricing and falls back to its own number."""
     priced = PricingDatabase(
         db_path=_pricing_file(tmp_path / "p.json", {"m1": {"input": 2.0, "output": 0.0}}),
         override_path=tmp_path / "absent.json",
@@ -649,7 +649,7 @@ def test_private_provenance_never_reaches_a_caller(_isolated_home):
     assert not _private_keys(json.loads(stored[0])), "raw_json must stay public"
     assert json.loads(stored[1])["kind"] == "pricing", "provenance lives in its own column"
 
-    # /api/usage and /api/tools aggregate through here; `tokdash export` through
+    # /api/usage and /api/tools aggregate through here; `token_dashboard export` through
     # compute_usage. Neither may carry the private record.
     assert not _private_keys(compute.get_tools_data_for_range(None, None))
     for entry in compute.run_local_coding_tools_json([])["entries"]:
@@ -662,7 +662,7 @@ def test_the_live_parser_path_hands_back_the_same_public_shape(_isolated_home, m
     _write_pricing(_rates())
     _sync()
 
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     _reset()
     live = compute.run_local_coding_tools_json([])
 
@@ -961,7 +961,7 @@ def session_corpus_for_tests(rows, signature=()):
     ``collect_session_corpus`` because the sync now checks and writes ONE
     collection; the stored values below are what prove the patch still bites
     (a seam that is silently never called looks identical to one that is)."""
-    from tokdash.sources import openclaw
+    from token_dashboard.sources import openclaw
 
     meta = {}
     for row in rows:
@@ -978,7 +978,7 @@ def test_openclaw_sync_landing_after_another_process_repriced_is_not_lost(
     _isolated_home, monkeypatch, tmp_path
 ):
     """OpenClaw runs the same apply-then-sync sequence and needs the same guard."""
-    from tokdash.sources import openclaw
+    from token_dashboard.sources import openclaw
 
     sessions_dir = _isolated_home / ".openclaw" / "sessions"
     sessions_dir.mkdir(parents=True)
@@ -1122,7 +1122,7 @@ def test_every_read_path_repairs_the_mid_race_window(_isolated_home):
 
 def test_openclaw_reads_its_totals_and_grid_from_one_snapshot(_isolated_home, monkeypatch):
     """Its two fetches must not straddle a racing write."""
-    from tokdash.sources import openclaw
+    from token_dashboard.sources import openclaw
 
     _write_pricing({"m1": {"input": 9.0, "output": 0.0}})
     sessions_dir = _isolated_home / ".openclaw" / "sessions"
@@ -1316,7 +1316,7 @@ def _write_legacy_db(path: Path, *, source: str, file_path: str, cost: float, mi
             "files": [[file_path, 1, 100]],
             "pricing": {"content": ["pricing-content-v1", "baseline", 1, "abc"]},
             "parser": {
-                "object": "tokdash.sources.coding_tools.CodexParser",
+                "object": "token_dashboard.sources.coding_tools.CodexParser",
                 "content_sha1": "a-module-hash-from-v2.0.0",
             },
             "extra": {"mode": "file"},
@@ -1360,7 +1360,7 @@ def test_a_legacy_row_whose_log_still_exists_rebuilds_once_then_hits_the_cache(
 ):
     log = _write_codex(_isolated_home, "c1")
     _write_pricing(_rates())
-    db_path = Path(os.environ["TOKDASH_USAGE_DB_PATH"])
+    db_path = Path(os.environ["TOKEN_DASHBOARD_USAGE_DB_PATH"])
     _write_legacy_db(db_path, source="codex", file_path=str(log), cost=0.5, missing=0)
 
     store, _sources = _sync()
@@ -1388,7 +1388,7 @@ def test_a_legacy_durable_row_whose_log_is_gone_keeps_its_cost(
 ):
     """No trustworthy provenance and no log to reread: preserve, do not guess."""
     _write_pricing(_rates())
-    db_path = Path(os.environ["TOKDASH_USAGE_DB_PATH"])
+    db_path = Path(os.environ["TOKEN_DASHBOARD_USAGE_DB_PATH"])
     missing_log = str(_isolated_home / ".codex" / "sessions" / "gone.jsonl")
     _write_legacy_db(db_path, source="codex", file_path=missing_log, cost=0.5, missing=0)
 
@@ -1412,7 +1412,7 @@ def test_the_legacy_migration_keeps_session_records_and_quota_history(
     _isolated_home, parse_counts
 ):
     _write_pricing(_rates())
-    db_path = Path(os.environ["TOKDASH_USAGE_DB_PATH"])
+    db_path = Path(os.environ["TOKEN_DASHBOARD_USAGE_DB_PATH"])
     log = _write_codex(_isolated_home, "c1")
     _write_legacy_db(db_path, source="codex", file_path=str(log), cost=0.5, missing=0)
     with sqlite3.connect(db_path) as conn:

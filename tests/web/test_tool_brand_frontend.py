@@ -11,12 +11,12 @@ import json
 import re
 from pathlib import Path
 
-import tokdash  # type: ignore[import-untyped]
+import token_dashboard  # type: ignore[import-untyped]
 
 from support.frontend import extract_js_function, index_source, needs_node, run_node
 
 
-STATIC_DIR = Path(tokdash.__file__).parent / "static"
+STATIC_DIR = Path(token_dashboard.__file__).parent / "static"
 INDEX_HTML = STATIC_DIR / "index.html"
 ICON_DIR = STATIC_DIR / "icons" / "agents"
 PROJECT_ROOT = STATIC_DIR.parents[2]
@@ -340,7 +340,7 @@ def test_tool_brand_icon_requests_are_shared_per_asset(tmp_path: Path) -> None:
         """
 let fetchCalls = 0;
 const toolBrandIconPromises = new Map();
-function appAssetWithBase(path) { return `/tokdash${path}`; }
+function appAssetWithBase(path) { return `/token-dashboard${path}`; }
 async function fetch() {
   fetchCalls += 1;
   return { ok: true, status: 200, blob: async () => ({}) };

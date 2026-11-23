@@ -1,6 +1,6 @@
 # Codex usage counting: replay de-duplication
 
-How Tokdash avoids double-counting Codex usage when rollout files copy an existing
+How TokenDashboard avoids double-counting Codex usage when rollout files copy an existing
 thread's history. Observed against Codex CLI **0.144.1** (subagent replay),
 **0.146.0** (ordinary resumed-thread replay), and **0.147.0** (single-meta fork
 replay).
@@ -8,7 +8,7 @@ replay).
 ## The problem
 
 Codex writes JSONL rollout files under `~/.codex/sessions/YYYY/MM/DD/` and moves
-completed rollouts to `~/.codex/archived_sessions/`. Tokdash scans both roots; an
+completed rollouts to `~/.codex/archived_sessions/`. TokenDashboard scans both roots; an
 archived copy that still exists under `sessions/` too collapses via the stable
 event key, so overlap cannot double-count. A later rollout can also replay token
 events already present in an older file:
@@ -52,7 +52,7 @@ Codex replay preserves three useful pieces of state:
 2. `total_token_usage`, the cumulative session snapshot.
 3. `last_token_usage`, the per-call snapshot.
 
-Tokdash hashes that state into a `codex-token-v1:*` event key. Known numeric token
+TokenDashboard hashes that state into a `codex-token-v1:*` event key. Known numeric token
 fields are normalized so a missing field and an explicit zero compare equally;
 Codex 0.146 can add zero-valued fields while copying snapshots written by an older
 CLI.
@@ -75,7 +75,7 @@ survive under the parent scope and are counted once — replay handling never
 silently drops usage. The parent scope also means a parent file indexed later
 still collapses the earlier copy.
 
-If either usage snapshot is absent, Tokdash deliberately falls back to the
+If either usage snapshot is absent, TokenDashboard deliberately falls back to the
 file/line identity. That can visibly over-count an old or unrecognized replay,
 but it cannot silently merge two genuine calls that happened to use the same
 number of tokens.
@@ -117,7 +117,7 @@ parent's session id, and gating them would lose genuine subagent work.
 `thread_settings_applied` before the first `turn_context`, and issue #23 reported
 builds nesting the selection under `session_meta.base_instructions
 .provenance.model` (unconfirmed — no real log through 0.147.0 carries that key,
-but the lookup is harmless); Tokdash accepts both as early model sources. Rows
+but the lookup is harmless); TokenDashboard accepts both as early model sources. Rows
 written before a file's first model signal — a fork's replayed parent prefix that
 outlives an unindexed parent, or old formats — are backfilled with the file's own
 first observed model instead of the placeholder default, so surviving replay rows
@@ -209,7 +209,7 @@ never timed: the speed reader already treats compaction as `incomplete`.
 The usage database is a parse cache, not a source of truth. Parser module content
 is part of each stored signature, so upgrading to a parser with this logic
 reparses Codex rollout files and removes previously cached copies automatically.
-`tokdash db resync` remains available as a manual full rebuild but is not required.
+`token-dashboard db resync` remains available as a manual full rebuild but is not required.
 
 ## References
 

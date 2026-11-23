@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import clientpaths
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import BaseParser, ReasonixParser, _sig_cache
+from token_dashboard import clientpaths
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import BaseParser, ReasonixParser, _sig_cache
 
 
 def _stats_line(
@@ -80,7 +80,7 @@ def test_reasonix_parser_basic(_isolated_reasonix_home):
     assert e["model"] == "MiniMax-M3"
     assert e["provider"] == "minimax-cn"
     # Reasonix's prompt counts cached and uncached input together, so the two
-    # Tokdash buckets must partition it rather than both claiming cache_hit.
+    # TokenDashboard buckets must partition it rather than both claiming cache_hit.
     assert e["input"] == 8119
     assert e["cacheRead"] == 128
     assert e["input"] + e["cacheRead"] == 8247
@@ -190,7 +190,7 @@ def test_reasonix_input_derived_from_prompt_when_cache_miss_absent(_isolated_rea
 
 
 def test_reasonix_nine_digit_fractional_seconds_parse(_isolated_reasonix_home):
-    """datetime.fromisoformat takes only 3 or 6 digits before 3.11; Tokdash supports 3.10."""
+    """datetime.fromisoformat takes only 3 or 6 digits before 3.11; TokenDashboard supports 3.10."""
     home = _isolated_reasonix_home
     _write_stats(
         home,

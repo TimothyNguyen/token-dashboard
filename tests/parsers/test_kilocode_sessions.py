@@ -18,9 +18,9 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import sessions
-from tokdash.pricing import PricingDatabase
-from tokdash.sessions import (
+from token_dashboard import sessions
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sessions import (
     SESSION_TOOLS,
     _kilocode_db_signature,
     _kilocode_sessions,
@@ -28,7 +28,7 @@ from tokdash.sessions import (
     get_sessions_data,
     reload_pricing_db,
 )
-from tokdash.sources.coding_tools import KiloCodeParser
+from token_dashboard.sources.coding_tools import KiloCodeParser
 
 # Whole-second base so the parser's datetime window converts back to the same
 # millisecond boundary without float drift.

@@ -1,4 +1,4 @@
-"""A usage DB written by a newer Tokdash must fail fast, never reparse.
+"""A usage DB written by a newer TokenDashboard must fail fast, never reparse.
 
 Regression cover for the incident where a schema-9 database met a build that
 only supported schema 7: every cache read raised, every caller treated that as
@@ -10,7 +10,7 @@ The contract these tests pin down:
   - no raw Codex/Claude/Kimi/OpenClaw parser is ever reached;
   - the API fails fast with an actionable message (and not with the 503 the
     dashboard retries);
-  - `tokdash doctor` reports it;
+  - `token_dashboard doctor` reports it;
   - /health is unaffected.
 """
 
@@ -24,11 +24,11 @@ from pathlib import Path
 
 import pytest
 
-import tokdash.compute as compute_module
-import tokdash.sessions as sessions_module
-import tokdash.sources.openclaw as openclaw_module
-from tokdash.clientpaths import usage_db_path
-from tokdash.usage_store import (
+import token_dashboard.compute as compute_module
+import token_dashboard.sessions as sessions_module
+import token_dashboard.sources.openclaw as openclaw_module
+from token_dashboard.clientpaths import usage_db_path
+from token_dashboard.usage_store import (
     SCHEMA_VERSION,
     UsageDatabaseSchemaTooNewError,
     UsageEntryStore,
@@ -102,7 +102,7 @@ def test_error_message_is_actionable(future_db: Path) -> None:
     with pytest.raises(UsageDatabaseSchemaTooNewError) as excinfo:
         UsageEntryStore()._connect()
     message = str(excinfo.value)
-    assert "tokdash update" in message
+    assert "token_dashboard update" in message
     assert str(FUTURE_SCHEMA) in message and str(SCHEMA_VERSION) in message
 
 
@@ -142,7 +142,7 @@ def test_mismatch_is_rechecked_not_latched(future_db: Path) -> None:
     """The failure must not be cached for the process's lifetime.
 
     Marking the store permanently unusable would be cheap but wrong: replacing
-    the database (an upgrade, a `tokdash db resync`, a restore) has to start
+    the database (an upgrade, a `token_dashboard db resync`, a restore) has to start
     working again without a restart. The check is two queries, so it is re-run.
     """
     store = UsageEntryStore()
@@ -157,7 +157,7 @@ def test_mismatch_is_rechecked_not_latched(future_db: Path) -> None:
 
 
 def test_doctor_reports_the_mismatch(future_db: Path) -> None:
-    from tokdash.onboard.engine import _append_usage_db_issues, _doctor_usage_db
+    from token_dashboard.onboard.engine import _append_usage_db_issues, _doctor_usage_db
 
     info = _doctor_usage_db()
     assert info["stored_schema"] == FUTURE_SCHEMA
@@ -166,12 +166,12 @@ def test_doctor_reports_the_mismatch(future_db: Path) -> None:
     issues: list[str] = []
     _append_usage_db_issues(issues, info)
     assert len(issues) == 1
-    assert "tokdash update" in issues[0]
+    assert "token_dashboard update" in issues[0]
 
 
 def test_doctor_is_read_only(future_db: Path) -> None:
     """Doctor must be able to report a too-new DB without migrating it."""
-    from tokdash.onboard.engine import _doctor_usage_db
+    from token_dashboard.onboard.engine import _doctor_usage_db
 
     before_tables, before_journal = _tables(future_db), _journal_mode(future_db)
     _doctor_usage_db()
@@ -180,7 +180,7 @@ def test_doctor_is_read_only(future_db: Path) -> None:
 
 
 def test_doctor_clean_on_a_current_database() -> None:
-    from tokdash.onboard.engine import _append_usage_db_issues, _doctor_usage_db
+    from token_dashboard.onboard.engine import _append_usage_db_issues, _doctor_usage_db
 
     UsageEntryStore()._connect().close()
     info = _doctor_usage_db()
@@ -203,7 +203,7 @@ class TestApiSurface:
     @staticmethod
     def _api():
         pytest.importorskip("fastapi")
-        import tokdash.api as api
+        import token_dashboard.api as api
 
         api._clear_cache()
         return api
@@ -216,13 +216,13 @@ class TestApiSurface:
         # retry, so it must NOT be reported as one.
         assert excinfo.value.status_code == 500
         detail = str(excinfo.value.detail)
-        assert "tokdash update" in detail
+        assert "token_dashboard update" in detail
         assert str(FUTURE_SCHEMA) in detail
 
     def test_health_is_unaffected(self, future_db: Path) -> None:
         api = self._api()
         payload = asyncio.run(api.health_check())
-        assert payload["service"] == "tokdash"
+        assert payload["service"] == "token_dashboard"
 
     def test_version_reports_supported_schema(self, future_db: Path) -> None:
         api = self._api()
@@ -260,12 +260,12 @@ def test_read_only_uri_is_escaped_and_has_one_query_string(tmp_path: Path) -> No
 def test_doctor_reads_a_database_under_a_reserved_character_path(
     tmp_path: Path, monkeypatch
 ) -> None:
-    from tokdash.onboard.engine import _doctor_usage_db
+    from token_dashboard.onboard.engine import _doctor_usage_db
 
     special = tmp_path / SPECIAL_DIR_NAME
     special.mkdir()
     db = special / "usage.sqlite3"
-    monkeypatch.setenv("TOKDASH_USAGE_DB_PATH", str(db))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_PATH", str(db))
     _make_future_schema_db(db)
 
     info = _doctor_usage_db()
@@ -279,10 +279,10 @@ def test_doctor_reads_a_database_under_a_reserved_character_path(
 def test_doctor_ignores_schema_when_the_database_is_disabled(
     future_db: Path, monkeypatch
 ) -> None:
-    """TOKDASH_USAGE_DB=0 means nothing reads the file; it cannot break a request."""
-    from tokdash.onboard.engine import _append_usage_db_issues, _doctor_usage_db
+    """TOKEN_DASHBOARD_USAGE_DB=0 means nothing reads the file; it cannot break a request."""
+    from token_dashboard.onboard.engine import _append_usage_db_issues, _doctor_usage_db
 
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     info = _doctor_usage_db()
     assert info["enabled"] is False
     assert info["stored_schema"] == FUTURE_SCHEMA
@@ -294,7 +294,7 @@ def test_doctor_ignores_schema_when_the_database_is_disabled(
 
 def test_doctor_flags_an_enabled_but_unreadable_database() -> None:
     """Enabled and unreadable must fail doctor, not print a note and exit 0."""
-    from tokdash.onboard.engine import _append_usage_db_issues, _doctor_usage_db
+    from token_dashboard.onboard.engine import _append_usage_db_issues, _doctor_usage_db
 
     db = usage_db_path()
     db.parent.mkdir(parents=True, exist_ok=True)
@@ -317,29 +317,29 @@ def test_doctor_command_fails_end_to_end_on_a_too_new_database(
     """The issue must reach cmd_doctor's report, ok flag and exit code."""
     import json as _json
 
-    from tokdash import cli
-    from tokdash.onboard.engine import run_lifecycle
+    from token_dashboard import cli
+    from token_dashboard.onboard.engine import run_lifecycle
 
     capsys.readouterr()
-    args = cli.build_parser("tokdash").parse_args(["doctor", "--json"])
+    args = cli.build_parser("token_dashboard").parse_args(["doctor", "--json"])
     rc = run_lifecycle(args)
     payload = _json.loads(capsys.readouterr().out)
 
     assert payload["usage_db"]["stored_schema"] == FUTURE_SCHEMA
     assert payload["usage_db"]["supported_schema"] == SCHEMA_VERSION
-    assert any("tokdash update" in issue for issue in payload["issues"])
+    assert any("token_dashboard update" in issue for issue in payload["issues"])
     assert payload["ok"] is False and rc != 0
 
 
 @pytest.mark.skipif(os.name == "nt", reason="Windows forbids '?' in filenames")
 def test_doctor_reads_a_path_containing_a_question_mark(tmp_path: Path, monkeypatch) -> None:
     """`?` is the character that truncated the naive f-string URI. POSIX only."""
-    from tokdash.onboard.engine import _doctor_usage_db
+    from token_dashboard.onboard.engine import _doctor_usage_db
 
     special = tmp_path / POSIX_SPECIAL_DIR_NAME
     special.mkdir()
     db = special / "usage.sqlite3"
-    monkeypatch.setenv("TOKDASH_USAGE_DB_PATH", str(db))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_PATH", str(db))
     _make_future_schema_db(db)
 
     uri = db.resolve().as_uri() + "?mode=ro"
@@ -397,7 +397,7 @@ def test_openclaw_sync_checks_schema_before_discovery(future_db: Path, monkeypat
 
 def test_preflight_is_silent_on_a_compatible_database() -> None:
     """The guard must not disturb the normal path, nor create the file."""
-    from tokdash.usage_store import raise_if_usage_db_incompatible
+    from token_dashboard.usage_store import raise_if_usage_db_incompatible
 
     raise_if_usage_db_incompatible()  # absent file: no error, no creation
     assert not usage_db_path().exists()
@@ -408,7 +408,7 @@ def test_preflight_is_silent_on_a_compatible_database() -> None:
 
 def test_preflight_stays_silent_on_a_corrupt_database() -> None:
     """Corruption is the fallback paths' business, not the fail-fast guard's."""
-    from tokdash.usage_store import raise_if_usage_db_incompatible
+    from token_dashboard.usage_store import raise_if_usage_db_incompatible
 
     db = usage_db_path()
     db.parent.mkdir(parents=True, exist_ok=True)
@@ -435,8 +435,8 @@ def clean_quota_cooldown(monkeypatch):
     fabricated raise.
     """
     pytest.importorskip("fastapi")
-    import tokdash.api as api
-    from tokdash.sources import quota as quota_module
+    import token_dashboard.api as api
+    from token_dashboard.sources import quota as quota_module
 
     def _collect_touching_store(*, include_network=True, store=None, network_sources=None):
         if store is not None:
@@ -477,7 +477,7 @@ def test_quota_refresh_converts_the_typed_error_to_an_actionable_500(
 
     assert excinfo.value.status_code == 500
     detail = str(excinfo.value.detail)
-    assert "tokdash update" in detail
+    assert "token_dashboard update" in detail
     assert str(FUTURE_SCHEMA) in detail and str(SCHEMA_VERSION) in detail
 
 
@@ -503,7 +503,7 @@ def test_every_store_backed_route_reports_the_remediation() -> None:
     """
     import re
 
-    source = (Path(__import__("tokdash").__file__).parent / "api.py").read_text(encoding="utf-8")
+    source = (Path(__import__("token_dashboard").__file__).parent / "api.py").read_text(encoding="utf-8")
     routes = re.split(r"\n@app\.(?:get|post)\(", source)[1:]
     offenders = []
     for chunk in routes:

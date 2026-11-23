@@ -7,11 +7,11 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import clientpaths, compute
-from tokdash.compute import _collect_parser_file
-from tokdash.pricing import PricingDatabase
-from tokdash.sources import coding_tools as ct
-from tokdash.sources.coding_tools import (
+from token_dashboard import clientpaths, compute
+from token_dashboard.compute import _collect_parser_file
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources import coding_tools as ct
+from token_dashboard.sources.coding_tools import (
     BaseParser,
     CrushParser,
     CodingToolsUsageTracker,
@@ -369,7 +369,7 @@ def test_crush_copied_session_bills_once_with_earliest_timestamp_path_owner(monk
 
 @pytest.mark.parametrize("durable", ["0", "1"])
 def test_crush_rewritten_owner_promotes_unchanged_copy(monkeypatch, tmp_path, durable):
-    monkeypatch.setenv("TOKDASH_USAGE_DB_DURABLE", durable)
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_DURABLE", durable)
     a, b = tmp_path / "a", tmp_path / "b"
     db = _make_db(a, sessions=[("s1", None, 100, 5, T0, 0.0)], messages=[])
     _make_db(b, sessions=[("s1", None, 200, 5, T0, 0.0)], messages=[])
@@ -381,7 +381,7 @@ def test_crush_rewritten_owner_promotes_unchanged_copy(monkeypatch, tmp_path, du
 
 
 def test_crush_deleting_owner_promotes_copy_without_durability(monkeypatch, tmp_path):
-    monkeypatch.setenv("TOKDASH_USAGE_DB_DURABLE", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_DURABLE", "0")
     a, b = tmp_path / "a", tmp_path / "b"
     db = _make_db(a, sessions=[("s1", None, 100, 5, T0, 0.0)], messages=[])
     _make_db(b, sessions=[("s1", None, 200, 5, T0, 0.0), ("s2", None, 300, 5, T0, 0.0)], messages=[])

@@ -10,7 +10,7 @@ import pytest
 
 pytest.importorskip("fastapi")
 
-import tokdash.api as api
+import token_dashboard.api as api
 
 
 def _enabled(name: str) -> bool:
@@ -39,7 +39,7 @@ def _static_middleware_cache_control(path: str) -> str:
 
 @pytest.fixture(autouse=True)
 def _reset_api_cache(monkeypatch):
-    monkeypatch.setenv("TOKDASH_WARM_ON_START", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_WARM_ON_START", "0")
     api._clear_cache()
     with api._cache_guard:
         api._key_locks.clear()
@@ -215,17 +215,17 @@ def test_api_endpoints_and_dashboard_smoke(synthetic_api_data):
     assert activity["recorded_chats"]["value"] == 3
 
     manifest = (api.STATIC_DIR / "manifest.webmanifest").read_text(encoding="utf-8")
-    assert "Tokdash" in manifest
+    assert "TokenDashboard" in manifest
 
     sw = api._render_service_worker("")
     assert "service worker" in sw.lower()
-    assert "__TOKDASH_CACHE_NAME__" not in sw
-    assert "__TOKDASH_BASE_PATH__" not in sw
-    assert 'const CACHE_NAME = "tokdash-' in sw
+    assert "__TOKEN_DASHBOARD_CACHE_NAME__" not in sw
+    assert "__TOKEN_DASHBOARD_BASE_PATH__" not in sw
+    assert 'const CACHE_NAME = "token-dashboard-' in sw
 
     html = api._render_dashboard_html("")
-    assert "Tokdash" in html
-    assert "__TOKDASH_BASE_PATH__" not in html
+    assert "TokenDashboard" in html
+    assert "__TOKEN_DASHBOARD_BASE_PATH__" not in html
 
     icon_path = api.STATIC_DIR / "icons" / "icon-192.png"
     assert icon_path.exists()
@@ -274,26 +274,26 @@ def test_static_serves_symlinked_assets(tmp_path):
 
 
 def test_public_base_path_rendering():
-    assert api._normalize_public_base_path("tokdash/") == "/tokdash"
+    assert api._normalize_public_base_path("token-dashboard/") == "/token-dashboard"
     assert api._normalize_public_base_path("/") == ""
 
-    html = api._render_dashboard_html("/tokdash")
-    assert 'const configured = "/tokdash";' in html
+    html = api._render_dashboard_html("/token-dashboard")
+    assert 'const configured = "/token-dashboard";' in html
 
-    manifest = api._render_manifest("/tokdash")
-    assert '"start_url":"/tokdash/"' in manifest
-    assert '"/tokdash/static/icons/icon-192.png"' in manifest
+    manifest = api._render_manifest("/token-dashboard")
+    assert '"start_url":"/token-dashboard/"' in manifest
+    assert '"/token-dashboard/static/icons/icon-192.png"' in manifest
 
-    sw = api._render_service_worker("/tokdash")
-    assert 'const BASE_PATH = "/tokdash";' in sw
-    assert "__TOKDASH_BASE_PATH__" not in sw
+    sw = api._render_service_worker("/token-dashboard")
+    assert 'const BASE_PATH = "/token-dashboard";' in sw
+    assert "__TOKEN_DASHBOARD_BASE_PATH__" not in sw
 
 
 def test_static_assets_resolve_under_a_preserved_prefix():
-    """A proxy that forwards /tokdash intact must reach the static mount too.
+    """A proxy that forwards /token-dashboard intact must reach the static mount too.
 
     BasePathMiddleware used to extend root_path while stripping the path, so
-    Starlette looked up /tokdash/static/themes.css as static/static/themes.css
+    Starlette looked up /token-dashboard/static/themes.css as static/static/themes.css
     and every asset behind such a proxy 404'd. The stripped path must also
     keep the vendor files' long-lived cache header.
     """
@@ -301,12 +301,12 @@ def test_static_assets_resolve_under_a_preserved_prefix():
 
     client = TestClient(api.app)
     vendor = next((api.STATIC_DIR / "vendor").glob("*.js")).name
-    for path in ("/static/themes.css", "/tokdash/static/themes.css", "/tokdash/static/icons/icon-192.png"):
+    for path in ("/static/themes.css", "/token-dashboard/static/themes.css", "/token-dashboard/static/icons/icon-192.png"):
         assert client.get(path).status_code == 200, path
-    response = client.get(f"/tokdash/static/vendor/{vendor}")
+    response = client.get(f"/token-dashboard/static/vendor/{vendor}")
     assert response.status_code == 200
     assert "immutable" in response.headers["cache-control"]
-    assert client.get("/tokdash/static/no-such-file.css").status_code == 404
+    assert client.get("/token-dashboard/static/no-such-file.css").status_code == 404
 
 
 def test_api_docs_pages_are_off_but_the_schema_is_served():
@@ -458,8 +458,8 @@ def test_activity_insights_failure_does_not_change_stats(monkeypatch):
 
 
 @pytest.mark.skipif(
-    not _enabled("TOKDASH_RUN_REAL_API_SMOKE"),
-    reason="set TOKDASH_RUN_REAL_API_SMOKE=1 to walk real local logs; this is intentionally heavy",
+    not _enabled("TOKEN_DASHBOARD_RUN_REAL_API_SMOKE"),
+    reason="set TOKEN_DASHBOARD_RUN_REAL_API_SMOKE=1 to walk real local logs; this is intentionally heavy",
 )
 def test_api_endpoints_against_real_local_logs():
     """Opt-in integration/stress check for the real parser stack."""

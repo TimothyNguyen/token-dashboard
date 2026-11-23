@@ -21,9 +21,9 @@ REQUEST={'from':'2026-09-01','to':'2026-09-28','source':''}
 
 def configure(src,corpus,data):
     import speed_fixtures
-    from bench_tokdash_server import _prune_parsers
+    from bench_token_dashboard_server import _prune_parsers
     os.environ.update(speed_fixtures.isolated_env(corpus,data,data.parent/'xdg'))
-    os.environ['TOKDASH_SPEED_CPU_FRACTION']='1'
+    os.environ['TOKEN_DASHBOARD_SPEED_CPU_FRACTION']='1'
     sys.path.insert(0,str(src));_prune_parsers(ALLOWED)
 
 
@@ -35,8 +35,8 @@ def prepare(args):
         template=conn.execute("SELECT data FROM message WHERE id='m1'").fetchone()[0]
         conn.executemany('INSERT INTO message VALUES(?,?,?,?,?)',((f'history-{i}','s',1788264000000,1788264002000,template) for i in range(args.history)))
     configure(Path(args.src),corpus,data)
-    from tokdash import compute,speed_cache,speed_worker
-    from tokdash.sources.coding_tools import CodingToolsUsageTracker,_sig_cache
+    from token_dashboard import compute,speed_cache,speed_worker
+    from token_dashboard.sources.coding_tools import CodingToolsUsageTracker,_sig_cache
     compute._sync_usage_store(CodingToolsUsageTracker())
     with closing(speed_cache.connect()) as conn:
         conn.execute("INSERT INTO speed_jobs(id,request,state,created_at,updated_at) VALUES('benchmark',?,'building',0,0)",(json.dumps(REQUEST),));conn.commit()
@@ -60,7 +60,7 @@ def measure(args):
     for name in ('usage.sqlite3','output_speed.sqlite3'):
         backup(common/'prepared'/name,data/name)
     configure(Path(args.src),common/'corpus',data)
-    from tokdash import speed_cache,speed_worker
+    from token_dashboard import speed_cache,speed_worker
     measurements={};staged=[];wal_sizes=[]
     def timing(name,fn):
         cpu=time.process_time();wall=time.perf_counter();value=fn()

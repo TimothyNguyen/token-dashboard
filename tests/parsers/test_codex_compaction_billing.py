@@ -14,20 +14,20 @@ from pathlib import Path
 
 import pytest
 
-import tokdash.compute as compute
-from tokdash import sessions
-from tokdash.output_speed import STATUS_INCOMPLETE
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import (
+import token_dashboard.compute as compute
+from token_dashboard import sessions
+from token_dashboard.output_speed import STATUS_INCOMPLETE
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import (
     BaseParser,
     CodexParser,
     CodingToolsUsageTracker,
     _sig_cache,
     codex_compaction_event_key,
 )
-from tokdash.speed_mode import collect_timings
+from token_dashboard.speed_mode import collect_timings
 
-MODEL = "tokdash-codex-test"
+MODEL = "token-dashboard-codex-test"
 BASE = datetime(2026, 5, 19, 12, tzinfo=timezone.utc)
 
 # One request before the compaction, the compaction itself, one request after.
@@ -41,8 +41,8 @@ ZERO = {"input_tokens": 0, "cached_input_tokens": 0, "output_tokens": 0, "reason
 def _isolated_home(monkeypatch, tmp_path):
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
     monkeypatch.delenv("CODEX_HOME", raising=False)
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
-    monkeypatch.setenv("TOKDASH_USAGE_DB_DURABLE", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_DURABLE", "1")
     yield tmp_path
 
 
@@ -139,7 +139,7 @@ def _overview_stored():
 
 
 def _sessions(monkeypatch, stored):
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1" if stored else "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1" if stored else "0")
     _sig_cache.clear()
     sessions.reload_pricing_db()
     turns = [turn for raw in sessions._raw_sessions_for_tool("codex").values() for turn in raw["turns"]]

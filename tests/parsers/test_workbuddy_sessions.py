@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-import tokdash.sessions as sessions
+import token_dashboard.sessions as sessions
 from test_workbuddy_parser import (
     _assistant_row,
     _fallback_usage,
@@ -22,15 +22,15 @@ from test_workbuddy_parser import (
     _workbuddy_only_tracker,
     _write_transcript,
 )
-from tokdash.pricing import PricingDatabase
-from tokdash.sessions import (
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sessions import (
     SESSION_TOOLS,
     _raw_sessions_for_tool,
     get_session_detail,
     get_sessions_data,
     reload_pricing_db,
 )
-from tokdash.sources.coding_tools import BaseParser, _sig_cache
+from token_dashboard.sources.coding_tools import BaseParser, _sig_cache
 
 # One priced model so billing drift is visible; "default-model" (the router
 # alias) stays absent to pin the zero-cost path.
@@ -58,7 +58,7 @@ def _setup(monkeypatch, tmp_path, root: Path) -> None:
     monkeypatch.setenv("HOME", str(home))
     monkeypatch.setattr(Path, "home", lambda: home)
     monkeypatch.setenv("WORKBUDDY_DATA_DIR", str(root))
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(tmp_path / "data-home"))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path / "data-home"))
     override = PricingDatabase().override_path()
     override.parent.mkdir(parents=True, exist_ok=True)
     override.write_text(
@@ -315,7 +315,7 @@ def test_project_from_repo_or_path_separators():
     assert project_of(None, "C:\\Users\\H1937\\proj\\") == "proj"  # trailing sep
     # POSIX paths and repo URLs are untouched.
     assert project_of(None, "/work/demo-proj") == "demo-proj"
-    assert project_of("https://github.com/acme/tokdash.git", "/work/other") == "tokdash"
+    assert project_of("https://github.com/acme/token-dashboard.git", "/work/other") == "token-dashboard"
     # Known behaviour change: a POSIX directory whose NAME contains a
     # literal backslash now splits on it. Rare, and accepted so that the
     # far more common Windows cwd resolves.
@@ -338,7 +338,7 @@ def test_multi_root_whitespace(monkeypatch, tmp_path):
                             raw_usage=_raw_usage(2000, 200, 0, 2000)), "wb-r2"),
     ])
     monkeypatch.setenv("WORKBUDDY_DATA_DIR", f"{root_a} , {root_b}")
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(tmp_path / "data-home"))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path / "data-home"))
     override = PricingDatabase().override_path()
     override.parent.mkdir(parents=True, exist_ok=True)
     override.write_text(
@@ -401,7 +401,7 @@ def test_parity_with_overview_parser(monkeypatch, tmp_path):
     comparison are live parses; with the store on this test would measure
     ingestion state, not the harness.
     """
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     root = tmp_path / "wb-parity"
     (root / "projects").mkdir(parents=True)
     _write_transcript(root, "slug-p1", "wb-p1", [
@@ -464,7 +464,7 @@ def test_no_root_empty_view(monkeypatch, tmp_path):
     monkeypatch.setenv("HOME", str(home))
     monkeypatch.setattr(Path, "home", lambda: home)
     monkeypatch.delenv("WORKBUDDY_DATA_DIR", raising=False)
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(tmp_path / "data-home"))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path / "data-home"))
     reload_pricing_db()
 
     data = get_sessions_data("workbuddy", "all")
@@ -478,7 +478,7 @@ def test_registration_smoke(monkeypatch, tmp_path):
     monkeypatch.setenv("HOME", str(home))
     monkeypatch.setattr(Path, "home", lambda: home)
     monkeypatch.delenv("WORKBUDDY_DATA_DIR", raising=False)
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(tmp_path / "data-home"))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path / "data-home"))
     reload_pricing_db()
 
     assert "workbuddy" in SESSION_TOOLS

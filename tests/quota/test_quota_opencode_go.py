@@ -7,7 +7,7 @@ from __future__ import annotations
 import json
 from urllib.error import HTTPError
 
-from tokdash.sources.quota import opencode_go
+from token_dashboard.sources.quota import opencode_go
 
 
 class FakeResponse:
@@ -218,10 +218,10 @@ def test_403_entitlement_error_reports_unavailable(monkeypatch, tmp_path):
 
 
 def test_subscription_loss_and_recovery_update_stored_quota_status(monkeypatch, tmp_path):
-    from tokdash import api
-    from tokdash.sources import quota
-    from tokdash.sources.quota import config
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard import api
+    from token_dashboard.sources import quota
+    from token_dashboard.sources.quota import config
+    from token_dashboard.usage_store import UsageEntryStore
 
     _auth_file(tmp_path, monkeypatch, {"type": "api", "key": "sk-file"})
     config.set_quota_consent({"credential_scan": True, "opencode_go_api": True})
@@ -324,7 +324,7 @@ def test_plain_string_and_underscore_key_entries_accepted(monkeypatch, tmp_path)
 
 
 def test_detection_reads_key_content_only_with_credential_scan(monkeypatch, tmp_path):
-    from tokdash.sources import quota
+    from token_dashboard.sources import quota
 
     _auth_file(tmp_path, monkeypatch, {"type": "api", "key": "sk-file"})
     monkeypatch.delenv("OPENCODE_API_KEY", raising=False)

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 
-from tokdash.model_normalization import normalize_model_name
+from token_dashboard.model_normalization import normalize_model_name
 
 from support.frontend import extract_js_function, index_source, needs_node, run_node
 

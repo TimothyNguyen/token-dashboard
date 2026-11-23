@@ -20,22 +20,22 @@ from pathlib import Path
 
 import pytest
 
-import tokdash.sessions as sessions
-from tokdash import clientpaths
-from tokdash.pricing import PricingDatabase
-from tokdash.sessions import (
+import token_dashboard.sessions as sessions
+from token_dashboard import clientpaths
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sessions import (
     SESSION_TOOLS,
     _raw_sessions_for_tool,
     get_sessions_data,
     reload_pricing_db,
 )
-from tokdash.sources import coding_tools
-from tokdash.sources.coding_tools import (
+from token_dashboard.sources import coding_tools
+from token_dashboard.sources.coding_tools import (
     BaseParser,
     QwenCodeParser,
     _sig_cache,
 )
-from tokdash.compute import CodingToolsUsageTracker
+from token_dashboard.compute import CodingToolsUsageTracker
 
 # One priced model so billing drift is visible; "qwen-unpriced" stays absent
 # from the pricing file to pin the zero-cost path.
@@ -74,7 +74,7 @@ def _setup(monkeypatch, tmp_path) -> Path:
     home = tmp_path / "home"
     monkeypatch.setenv("HOME", str(home))
     monkeypatch.setattr(Path, "home", lambda: home)
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(tmp_path / "data-home"))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path / "data-home"))
     override = PricingDatabase().override_path()
     override.parent.mkdir(parents=True, exist_ok=True)
     override.write_text(
@@ -510,7 +510,7 @@ def test_transient_lock_degrades_and_recovers(monkeypatch, tmp_path):
 def test_parity_property_randomized(monkeypatch, tmp_path):
     """The release gate: live parse vs Sessions harness over the same fixture
     corpus, store off, WorkBuddy sum formula, five seeds."""
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     for seed in range(5):
         rng = random.Random(seed)
         base = tmp_path / f"root-{seed}"

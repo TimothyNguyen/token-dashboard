@@ -15,16 +15,16 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import sessions
-from tokdash.pricing import PricingDatabase
-from tokdash.sessions import (
+from token_dashboard import sessions
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sessions import (
     SESSION_TOOLS,
     _hermes_sessions,
     get_session_detail,
     get_sessions_data,
     reload_pricing_db,
 )
-from tokdash.sources.coding_tools import BaseParser, HermesParser, _sig_cache
+from token_dashboard.sources.coding_tools import BaseParser, HermesParser, _sig_cache
 
 SCHEMA = """
 CREATE TABLE sessions (
@@ -736,7 +736,7 @@ def test_hermes_sessions_multi_model_without_a_recorded_provider(monkeypatch, tm
 
 @pytest.mark.parametrize("wal", [False, True])
 def test_api_sessions_detects_source_updates_before_ttl(monkeypatch, tmp_path, wal):
-    from tokdash import api
+    from token_dashboard import api
 
     home = _home(tmp_path)
     _patch_env(monkeypatch, home)
@@ -747,7 +747,7 @@ def test_api_sessions_detects_source_updates_before_ttl(monkeypatch, tmp_path, w
         conn.execute("PRAGMA wal_autocheckpoint=0")
         # Establish the WAL/read index before capturing the first signature.
         conn.execute("SELECT COUNT(*) FROM sessions").fetchone()
-    monkeypatch.setenv("TOKDASH_WARM_ON_START", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_WARM_ON_START", "0")
     api._clear_cache()
     try:
         first = api.get_sessions("hermes", "all")

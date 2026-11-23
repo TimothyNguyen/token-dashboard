@@ -10,15 +10,15 @@ from contextlib import closing
 
 import pytest
 
-from tokdash.compute import _collect_parser_file, _collect_parser_tail
-from tokdash.output_speed import (
+from token_dashboard.compute import _collect_parser_file, _collect_parser_tail
+from token_dashboard.output_speed import (
     STATUS_INVALID_TIMING,
     STATUS_MEASURED,
     STATUS_MISSING_TIMING,
 )
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import KimiParser
-from tokdash.usage_store import (
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import KimiParser
+from token_dashboard.usage_store import (
     MEASUREMENT_GENERATION_META_KEY,
     SCHEMA_VERSION,
     SPEED_ENTRY_KEY,
@@ -34,7 +34,7 @@ SPEED_COLUMNS = (
 
 @pytest.fixture(autouse=True)
 def _timing_truth_reader():
-    from tokdash.speed_mode import collect_timings
+    from token_dashboard.speed_mode import collect_timings
     with collect_timings():
         yield
 
@@ -342,7 +342,7 @@ def test_speed_columns_present_names_a_layout_this_build_can_read(tmp_path):
     this build wrote, false for one an older build wrote, so the route can say
     "still migrating" instead of raising SQLite's complaint at the reader.
     """
-    from tokdash.usage_store import speed_columns_present
+    from token_dashboard.usage_store import speed_columns_present
 
     current = UsageEntryStore(tmp_path / "current.sqlite3")
     _sync(current, [_entry(**_private_speed())])
@@ -424,9 +424,9 @@ def _kimi_sync(store, parser, path, calls):
 
 
 def _stored_speed(store):
-    from tokdash import speed_cache, speed_worker
+    from token_dashboard import speed_cache, speed_worker
     from unittest.mock import patch
-    with patch.dict('os.environ',{'TOKDASH_USAGE_DB_PATH':str(store.path),'TOKDASH_SPEED_CPU_FRACTION':'1'}):
+    with patch.dict('os.environ',{'TOKEN_DASHBOARD_USAGE_DB_PATH':str(store.path),'TOKEN_DASHBOARD_SPEED_CPU_FRACTION':'1'}):
         with closing(speed_cache.connect()) as c:
             c.execute("INSERT OR REPLACE INTO speed_jobs(id,request,state,created_at,updated_at) VALUES('boundary','{}','building',0,0)");c.commit()
             speed_worker.build(c,'boundary',{'from':'2020-01-01','to':'2030-01-01','source':'kimi'},sync=False)
@@ -551,8 +551,8 @@ def test_a_speed_tracking_source_keeps_its_append_path(monkeypatch):
     it. So the decision belongs to the source's append capability and to nothing
     else, and this is the level where that decision is actually made.
     """
-    from tokdash import compute
-    from tokdash.sources.coding_tools import SourceSyncCapability
+    from token_dashboard import compute
+    from token_dashboard.sources.coding_tools import SourceSyncCapability
 
     tail_parsers = {}
 
@@ -599,7 +599,7 @@ def test_a_speed_tracking_source_keeps_its_append_path(monkeypatch):
 
 def _minted(**kw):
     """A verdict as the association itself mints it, not as a test would write it."""
-    from tokdash.output_speed import measured
+    from token_dashboard.output_speed import measured
 
     return measured(
         tokens=kw.get("tokens", 400),
@@ -621,7 +621,7 @@ def test_a_minted_verdict_stores_the_same_columns_as_the_same_numbers_written_by
     minted dict, the other a copy of it that it cannot vouch for, and the two rows
     have to come out identical -- measured ones and unmeasured ones alike.
     """
-    from tokdash.output_speed import STATUS_AMBIGUOUS_PAIR, unmeasured
+    from token_dashboard.output_speed import STATUS_AMBIGUOUS_PAIR, unmeasured
 
     cases = {
         "measured": _minted(),
@@ -643,7 +643,7 @@ def test_a_minted_verdict_stores_the_same_columns_as_the_same_numbers_written_by
 
 
 def test_two_rows_can_share_one_verdict_dict(tmp_path):
-    from tokdash.output_speed import unmeasured
+    from token_dashboard.output_speed import unmeasured
     shared=unmeasured(STATUS_MISSING_TIMING)
     store=UsageEntryStore(tmp_path/'u.sqlite3')
     _sync(store,[_entry('k1',_speed=shared),_entry('k2',_speed=shared),_entry('k3',**_private_speed())])

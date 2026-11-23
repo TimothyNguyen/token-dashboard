@@ -23,7 +23,7 @@ from support.frontend import (
 )
 
 # localStorage key the dashboard persists per-host provider visibility under.
-QUOTA_VISIBILITY_STORAGE_KEY = "tokdash-quota-visible-by-host"
+QUOTA_VISIBILITY_STORAGE_KEY = "token-dashboard-quota-visible-by-host"
 
 
 def _js_binding(source: str, name: str) -> str:
@@ -342,8 +342,8 @@ def test_companion_settings_save_validates_addresses_without_waiting_on_a_probe(
     probe: an offline host can still be saved. Neither companion has a UI test for
     its Save action, so the rule is held here against both sources."""
     root = INDEX_HTML.parents[3]
-    mac_settings = (root / "companion/macos/TokdashCompanion/SettingsView.swift").read_text(encoding="utf-8")
-    win_settings = (root / "companion/windows/TokdashCompanion/SettingsWindow.xaml.cs").read_text(encoding="utf-8")
+    mac_settings = (root / "companion/macos/TokenDashboardCompanion/SettingsView.swift").read_text(encoding="utf-8")
+    win_settings = (root / "companion/windows/TokenDashboardCompanion/SettingsWindow.xaml.cs").read_text(encoding="utf-8")
     mac_save = mac_settings[mac_settings.index("private func saveSettings()") : mac_settings.index("private func removeServer")]
     assert "validServers" in mac_save and "testResults" not in mac_save
     win_save = win_settings[win_settings.index("private async void Save_Click") : win_settings.index("private static string ServerSignature")]
@@ -357,8 +357,8 @@ def test_both_companion_suites_read_the_shared_multi_server_fixture():
     """The multi-server merge is pinned once, in companion/contract/expected; each
     native suite has to keep reading that file rather than a private copy."""
     root = INDEX_HTML.parents[3]
-    windows_tests = (root / "companion/windows/TokdashCompanion.Tests/MultiServerContractTests.cs").read_text(encoding="utf-8")
-    mac_tests = (root / "companion/macos/TokdashCompanionTests/SnapshotTests.swift").read_text(encoding="utf-8")
+    windows_tests = (root / "companion/windows/TokenDashboardCompanion.Tests/MultiServerContractTests.cs").read_text(encoding="utf-8")
+    mac_tests = (root / "companion/macos/TokenDashboardCompanionTests/SnapshotTests.swift").read_text(encoding="utf-8")
     assert (root / "companion/contract/expected/multi-server.json").is_file()
     assert 'ContractFile("expected", "multi-server.json")' in windows_tests
     assert 'contractURL("expected/multi-server.json")' in mac_tests
@@ -367,7 +367,7 @@ def test_both_companion_suites_read_the_shared_multi_server_fixture():
 def test_every_backend_quota_provider_can_render_a_card():
     """A provider missing from the shipped visibility list or the card order is
     filtered out of presence and never renders, whatever /api/quota returns."""
-    from tokdash.sources import quota
+    from token_dashboard.sources import quota
 
     backend = set(quota.quota_state()["providers"])
     source = index_source()
@@ -1110,7 +1110,7 @@ def _route_source(source: str) -> list[str]:
         extract_js_function(source, "function localHostFrom("),
         extract_js_function(source, "function loadServerRegistry("),
         extract_js_function(source, "function mergeHostsByIdentity("),
-        extract_js_function(source, "function tokdashShaped(payload) {"),
+        extract_js_function(source, "function tokenDashboardShaped(payload) {"),
         extract_js_function(source, "function routeLevelError(error) {"),
     ]
 
@@ -1135,8 +1135,8 @@ def test_route_url_normalisation_is_the_dedupe_key(tmp_path):
     urls = [
         "HTTP://127.0.0.1:55423/",
         "http://127.0.0.1:55423",
-        "https://wsl.tail76535.ts.net:443/tokdash/",
-        "https://wsl.tail76535.ts.net/tokdash",
+        "https://wsl.tail76535.ts.net:443/token-dashboard/",
+        "https://wsl.tail76535.ts.net/token-dashboard",
         "http://192.168.1.30:55423/base//",
         "http://[::1]:55423",
         "not a url",
@@ -1145,7 +1145,7 @@ def test_route_url_normalisation_is_the_dedupe_key(tmp_path):
     ]
     out = _run_routes(tmp_path, "normalise", "urls.map(normalizeRouteUrl)", {"urls": urls})
     assert out[0] == "http://127.0.0.1:55423" == out[1]
-    assert out[2] == "https://wsl.tail76535.ts.net/tokdash" == out[3], "default port and trailing slash drop, prefix stays"
+    assert out[2] == "https://wsl.tail76535.ts.net/token-dashboard" == out[3], "default port and trailing slash drop, prefix stays"
     assert out[4] == "http://192.168.1.30:55423/base"
     assert out[5] == "http://[::1]:55423"
     assert out[6:] == ["", "", ""], "anything a browser could not fetch is not a route"
@@ -1155,23 +1155,23 @@ def test_route_url_normalisation_is_the_dedupe_key(tmp_path):
 def test_blocked_is_predicted_from_the_two_addresses_not_probed(tmp_path):
     cases = [
         # https page, LAN plain-http route: the page itself refuses it.
-        ("https://wsl.tail76535.ts.net/tokdash", "http://192.168.1.30:55423"),
+        ("https://wsl.tail76535.ts.net/token-dashboard", "http://192.168.1.30:55423"),
         # https Serve page, foreign tailnet: no stock rule admits that origin.
-        ("https://wsl.other.tail76535.ts.net/tokdash", "https://mac.tail76535.ts.net"),
+        ("https://wsl.other.tail76535.ts.net/token-dashboard", "https://mac.tail76535.ts.net"),
         # https Serve page, its own machine's loopback: still admitted by nothing.
-        ("https://wsl.tail76535.ts.net/tokdash", "http://127.0.0.1:55423"),
+        ("https://wsl.tail76535.ts.net/token-dashboard", "http://127.0.0.1:55423"),
         # https page on a tunnel host, any cross-origin route.
         ("https://dash.example.com", "https://other.example.com"),
         # the loopback page, which is where the feature lives: all of those read fine.
-        ("http://127.0.0.1:55423", "https://wsl.tail76535.ts.net/tokdash"),
+        ("http://127.0.0.1:55423", "https://wsl.tail76535.ts.net/token-dashboard"),
         ("http://127.0.0.1:55423", "http://192.168.1.30:55423"),
         ("http://127.0.0.1:55423", "http://127.0.0.1:55424"),
         # same tailnet, https to https: admitted.
-        ("https://wsl.tail76535.ts.net/tokdash", "https://mac.tail76535.ts.net"),
+        ("https://wsl.tail76535.ts.net/token-dashboard", "https://mac.tail76535.ts.net"),
         # same origin is never blocked, prefix differences included.
-        ("https://wsl.tail76535.ts.net/tokdash", "https://wsl.tail76535.ts.net/tokdash/api"),
+        ("https://wsl.tail76535.ts.net/token-dashboard", "https://wsl.tail76535.ts.net/token-dashboard/api"),
         # a Serve page cannot read a plain-HTTP same-tailnet address (mixed content first).
-        ("https://wsl.tail76535.ts.net/tokdash", "http://matebook.tail76535.ts.net:55423"),
+        ("https://wsl.tail76535.ts.net/token-dashboard", "http://matebook.tail76535.ts.net:55423"),
     ]
     out = _run_routes(tmp_path, "blocked", "pairs.map(([p, r]) => predictBlocked(p, r))", {"pairs": cases})
     assert out[0] == "mixedContent"
@@ -1194,7 +1194,7 @@ def test_registry_migration_accepts_both_shapes(tmp_path):
             {"id": "dup", "url": "http://192.168.1.30:55423/"},
         ]},
         {"id": "local", "label": "WSL box", "choice": "r1",
-         "routes": [{"id": "w", "url": "https://wsl.tail76535.ts.net/tokdash"}]},
+         "routes": [{"id": "w", "url": "https://wsl.tail76535.ts.net/token-dashboard"}]},
         {"id": "junk", "label": "no url"},
         {"id": "routed", "label": "duplicate id"},
         None,
@@ -1218,7 +1218,7 @@ def test_registry_migration_accepts_both_shapes(tmp_path):
 @needs_node
 def test_local_entry_survives_a_reload_with_its_routes_and_choice(tmp_path):
     stored = [{"id": "local", "label": "WSL box", "choice": "w",
-               "routes": [{"id": "w", "url": "https://wsl.tail76535.ts.net/tokdash", "kind": "added"}]},
+               "routes": [{"id": "w", "url": "https://wsl.tail76535.ts.net/token-dashboard", "kind": "added"}]},
               {"id": "mate", "label": "matebook", "baseUrl": "http://192.168.1.30:55423"}]
     out = _run_routes(tmp_path, "localload",
                       "loadServerRegistry({ getItem: () => JSON.stringify(stored) }, 'http://127.0.0.1:55423')",
@@ -1229,7 +1229,7 @@ def test_local_entry_survives_a_reload_with_its_routes_and_choice(tmp_path):
     assert local["label"] == "WSL box", "the rename comes back"
     assert local["choice"] == "w", "the pinned route comes back"
     assert [r["url"] for r in local["routes"]] == [
-        "http://127.0.0.1:55423", "https://wsl.tail76535.ts.net/tokdash"], "the origin route is prepended, not stored"
+        "http://127.0.0.1:55423", "https://wsl.tail76535.ts.net/token-dashboard"], "the origin route is prepended, not stored"
     assert local["routes"][0]["kind"] == "origin"
     assert local["instanceId"] == "", "local's identity is re-read each load, never trusted from storage"
 
@@ -1320,7 +1320,7 @@ def test_identity_merge_survivor_and_carried_state(tmp_path):
 
 
 @needs_node
-def test_503_with_a_tokdash_detail_is_not_a_route_failure(tmp_path):
+def test_503_with_a_token_dashboard_detail_is_not_a_route_failure(tmp_path):
     cases = {
         "corsOrDeadSocket": {"typeName": "TypeError"},
         "abort": {"name": "AbortError"},
@@ -1336,7 +1336,7 @@ def test_503_with_a_tokdash_detail_is_not_a_route_failure(tmp_path):
                       {"cases": cases})
     assert out["abort"] is True and out["nothing"] is False
     assert out["proxy502"] is True and out["proxy503Plain"] is True and out["proxyJsonNoDetail"] is True
-    assert out["backpressure503"] is False, "Tokdash backpressure is retry, not a dead route"
+    assert out["backpressure503"] is False, "TokenDashboard backpressure is retry, not a dead route"
     assert out["notFound"] is False
 
     # The TypeError half needs a real TypeError, which is what fetch throws on a CORS refusal.
@@ -1369,7 +1369,7 @@ def test_two_routes_one_host_still_counts_once(tmp_path):
     )
     usage = {"total_tokens": 100, "total_cost": 1.5, "daily": [{"date": "2026-09-25", "tokens": 100, "cost": 1.5}]}
     stored = [{"id": "local", "label": "Local",
-               "routes": [{"id": "w", "url": "https://wsl.tail76535.ts.net/tokdash"}]}]
+               "routes": [{"id": "w", "url": "https://wsl.tail76535.ts.net/token-dashboard"}]}]
     result = json.loads(run_node(
         harness, json.dumps({"stored": stored, "page": "http://127.0.0.1:55423", "usage": usage})))
     assert result["hostCount"] == 1, "the tailnet URL joined the page's own host instead of becoming a second row"
@@ -1402,7 +1402,7 @@ def _probing_source(source: str) -> list[str]:
         extract_js_function(source, "function predictBlocked(pageUrl, routeUrl) {"),
         extract_js_function(source, "function routeMedianMs(state) {"),
         extract_js_function(source, "function routePath(route, path) {"),
-        extract_js_function(source, "function tokdashShaped(payload) {"),
+        extract_js_function(source, "function tokenDashboardShaped(payload) {"),
         extract_js_function(source, "function routeLevelError(error) {"),
         extract_js_function(source, "function newRouteRuntime() {"),
         extract_js_function(source, "function setRouteState(routeId, patch) {"),
@@ -1470,7 +1470,7 @@ def _run_probing(tmp_path: Path, name: str, body: str, value=None):
 def test_the_placeholder_never_lands_on_a_route_from_another_daemon(tmp_path):
     """The all-failed placeholder exists to keep an unverified host in the combined view.
 
-    Once a route has been caught answering as some other Tokdash it is no longer unverified,
+    Once a route has been caught answering as some other TokenDashboard it is no longer unverified,
     and reading it would file that machine's tokens under this host -- which is what happens
     on failover when the only remaining address is the stale one.
     """
@@ -1604,7 +1604,7 @@ def test_a_route_that_goes_quiet_mid_probe_is_not_left_healthy(tmp_path):
         calls[id] += 1;
         if (id === 'quiet' && calls.quiet > 1) throw new TypeError('Failed to fetch');
         return { ok: true, status: 200,
-          json: async () => ({ service: 'tokdash', instance_id: 'MINE', version: '2.6.4' }) };
+          json: async () => ({ service: 'token_dashboard', instance_id: 'MINE', version: '2.6.4' }) };
       };
       const goodProbe = await probeRoute(healthy, { bypassBackoff: true });
       const quietProbe = await probeRoute(quiet, { bypassBackoff: true });
@@ -1633,7 +1633,7 @@ def test_an_address_is_judged_before_it_is_stored(tmp_path):
     """
     body = """{
       globalThis.fetch = async () => (typeof reply === 'function' ? reply()
-        : { ok: true, status: 200, json: async () => ({ service: 'tokdash', instance_id: reply, version: '2.6.4' }) });
+        : { ok: true, status: 200, json: async () => ({ service: 'token_dashboard', instance_id: reply, version: '2.6.4' }) });
       const host = { id: 'ws', instanceId: 'WS', routes: [{ id: 'r', url: 'http://ws', kind: 'added' }] };
       const unidentified = { id: 'old', instanceId: '', routes: [{ id: 'o', url: 'http://old', kind: 'added' }] };
       const results = {};
@@ -1838,7 +1838,7 @@ def test_session_detail_reads_through_the_route_system() -> None:
 
 @needs_node
 @pytest.mark.parametrize("address,available,expected,hits", [
-    ("box.ts.net/tokdash/", ["https://box.ts.net/tokdash"], "https://box.ts.net/tokdash", 1),
+    ("box.ts.net/token-dashboard/", ["https://box.ts.net/token-dashboard"], "https://box.ts.net/token-dashboard", 1),
     ("127.0.0.1:55423", ["http://127.0.0.1:55423"], "http://127.0.0.1:55423", 2),
     ("[::1]:55423/base", ["http://[::1]:55423/base"], "http://[::1]:55423/base", 2),
     ("http://offline:55423", [], "http://offline:55423", 0),

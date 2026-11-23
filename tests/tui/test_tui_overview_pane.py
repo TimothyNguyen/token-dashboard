@@ -18,9 +18,9 @@ textual = pytest.importorskip("textual", reason="the TUI tests need textual")
 
 from textual.widgets import DataTable, Static  # noqa: E402
 
-import tokdash.tui.app as app_mod  # noqa: E402
-from tokdash.tui import views  # noqa: E402
-from tokdash.tui.data import FetchOutcome  # noqa: E402
+import token_dashboard.tui.app as app_mod  # noqa: E402
+from token_dashboard.tui import views  # noqa: E402
+from token_dashboard.tui.data import FetchOutcome  # noqa: E402
 import support.tui as fx  # noqa: E402  (the layout-law tests call it fx)
 from support.tui import (  # noqa: E402
     ACTIVE,
@@ -408,7 +408,7 @@ def test_a_card_caption_never_breaks_in_the_middle_of_a_word(pane_width):
     token we..." leaves the denominator open, which is exactly the confusion
     the caption exists to close. So the short wording has to be short.
     """
-    import tokdash.tui.views as views_mod
+    import token_dashboard.tui.views as views_mod
 
     cards = views_mod.kpi_cards(copy.deepcopy(USAGE), copy.deepcopy(ACTIVE))
     assert cards, "the fixture has to feed the headline row"
@@ -420,7 +420,7 @@ def test_a_card_caption_never_breaks_in_the_middle_of_a_word(pane_width):
 @pytest.mark.parametrize("pane_width", [118, 98, 78, 58])
 def test_every_card_keeps_its_full_value_at_every_width(pane_width):
     """Cropping a caption is a wording decision; cropping a FIGURE is a bug."""
-    import tokdash.tui.views as views_mod
+    import token_dashboard.tui.views as views_mod
 
     cards = views_mod.kpi_cards(copy.deepcopy(USAGE), copy.deepcopy(ACTIVE))
     painted = "\n".join(_card_lines(cards, pane_width))
@@ -430,7 +430,7 @@ def test_every_card_keeps_its_full_value_at_every_width(pane_width):
 
 def test_the_monochrome_cards_still_separate_their_figures():
     """No tints in a mono terminal: the geometry alone has to group the row."""
-    import tokdash.tui.views as views_mod
+    import token_dashboard.tui.views as views_mod
 
     cards = views_mod.kpi_cards(copy.deepcopy(USAGE), copy.deepcopy(ACTIVE))
     painted = "\n".join(_card_lines(cards, 118, mono=True))

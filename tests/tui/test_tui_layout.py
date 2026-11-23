@@ -16,7 +16,7 @@ textual = pytest.importorskip("textual", reason="the TUI tests need textual")
 
 from textual.widgets import Button, DataTable  # noqa: E402
 
-from tokdash.tui.app import fit_columns  # noqa: E402
+from token_dashboard.tui.app import fit_columns  # noqa: E402
 from support.tui import (  # noqa: E402
     SIZES,
     api,  # noqa: F401  (the fixture these tests ask pytest for)

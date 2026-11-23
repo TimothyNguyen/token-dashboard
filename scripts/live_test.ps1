@@ -1,13 +1,13 @@
 #requires -Version 5.1
 <#
-Tokdash Windows setup fix - live end-to-end test (fix/windows-setup worktree).
+TokenDashboard Windows setup fix - live end-to-end test (fix/windows-setup worktree).
 
 Run from a NORMAL (non-elevated) PowerShell. It:
-  0. checks it is not elevated and no Tokdash task exists
+  0. checks it is not elevated and no TokenDashboard task exists
   1. builds a throwaway test venv from the worktree (H: drive copy of the fix)
-  2. proves `tokdash serve` survives a cp1252-redirected stdout (bug 3: the
+  2. proves `token-dashboard serve` survives a cp1252-redirected stdout (bug 3: the
      UnicodeEncodeError on the first emoji print that killed the task process)
-  3. runs a full non-elevated `tokdash setup --auto` (bug 1: per-user logon
+  3. runs a full non-elevated `token-dashboard setup --auto` (bug 1: per-user logon
      trigger registers without UAC; bug 2: port 55423 is held by wslrelay/WSL,
      so setup must auto-pick a free port and the service must really come up)
   4. re-runs setup (re-setup path: own service keeps the port, old task stopped)
@@ -15,7 +15,7 @@ Run from a NORMAL (non-elevated) PowerShell. It:
   6. uninstall -y and verifies the machine is back to a clean state
   7. removes the test venv if everything passed
 
-Nothing outside the throwaway venv and the Tokdash task/manifest is touched.
+Nothing outside the throwaway venv and the TokenDashboard task/manifest is touched.
 #>
 $ErrorActionPreference = "Continue"
 $script:failures = @()
@@ -24,26 +24,26 @@ function Check($name, $cond, $detail) {
   else { Write-Host "  [FAIL] $name - $detail" -ForegroundColor Red; $script:failures += $name }
 }
 
-$worktree = "H:\Developing\Agent\Tokdash_Project\tokdash\.claude\worktrees\windows-setup-fix"
-$testRoot = Join-Path $env:LOCALAPPDATA "tokdash-winfix-test"
+$worktree = "H:\Developing\Agent\TokenDashboard_Project\token-dashboard\.claude\worktrees\windows-setup-fix"
+$testRoot = Join-Path $env:LOCALAPPDATA "token-dashboard-winfix-test"
 $testVenv = Join-Path $testRoot "venv"
 $py = Join-Path $testVenv "Scripts\python.exe"
-$wrapper = Join-Path $worktree "tokdash"
-$base = Join-Path $env:TEMP "tokdash-winfix"
+$wrapper = Join-Path $worktree "token-dashboard"
+$base = Join-Path $env:TEMP "token-dashboard-winfix"
 New-Item -ItemType Directory -Force -Path $base | Out-Null
 
 Write-Host "=== 0. Preconditions ==="
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 Check "not elevated" (-not $isAdmin) "run this from a normal (non-elevated) PowerShell"
 if ($isAdmin) { Write-Host "Aborting: elevated would mask the bug-1 failure." -ForegroundColor Yellow; exit 1 }
-$existing = Get-ScheduledTask -TaskName "Tokdash" -ErrorAction SilentlyContinue
-Check "no pre-existing Tokdash task" ($null -eq $existing) "a Tokdash task already exists; run `tokdash uninstall` first"
+$existing = Get-ScheduledTask -TaskName "TokenDashboard" -ErrorAction SilentlyContinue
+Check "no pre-existing TokenDashboard task" ($null -eq $existing) "a TokenDashboard task already exists; run `token-dashboard uninstall` first"
 if ($null -ne $existing) { exit 1 }
 
 Write-Host "=== 1. Test venv from the worktree ==="
 if (Test-Path $py) {
   # A leftover venv from a previous round still contains the OLD worktree code
-  # (pip copies the package). The task runs `pythonw -m tokdash` from the venv,
+  # (pip copies the package). The task runs `pythonw -m token-dashboard` from the venv,
   # so force-reinstall the current worktree code before testing.
   Write-Host "  (venv already present, force-reinstalling worktree code)"
   & $py -m pip install -q --disable-pip-version-check --force-reinstall --no-deps $worktree
@@ -72,7 +72,7 @@ try { $health = (Invoke-WebRequest -UseBasicParsing "http://127.0.0.1:55424/heal
 Stop-Process -Id $job.Id -Force -ErrorAction SilentlyContinue
 $serveErrPreview = Get-Content $serveErr -TotalCount 3 -ErrorAction SilentlyContinue | Out-String
 Check "serve process survived the banner print" $alive ("process exited early (pre-fix behavior); stderr: " + $serveErrPreview)
-Check "serve answers /health on 55424" ($health -match '"service":"tokdash"') "health: $health"
+Check "serve answers /health on 55424" ($health -match '"service":"token-dashboard"') "health: $health"
 
 Write-Host "=== 3. Bug 1 + 2: full non-elevated setup (default port 55423 is held by WSL relay) ==="
 & $py $wrapper setup --auto --json > (Join-Path $base "setup1.json") 2>&1
@@ -84,7 +84,7 @@ Check "setup exit code 0" ($rc1 -eq 0) ("rc=$rc1 ; output: " + $setup1Output)
 Check "task registered" ($j1.service.enabled -eq $true) "service block: $($j1.service | ConvertTo-Json -Compress)"
 Check "readiness ok (port really serves the NEW service)" ($j1.readiness.ok -eq $true) "readiness: $($j1.readiness | ConvertTo-Json -Compress)"
 $picked = $j1.port
-# If the WSL relay is up it holds 55423 with a foreign Tokdash and setup must avoid it;
+# If the WSL relay is up it holds 55423 with a foreign TokenDashboard and setup must avoid it;
 # if it is down, the default 55423 is legitimately used.
 $relayConn = Get-NetTCPConnection -LocalPort 55423 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
 $relayHolder = "none"
@@ -98,10 +98,10 @@ if ($relayHolder -ne "none") {
 } else {
   Check "default port 55423 free and used" ($picked -eq 55423) "port=$picked"
 }
-$xml = Get-Content "$env:LOCALAPPDATA\Tokdash\Tokdash.xml" -Raw
+$xml = Get-Content "$env:LOCALAPPDATA\TokenDashboard\TokenDashboard.xml" -Raw
 Check "task XML has per-user LogonTrigger UserId" ($xml -match '<UserId>') "the trigger is still any-user (would need elevation)"
 Start-Sleep -Seconds 2
-$taskInfo = Get-ScheduledTask -TaskName "Tokdash" -ErrorAction SilentlyContinue
+$taskInfo = Get-ScheduledTask -TaskName "TokenDashboard" -ErrorAction SilentlyContinue
 $listener = Get-NetTCPConnection -LocalPort $picked -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
 Check "task state is Running" ($taskInfo.State -eq "Running") "state: $($taskInfo.State)"
 $listenerProc = if ($listener) { (Get-Process -Id $listener.OwningProcess).ProcessName } else { "none" }
@@ -117,13 +117,13 @@ Check "re-setup kept port $picked" ($j2.port -eq $picked) "port=$($j2.port)"
 Check "re-setup readiness ok" ($j2.readiness.ok -eq $true) "readiness: $($j2.readiness | ConvertTo-Json -Compress)"
 $notes2 = [string]::Join('|', @($j2.notes))
 $notesDetail = [string]::Join(' | ', @($j2.notes))
-Check 'note says port already serves Tokdash' ($notes2 -match 'already serves Tokdash') ("notes: " + $notesDetail)
+Check 'note says port already serves TokenDashboard' ($notes2 -match 'already serves TokenDashboard') ("notes: " + $notesDetail)
 # The re-setup readiness above can pass on a STALE instance: schtasks /End is only a
 # request, and the old pythonw can keep the port while the replacement dies on
 # "address in use" (uvicorn startup-failure exit 3). Verify the task itself is
 # really serving now, before doctor.
 Start-Sleep -Seconds 2
-$taskInfo2 = Get-ScheduledTask -TaskName "Tokdash" -ErrorAction SilentlyContinue
+$taskInfo2 = Get-ScheduledTask -TaskName "TokenDashboard" -ErrorAction SilentlyContinue
 $listener2 = Get-NetTCPConnection -LocalPort $picked -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
 Check "re-setup: task state is Running" ($taskInfo2.State -eq "Running") "state: $($taskInfo2.State)"
 $listenerProc2 = if ($listener2) { (Get-Process -Id $listener2.OwningProcess).ProcessName } else { "none" }
@@ -138,13 +138,13 @@ Check "doctor exit code 0" ($rcD -eq 0) $doctorOutput
 Write-Host "=== 6. Uninstall and verify clean state ==="
 & $py $wrapper uninstall -y --json > (Join-Path $base "uninstall.json") 2>&1
 $rcU = $LASTEXITCODE
-$taskAfter = Get-ScheduledTask -TaskName "Tokdash" -ErrorAction SilentlyContinue
-$manifestAfter = Test-Path "$env:USERPROFILE\.tokdash\install.json"
+$taskAfter = Get-ScheduledTask -TaskName "TokenDashboard" -ErrorAction SilentlyContinue
+$manifestAfter = Test-Path "$env:USERPROFILE\.token-dashboard\install.json"
 $uninstallOutput = Get-Content (Join-Path $base "uninstall.json") -Raw
 Check "uninstall exit code 0" ($rcU -eq 0) ("rc=$rcU ; " + $uninstallOutput)
-Check "task removed" ($null -eq $taskAfter) "Tokdash task still registered"
+Check "task removed" ($null -eq $taskAfter) "TokenDashboard task still registered"
 Check "manifest removed" (-not $manifestAfter) "install.json still present"
-Check "usage data kept" (Test-Path "$env:USERPROFILE\.tokdash\usage.sqlite3") "usage.sqlite3 missing"
+Check "usage data kept" (Test-Path "$env:USERPROFILE\.token-dashboard\usage.sqlite3") "usage.sqlite3 missing"
 
 Write-Host "=== 7. Cleanup ==="
 if ($script:failures.Count -eq 0) {
@@ -161,7 +161,7 @@ if ($script:failures.Count -eq 0) {
 } else {
   $failureSummary = $script:failures -join ", "
   Write-Host "FAILURES: $failureSummary" -ForegroundColor Red
-  $taskXmlPath = Join-Path $env:LOCALAPPDATA 'Tokdash\Tokdash.xml'
+  $taskXmlPath = Join-Path $env:LOCALAPPDATA 'TokenDashboard\TokenDashboard.xml'
   Write-Host "Debug artifacts: $base ; task XML: $taskXmlPath"
   exit 1
 }

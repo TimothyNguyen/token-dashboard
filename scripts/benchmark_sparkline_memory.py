@@ -36,7 +36,7 @@ signal.signal(signal.SIGTERM, interrupted)
 
 def start(repo, port, label):
     env = dict(os.environ, PYTHONPATH=str(repo / 'src'),
-               TOKDASH_DATA_DIR=str(output / (label + '-data')))
+               TOKEN_DASHBOARD_DATA_DIR=str(output / (label + '-data')))
     proc = subprocess.Popen([args.server_python, 'main.py', '--no-open',
         '--dev-fixture', 'dense', '--dev-seed', '17', '--port', str(port)],
         cwd=repo, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)

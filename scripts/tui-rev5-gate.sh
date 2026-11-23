@@ -6,13 +6,13 @@
 #   scripts/tui-rev5-gate.sh                 # focused TUI gate
 #   scripts/tui-rev5-gate.sh -x              # extra pytest args go to run 1
 #
-# Isolated data only: TOKDASH_DATA_DIR defaults to a throwaway under /tmp so a
-# run can never open the live ~/.tokdash usage database.
+# Isolated data only: TOKEN_DASHBOARD_DATA_DIR defaults to a throwaway under /tmp so a
+# run can never open the live ~/.token-dashboard usage database.
 set -u
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT" || exit 1
-export TOKDASH_TUI_NO_REMOTE=1
-export TOKDASH_DATA_DIR="${TOKDASH_DATA_DIR:-/tmp/tui-rev5-dev}"
+export TOKEN_DASHBOARD_TUI_NO_REMOTE=1
+export TOKEN_DASHBOARD_DATA_DIR="${TOKEN_DASHBOARD_DATA_DIR:-/tmp/tui-rev5-dev}"
 export PYTHONPATH=src:tests
 PY="${PY:-python3}"
 
@@ -38,7 +38,7 @@ status=$?
 # forever the day a review folder moved out from under it.
 main_root="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)"
 main_root="${main_root%/.git}"
-[ -d "$main_root" ] || main_root="/mnt/h/Developing/Agent/Tokdash_Project/tokdash"
+[ -d "$main_root" ] || main_root="/mnt/h/Developing/Agent/TokenDashboard_Project/token-dashboard"
 
 found=0
 for dir in tui-rev5-review tui-rev5-review2 tui-rev5-review3 tui-rev5-review4 \

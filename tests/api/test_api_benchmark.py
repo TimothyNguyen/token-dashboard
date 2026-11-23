@@ -44,14 +44,14 @@ def test_benchmark_summary_and_name_parsing():
 
 
 @pytest.mark.skipif(
-    os.environ.get("TOKDASH_RUN_API_BENCHMARK", "").strip().lower() not in {"1", "true", "yes", "on"},
-    reason="set TOKDASH_RUN_API_BENCHMARK=1 to compare live stable/dev Tokdash servers",
+    os.environ.get("TOKEN_DASHBOARD_RUN_API_BENCHMARK", "").strip().lower() not in {"1", "true", "yes", "on"},
+    reason="set TOKEN_DASHBOARD_RUN_API_BENCHMARK=1 to compare live stable/dev TokenDashboard servers",
 )
 def test_live_stable_dev_api_benchmark():
     bench = _load_benchmark_module()
-    stable_url = os.environ.get("TOKDASH_BENCH_STABLE_URL", "http://127.0.0.1:55423")
-    dev_url = os.environ.get("TOKDASH_BENCH_DEV_URL", "http://127.0.0.1:55619")
-    max_p95_ms = float(os.environ.get("TOKDASH_BENCH_MAX_P95_MS", "5000"))
+    stable_url = os.environ.get("TOKEN_DASHBOARD_BENCH_STABLE_URL", "http://127.0.0.1:55423")
+    dev_url = os.environ.get("TOKEN_DASHBOARD_BENCH_DEV_URL", "http://127.0.0.1:55619")
+    max_p95_ms = float(os.environ.get("TOKEN_DASHBOARD_BENCH_MAX_P95_MS", "5000"))
 
     report = bench.run_benchmark(
         [("stable", stable_url), ("dev", dev_url)],

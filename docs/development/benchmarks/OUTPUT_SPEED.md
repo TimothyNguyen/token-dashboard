@@ -140,7 +140,7 @@ python3 scripts/benchmark_lazy_speed_scopes.py \
   --baseline path/to/earlier-lazy/src --fixed src \
   --out output/output-speed-scopes --calls 10000 --pairs 3
 
-TOKDASH_BENCH_PYTHON=python3 python3 scripts/benchmark_lazy_speed_scope_browser.py \
+TOKEN_DASHBOARD_BENCH_PYTHON=python3 python3 scripts/benchmark_lazy_speed_scope_browser.py \
   --baseline path/to/earlier-lazy/src --fixed src \
   --common output/output-speed-scopes \
   --out output/output-speed-browser --pairs 3 --reps 1

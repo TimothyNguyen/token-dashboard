@@ -6,9 +6,9 @@ import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
-from tokdash import clientpaths
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import KiloCodeParser, OpenCodeParser
+from token_dashboard import clientpaths
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import KiloCodeParser, OpenCodeParser
 
 TS_COLD = 1_700_000_000_000
 TS_WARM = 1_700_010_000_000

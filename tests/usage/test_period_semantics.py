@@ -8,8 +8,8 @@ from __future__ import annotations
 from datetime import datetime
 from datetime import timedelta, timezone
 
-import tokdash.compute as compute
-import tokdash.sessions as sessions
+import token_dashboard.compute as compute
+import token_dashboard.sessions as sessions
 
 
 def test_get_session_data_month_vs_numeric_days(monkeypatch):

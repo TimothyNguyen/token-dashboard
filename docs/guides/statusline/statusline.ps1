@@ -1,9 +1,9 @@
-# Tokdash -> Claude Code statusline (PowerShell / native Windows starter)
+# TokenDashboard -> Claude Code statusline (PowerShell / native Windows starter)
 # -------------------------------------------------------------------------------
 # Renders one line, e.g.:   [Claude Sonnet 4.6] 📁 myproject | 📊 12.3M ($4.56) today
 #
 # Requires: PowerShell 5.1+ (Invoke-RestMethod / ConvertFrom-Json are built in --
-# no curl or jq needed). Fails silently (drops the 📊 segment) if tokdash isn't
+# no curl or jq needed). Fails silently (drops the 📊 segment) if token-dashboard isn't
 # running. This script only ever issues GET requests, so the write-protection
 # gate never blocks it.
 #
@@ -12,15 +12,15 @@
 #   2. add the Windows "statusLine" block from this folder's README.md to
 #      %USERPROFILE%\.claude\settings.json
 #
-# If you changed TOKDASH_HOST / TOKDASH_PORT, point the script at your endpoint,
+# If you changed TOKEN_DASHBOARD_HOST / TOKEN_DASHBOARD_PORT, point the script at your endpoint,
 # e.g. in your PowerShell profile:
-#   $env:TOKDASH_URL = "http://127.0.0.1:55423"
+#   $env:TOKEN_DASHBOARD_URL = "http://127.0.0.1:55423"
 #
 # This is the PowerShell counterpart of statusline-minimal.sh -- keep the two in
 # sync if you change one.
 
-$TokdashUrl = if ($env:TOKDASH_URL) { $env:TOKDASH_URL } else { "http://127.0.0.1:55423" }
-$Period = if ($env:TOKDASH_STATUSLINE_PERIOD) { $env:TOKDASH_STATUSLINE_PERIOD } else { "today" }   # today | 3days | week | 14days | month | year | all
+$TokenDashboardUrl = if ($env:TOKEN_DASHBOARD_URL) { $env:TOKEN_DASHBOARD_URL } else { "http://127.0.0.1:55423" }
+$Period = if ($env:TOKEN_DASHBOARD_STATUSLINE_PERIOD) { $env:TOKEN_DASHBOARD_STATUSLINE_PERIOD } else { "today" }   # today | 3days | week | 14days | month | year | all
 
 # Claude Code feeds the statusline a JSON blob on stdin.
 $stdinText = [Console]::In.ReadToEnd()
@@ -54,20 +54,20 @@ function Format-TokenCount {
     }
 }
 
-# Fetch the period totals. -TimeoutSec 1 keeps the bar responsive if tokdash is
+# Fetch the period totals. -TimeoutSec 1 keeps the bar responsive if token-dashboard is
 # mid-restart -- the same purpose as the bash template's `curl -m 1`.
-$TokdashSegment = ""
+$TokenDashboardSegment = ""
 try {
-    $usage = Invoke-RestMethod -Uri "$TokdashUrl/api/usage?period=$Period" -TimeoutSec 1 -ErrorAction Stop
+    $usage = Invoke-RestMethod -Uri "$TokenDashboardUrl/api/usage?period=$Period" -TimeoutSec 1 -ErrorAction Stop
     $tokens = if ($null -ne $usage.total_tokens) { [double]$usage.total_tokens } else { 0 }
     $cost = if ($null -ne $usage.total_cost) { [double]$usage.total_cost } else { 0 }
     if ($tokens -ne 0) {
         $costText = $cost.ToString("F2", [System.Globalization.CultureInfo]::InvariantCulture)
-        $TokdashSegment = " | 📊 $(Format-TokenCount $tokens) (`$$costText) $Period"
+        $TokenDashboardSegment = " | 📊 $(Format-TokenCount $tokens) (`$$costText) $Period"
     }
 } catch {
-    # Tokdash isn't running / unreachable -- fail silently, same as the bash
+    # TokenDashboard isn't running / unreachable -- fail silently, same as the bash
     # template's empty-JSON check.
 }
 
-Write-Output "[$Model] 📁 $DirName$TokdashSegment"
+Write-Output "[$Model] 📁 $DirName$TokenDashboardSegment"

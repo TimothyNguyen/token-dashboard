@@ -7,8 +7,8 @@ from __future__ import annotations
 
 import json
 
-from tokdash import sessions as sessions_module
-from tokdash.activity_insights import (
+from token_dashboard import sessions as sessions_module
+from token_dashboard.activity_insights import (
     build_activity_insights,
     canonical_mcp_tool_name,
     new_activity_record,
@@ -570,9 +570,9 @@ def test_codex_activity_warm_persistent_load_does_not_reparse(
             },
         ],
     )
-    db_path = tmp_path / "tokdash" / "usage.sqlite3"
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
-    monkeypatch.setenv("TOKDASH_USAGE_DB_PATH", str(db_path))
+    db_path = tmp_path / "token_dashboard" / "usage.sqlite3"
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_PATH", str(db_path))
     monkeypatch.setattr(
         sessions_module.clientpaths, "codex_sessions_dir", lambda: session_root
     )
@@ -602,9 +602,9 @@ def test_codex_activity_warm_store_disabled_load_does_not_reparse(
         session_root / "chat.jsonl",
         [{"type": "session_meta", "payload": {"id": "chat-1"}}],
     )
-    db_path = tmp_path / "tokdash" / "usage.sqlite3"
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
-    monkeypatch.setenv("TOKDASH_USAGE_DB_PATH", str(db_path))
+    db_path = tmp_path / "token_dashboard" / "usage.sqlite3"
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_PATH", str(db_path))
     monkeypatch.setattr(
         sessions_module.clientpaths, "codex_sessions_dir", lambda: session_root
     )

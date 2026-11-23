@@ -258,7 +258,7 @@ def test_a_repaint_leaves_the_poll_note_alone_until_a_read_answers_it(
     api, monkeypatch
 ):
     """Polling, then a repaint: the reader still sees the poll's own sentence."""
-    import tokdash.cli as cli_mod
+    import token_dashboard.cli as cli_mod
 
     release = threading.Event()
     calls = {"n": 0}

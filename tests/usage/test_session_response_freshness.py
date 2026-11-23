@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from tokdash import api, sessions
+from token_dashboard import api, sessions
 
 
 @pytest.fixture(autouse=True)

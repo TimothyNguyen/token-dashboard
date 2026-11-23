@@ -11,11 +11,11 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from fastapi import HTTPException
 
-from tokdash import api, cli
-from tokdash.compute import parse_entries_json
-from tokdash.compute import resolve_period
-from tokdash.insights import DEFAULT_FACETS
-from tokdash.dev_fixtures import (
+from token_dashboard import api, cli
+from token_dashboard.compute import parse_entries_json
+from token_dashboard.compute import resolve_period
+from token_dashboard.insights import DEFAULT_FACETS
+from token_dashboard.dev_fixtures import (
     SESSION_LABELS,
     TOOL_SPECS,
     dense_active_time,
@@ -23,9 +23,9 @@ from tokdash.dev_fixtures import (
     dense_usage,
     fixture_year_days,
 )
-from tokdash.sessions import SESSION_TOOLS
-from tokdash.sources.openclaw import get_session_usage
-from tokdash.usage_store import model_cost_rank_key, model_rank_key
+from token_dashboard.sessions import SESSION_TOOLS
+from token_dashboard.sources.openclaw import get_session_usage
+from token_dashboard.usage_store import model_cost_rank_key, model_rank_key
 
 
 @contextmanager
@@ -50,8 +50,8 @@ def dense_fixture():
 
 
 def test_dense_fixture_parser_is_explicit_and_off_by_default():
-    default = cli.build_parser("tokdash").parse_args(["serve"])
-    fixture = cli.build_parser("tokdash").parse_args(
+    default = cli.build_parser("token_dashboard").parse_args(["serve"])
+    fixture = cli.build_parser("token_dashboard").parse_args(
         ["serve", "--dev-fixture", "dense", "--dev-seed", "17"]
     )
 
@@ -394,14 +394,14 @@ def test_dense_fixture_stats_never_fabricate_future_days():
 
 def test_dense_fixture_review_sessions_follow_the_configured_default(monkeypatch):
     """An unset flag resolves through the real default, and the payload says so."""
-    monkeypatch.delenv("TOKDASH_INCLUDE_CODEX_GUARDIAN", raising=False)
+    monkeypatch.delenv("TOKEN_DASHBOARD_INCLUDE_CODEX_GUARDIAN", raising=False)
     with dense_fixture():
         off = api.get_sessions(tool="codex", period="week")
 
     assert off["include_review_sessions"] is False
     assert not any(row["is_review_session"] for row in off["sessions"])
 
-    monkeypatch.setenv("TOKDASH_INCLUDE_CODEX_GUARDIAN", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_INCLUDE_CODEX_GUARDIAN", "1")
     with dense_fixture():
         on = api.get_sessions(tool="codex", period="week")
 

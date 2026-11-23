@@ -13,13 +13,13 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def _timing_reader_mode():
-    from tokdash.speed_mode import collect_timings
+    from token_dashboard.speed_mode import collect_timings
     with collect_timings():
         yield
 
 
-from tokdash import output_speed as sp
-from tokdash.output_speed import (
+from token_dashboard import output_speed as sp
+from token_dashboard.output_speed import (
     KIMI_MAX_PLAUSIBLE_TOK_PER_S,
     STATUS_AMBIGUOUS_PAIR,
     STATUS_INCOMPLETE,

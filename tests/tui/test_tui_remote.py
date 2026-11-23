@@ -1,4 +1,4 @@
-"""tokdash.tui.remote: fail-closed probe + metadata-stripping GET, WITHOUT sockets.
+"""token_dashboard.tui.remote: fail-closed probe + metadata-stripping GET, WITHOUT sockets.
 
 Every opener here is a fake object: not one test in this file (or, enforced by
 the session fixture in conftest, anywhere in the suite) opens a socket or probes
@@ -14,10 +14,10 @@ import urllib.error
 
 import pytest
 
-from tokdash import __version__
-from tokdash.api import CacheBackpressureError
-from tokdash.onboard.plan import DEFAULT_PORT
-from tokdash.tui import remote
+from token_dashboard import __version__
+from token_dashboard.api import CacheBackpressureError
+from token_dashboard.onboard.plan import DEFAULT_PORT
+from token_dashboard.tui import remote
 
 SVC = remote.RemoteService(base="http://127.0.0.1:55999", version=__version__)
 
@@ -65,7 +65,7 @@ def _http_error(code: int, body: bytes = b"server said no") -> urllib.error.HTTP
 
 @pytest.fixture()
 def no_kill_switch(monkeypatch):
-    """The suite-wide TOKDASH_TUI_NO_REMOTE=1 is lifted for probe tests only."""
+    """The suite-wide TOKEN_DASHBOARD_TUI_NO_REMOTE=1 is lifted for probe tests only."""
     monkeypatch.delenv(remote.KILL_SWITCH_ENV, raising=False)
     # Never let a probe test read the developer's install manifest.
     monkeypatch.setattr(remote, "read_manifest", lambda: None)
@@ -77,7 +77,7 @@ def no_kill_switch(monkeypatch):
 
 def test_probe_returns_none_when_kill_switch_set(monkeypatch):
     opener = _install_opener(
-        monkeypatch, {"status": "ok", "service": "tokdash", "version": __version__}
+        monkeypatch, {"status": "ok", "service": "token_dashboard", "version": __version__}
     )
     monkeypatch.setattr(remote, "read_manifest", lambda: {"bind": "127.0.0.1", "port": 55999})
     monkeypatch.setenv(remote.KILL_SWITCH_ENV, "1")
@@ -90,7 +90,7 @@ def test_probe_uses_manifest_host_and_port(no_kill_switch, monkeypatch):
     # (engine._probe_host_for_bind), and the port is the recorded one.
     monkeypatch.setattr(remote, "read_manifest", lambda: {"bind": "0.0.0.0", "port": 55999})
     opener = _install_opener(
-        monkeypatch, {"status": "ok", "service": "tokdash", "version": __version__}
+        monkeypatch, {"status": "ok", "service": "token_dashboard", "version": __version__}
     )
     svc = remote.probe_service()
     assert svc == remote.RemoteService(base="http://127.0.0.1:55999", version=__version__)
@@ -103,7 +103,7 @@ def test_probe_falls_back_to_default_port_without_manifest(no_kill_switch, monke
     # the import, never re-typed here. (The no_kill_switch fixture already
     # patches read_manifest to None: the "manifest missing" world.)
     opener = _install_opener(
-        monkeypatch, {"status": "ok", "service": "tokdash", "version": __version__}
+        monkeypatch, {"status": "ok", "service": "token_dashboard", "version": __version__}
     )
     svc = remote.probe_service()
     assert svc is not None and svc.base == f"http://127.0.0.1:{DEFAULT_PORT}"
@@ -115,8 +115,8 @@ def test_probe_falls_back_to_default_port_without_manifest(no_kill_switch, monke
     "body",
     [
         {"status": "ok", "service": "other-app", "version": __version__},  # foreign app
-        {"status": "ok", "service": "tokdash", "version": "99.99.98"},  # version skew
-        {"status": "ok", "service": "tokdash"},  # missing version field
+        {"status": "ok", "service": "token_dashboard", "version": "99.99.98"},  # version skew
+        {"status": "ok", "service": "token_dashboard"},  # missing version field
         {"status": "ok"},  # missing service field: never trust generic ok
         [1, 2, 3],  # non-dict body
     ],
@@ -221,8 +221,8 @@ def test_remote_imports_no_rich_or_textual(monkeypatch):
     monkeypatch.setitem(sys.modules, "textual", None)
     # delitem: monkeypatch puts the ORIGINAL module object back at teardown, so
     # data._remote and every top-level import stay the same objects after this.
-    monkeypatch.delitem(sys.modules, "tokdash.tui.remote", raising=False)
-    mod = importlib.import_module("tokdash.tui.remote")  # re-executes the module body
+    monkeypatch.delitem(sys.modules, "token_dashboard.tui.remote", raising=False)
+    mod = importlib.import_module("token_dashboard.tui.remote")  # re-executes the module body
     assert mod.__file__ == remote.__file__
     assert issubclass(mod.ServiceGone, RuntimeError)
     assert mod.DEFAULT_PORT == DEFAULT_PORT  # its stdlib/onboard deps imported fine

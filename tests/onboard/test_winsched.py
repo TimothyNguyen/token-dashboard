@@ -15,9 +15,9 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import cli
-from tokdash.onboard import detect, engine, manifest, paths, plan, runtime, service_base, winsched
-from tokdash.onboard.engine import run_lifecycle
+from token_dashboard import cli
+from token_dashboard.onboard import detect, engine, manifest, paths, plan, runtime, service_base, winsched
+from token_dashboard.onboard.engine import run_lifecycle
 
 
 # --- harness --------------------------------------------------------------------
@@ -27,9 +27,9 @@ from tokdash.onboard.engine import run_lifecycle
 def _isolate(monkeypatch, tmp_path):
     """Redirect every onboarding path into tmp and stub the OS-touching probes."""
     data_dir = tmp_path / "dd"
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(data_dir))
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "cfg"))
-    monkeypatch.setattr(detect, "probe_port", lambda port=55423, *a, **k: {"port": port, "open": False, "is_tokdash": False, "version": None})
+    monkeypatch.setattr(detect, "probe_port", lambda port=55423, *a, **k: {"port": port, "open": False, "is_token_dashboard": False, "version": None})
     monkeypatch.setattr(detect, "is_tty", lambda: True)
     monkeypatch.setattr(detect, "systemd_user_available", lambda: True)
     yield
@@ -47,7 +47,7 @@ def windows_env(monkeypatch, tmp_path):
     monkeypatch.setattr(detect, "winsched_available", lambda: True)
     monkeypatch.setattr(detect, "systemd_user_available", lambda: False)
     monkeypatch.setattr(detect, "launchd_available", lambda: False)
-    task_path = tmp_path / "AppData" / "Tokdash" / "Tokdash.xml"
+    task_path = tmp_path / "AppData" / "TokenDashboard" / "TokenDashboard.xml"
     monkeypatch.setattr(paths, "winsched_task_path", lambda: task_path)
 
 
@@ -64,12 +64,12 @@ def fake_winsched(monkeypatch):
     monkeypatch.setattr(
         engine,
         "_wait_for_service_ready",
-        lambda bind, port, **k: {"ok": True, "port": {"port": port, "open": True, "is_tokdash": True, "version": "test"}},
+        lambda bind, port, **k: {"ok": True, "port": {"port": port, "open": True, "is_token_dashboard": True, "version": "test"}},
     )
 
 
 def run(argv):
-    args = cli.build_parser("tokdash").parse_args(argv)
+    args = cli.build_parser("token_dashboard").parse_args(argv)
     return run_lifecycle(args)
 
 
@@ -87,17 +87,17 @@ def run_json(argv, capsys):
 
 def test_task_carries_marker_and_uses_pythonw():
     text = winsched.render_task(
-        ["C:\\dd\\runtime\\python-venv\\Scripts\\python.exe", "-m", "tokdash"],
+        ["C:\\dd\\runtime\\python-venv\\Scripts\\python.exe", "-m", "token_dashboard"],
         "127.0.0.1", 55423, marker_id="abc123",
     )
     # schtasks /Create /XML hands the file to MSXML as UTF-16 and refuses a UTF-8
     # declaration — the bytes write_task emits must be what this declaration promises.
     assert text.startswith('<?xml version="1.0" encoding="UTF-16"?>')
-    assert "Managed-by: tokdash-setup" in text
-    assert "X-Tokdash-Managed id=abc123" in text
+    assert "Managed-by: token-dashboard-setup" in text
+    assert "X-TokenDashboard-Managed id=abc123" in text
     assert "<Command>C:\\dd\\runtime\\python-venv\\Scripts\\pythonw.exe</Command>" in text
-    assert "<Arguments>-m tokdash serve --bind 127.0.0.1 --port 55423 --no-open</Arguments>" in text
-    assert "TOKDASH_DATA_DIR" not in text  # default data dir => no env snippet
+    assert "<Arguments>-m token_dashboard serve --bind 127.0.0.1 --port 55423 --no-open</Arguments>" in text
+    assert "TOKEN_DASHBOARD_DATA_DIR" not in text  # default data dir => no env snippet
     assert "<LogonType>InteractiveToken</LogonType>" in text  # never SYSTEM/elevated
     assert "<RunLevel>LeastPrivilege</RunLevel>" in text
 
@@ -105,33 +105,33 @@ def test_task_carries_marker_and_uses_pythonw():
 def test_task_leaves_non_python_command_unchanged():
     # _pythonw_for only swaps a plain "python.exe"; an unexpected runtime is passed through
     # unchanged rather than inventing a nonexistent binary.
-    text = winsched.render_task(["C:\\rt\\tokdash.exe", "serveronly"], "127.0.0.1", 1, marker_id="x")
-    assert "<Command>C:\\rt\\tokdash.exe</Command>" in text
+    text = winsched.render_task(["C:\\rt\\token_dashboard.exe", "serveronly"], "127.0.0.1", 1, marker_id="x")
+    assert "<Command>C:\\rt\\token_dashboard.exe</Command>" in text
 
 
 def test_task_env_snippet_when_non_default_data_dir():
     text = winsched.render_task(
-        ["C:\\py\\python.exe", "-m", "tokdash"], "127.0.0.1", 55423,
+        ["C:\\py\\python.exe", "-m", "token_dashboard"], "127.0.0.1", 55423,
         marker_id="x", env_data_dir="C:\\custom\\dd",
     )
     assert "<Command>C:\\py\\pythonw.exe</Command>" in text
     assert "<Arguments>-c \"import os,runpy,sys;" in text
-    assert "os.environ['TOKDASH_DATA_DIR']='C:\\\\custom\\\\dd';" in text
-    assert "sys.argv=['tokdash', 'serve', '--bind', '127.0.0.1', '--port', '55423', '--no-open'];" in text
-    assert "sys.argv=['tokdash', '-m', 'tokdash'" not in text
-    assert "runpy.run_module('tokdash', run_name='__main__')\"</Arguments>" in text
+    assert "os.environ['TOKEN_DASHBOARD_DATA_DIR']='C:\\\\custom\\\\dd';" in text
+    assert "sys.argv=['token_dashboard', 'serve', '--bind', '127.0.0.1', '--port', '55423', '--no-open'];" in text
+    assert "sys.argv=['token_dashboard', '-m', 'token_dashboard'" not in text
+    assert "runpy.run_module('token_dashboard', run_name='__main__')\"</Arguments>" in text
 
 
 def test_task_is_managed_detection_via_file(tmp_path):
-    text = winsched.render_task(["py.exe", "-m", "tokdash"], "127.0.0.1", 1, marker_id="deadbeef")
-    task_path = tmp_path / "Tokdash.xml"
+    text = winsched.render_task(["py.exe", "-m", "token_dashboard"], "127.0.0.1", 1, marker_id="deadbeef")
+    task_path = tmp_path / "TokenDashboard.xml"
     # The same bytes write_task writes: UTF-16 LE with a BOM.
     task_path.write_bytes(codecs.BOM_UTF16_LE + text.encode("utf-16-le"))
     assert winsched.task_is_managed(task_path) is True
     assert winsched.task_is_managed(task_path, "deadbeef") is True
     assert winsched.task_is_managed(task_path, "other") is False
 
-    # Files written by pre-UTF-16 tokdash were plain UTF-8 — including failed setups,
+    # Files written by pre-UTF-16 token_dashboard were plain UTF-8 — including failed setups,
     # which wrote the file before schtasks rejected it. The reader must still recognize
     # their marker, or uninstall refuses to remove a task setup itself registered.
     legacy = tmp_path / "legacy.xml"
@@ -148,16 +148,16 @@ def test_task_is_managed_detection_via_file(tmp_path):
 
 
 def test_task_is_managed_detection_via_live_name(monkeypatch):
-    text = winsched.render_task(["py.exe", "-m", "tokdash"], "127.0.0.1", 1, marker_id="deadbeef")
+    text = winsched.render_task(["py.exe", "-m", "token_dashboard"], "127.0.0.1", 1, marker_id="deadbeef")
 
     def fake_run(args, timeout=20):
         assert args[:2] == ["/Query", "/TN"]
         return subprocess.CompletedProcess(args=[], returncode=0, stdout=text, stderr="")
 
     monkeypatch.setattr(winsched, "_run", fake_run)
-    assert winsched.task_is_managed("Tokdash") is True
-    assert winsched.task_is_managed("Tokdash", "deadbeef") is True
-    assert winsched.task_is_managed("Tokdash", "other") is False
+    assert winsched.task_is_managed("TokenDashboard") is True
+    assert winsched.task_is_managed("TokenDashboard", "deadbeef") is True
+    assert winsched.task_is_managed("TokenDashboard", "other") is False
 
 
 def test_task_is_managed_via_name_query_failure_returns_false(monkeypatch):
@@ -168,9 +168,9 @@ def test_task_is_managed_via_name_query_failure_returns_false(monkeypatch):
 
 
 def test_write_task_writes_to_paths_location(monkeypatch, tmp_path):
-    task_path = tmp_path / "nested" / "Tokdash.xml"
+    task_path = tmp_path / "nested" / "TokenDashboard.xml"
     monkeypatch.setattr(paths, "winsched_task_path", lambda: task_path)
-    text = winsched.render_task(["py.exe", "-m", "tokdash"], "127.0.0.1", 1, marker_id="x")
+    text = winsched.render_task(["py.exe", "-m", "token_dashboard"], "127.0.0.1", 1, marker_id="x")
     out = winsched.write_task(text)
     assert out == task_path
     # Read the written file back as BYTES: the declared encoding must match the actual
@@ -192,7 +192,7 @@ def test_winsched_lifecycle_commands_allow_service_manager_timeout(monkeypatch, 
         return _ok_proc()
 
     monkeypatch.setattr(winsched, "_run", fake_run)
-    task_path = tmp_path / "Tokdash.xml"
+    task_path = tmp_path / "TokenDashboard.xml"
     task_path.write_text("<Task/>", encoding="utf-8")
     winsched.create(task_path)
     winsched.run_now()
@@ -251,26 +251,26 @@ def test_status_not_registered_skips_running_probe(monkeypatch):
 
 def test_winsched_task_path_uses_local_appdata(monkeypatch):
     monkeypatch.setenv("LOCALAPPDATA", "/fake/AppData/Local")
-    assert paths.winsched_task_path() == Path("/fake/AppData/Local") / "Tokdash" / "Tokdash.xml"
+    assert paths.winsched_task_path() == Path("/fake/AppData/Local") / "TokenDashboard" / "TokenDashboard.xml"
 
 
 def test_winsched_task_path_falls_back_without_local_appdata(monkeypatch):
     monkeypatch.delenv("LOCALAPPDATA", raising=False)
-    assert paths.winsched_task_path() == Path("~/AppData/Local").expanduser() / "Tokdash" / "Tokdash.xml"
+    assert paths.winsched_task_path() == Path("~/AppData/Local").expanduser() / "TokenDashboard" / "TokenDashboard.xml"
 
 
 def test_managed_venv_python_windows_uses_scripts(monkeypatch, tmp_path):
     # Simulate the Windows branch via the `_windows_venv_layout` seam, NOT the real `os.name`
     # (flipping the real `os.name` would make pathlib try to build an unusable WindowsPath
     # for every other fresh Path(...) call on this non-Windows test host).
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(tmp_path / "dd"))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path / "dd"))
     monkeypatch.setattr(paths, "_windows_venv_layout", lambda: True)
     assert paths.managed_venv_python() == tmp_path / "dd" / "runtime" / "python-venv" / "Scripts" / "python.exe"
 
 
 def test_managed_venv_python_posix_unchanged(tmp_path, monkeypatch):
     # Explicitly force the POSIX branch so this remains meaningful on windows-latest too.
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(tmp_path / "dd"))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path / "dd"))
     monkeypatch.setattr(paths, "_windows_venv_layout", lambda: False)
     assert paths.managed_venv_python() == tmp_path / "dd" / "runtime" / "python-venv" / "bin" / "python"
 
@@ -290,23 +290,23 @@ def test_winsched_available_false_on_non_windows(monkeypatch):
 
 
 def test_existing_service_ignores_winsched_task_on_non_windows(monkeypatch, tmp_path):
-    task_path = tmp_path / "Tokdash.xml"
-    task_path.write_text(winsched.render_task(["py.exe", "-m", "tokdash"], "127.0.0.1", 1, marker_id="x"), encoding="utf-8")
+    task_path = tmp_path / "TokenDashboard.xml"
+    task_path.write_text(winsched.render_task(["py.exe", "-m", "token_dashboard"], "127.0.0.1", 1, marker_id="x"), encoding="utf-8")
     monkeypatch.setattr(paths, "winsched_task_path", lambda: task_path)
     monkeypatch.setattr(detect, "os_kind", lambda: "linux")
     existing = detect.existing_service()
     assert existing["winsched_task"] is None
 
 
-def test_pipx_tokdash_python_windows_scripts_candidate(monkeypatch, tmp_path):
+def test_pipx_token_dashboard_python_windows_scripts_candidate(monkeypatch, tmp_path):
     monkeypatch.setattr(detect, "os_kind", lambda: "windows")
     local_appdata = tmp_path / "AppData" / "Local"
-    candidate = local_appdata / "pipx" / "venvs" / "tokdash" / "Scripts" / "python.exe"
+    candidate = local_appdata / "pipx" / "venvs" / "token_dashboard" / "Scripts" / "python.exe"
     candidate.parent.mkdir(parents=True, exist_ok=True)
     candidate.write_text("", encoding="utf-8")
     monkeypatch.setenv("LOCALAPPDATA", str(local_appdata))
     monkeypatch.delenv("PIPX_HOME", raising=False)
-    assert detect.pipx_tokdash_python() == str(candidate)
+    assert detect.pipx_token_dashboard_python() == str(candidate)
 
 
 # --- select_service: windows matrix (service_base) --------------------------------
@@ -355,7 +355,7 @@ def test_windows_setup_writes_task_and_manifest(windows_env, fake_winsched, caps
     rc, payload = run_json(["setup", "--auto", "--service", "winsched", "--json"], capsys)
     assert rc == 0 and payload["service"]["type"] == "winsched"
     task_path = paths.winsched_task_path()
-    assert task_path.is_file() and "X-Tokdash-Managed" in task_path.read_bytes().decode("utf-16")
+    assert task_path.is_file() and "X-TokenDashboard-Managed" in task_path.read_bytes().decode("utf-16")
     assert manifest.read_manifest()["service"]["type"] == "winsched"
     assert "service:winsched" in payload["changed"]
 
@@ -365,7 +365,7 @@ def test_windows_setup_refuses_unmarked_task(windows_env, fake_winsched):
     task_path.parent.mkdir(parents=True, exist_ok=True)
     task_path.write_text("<Task></Task>", encoding="utf-8")
     rc = run(["setup", "--auto", "--service", "winsched"])
-    assert rc == 1 and "X-Tokdash-Managed" not in task_path.read_text(encoding="utf-8")
+    assert rc == 1 and "X-TokenDashboard-Managed" not in task_path.read_text(encoding="utf-8")
 
 
 def test_windows_setup_force_overwrites_unmarked_task(windows_env, fake_winsched):
@@ -373,7 +373,7 @@ def test_windows_setup_force_overwrites_unmarked_task(windows_env, fake_winsched
     task_path.parent.mkdir(parents=True, exist_ok=True)
     task_path.write_text("<Task></Task>", encoding="utf-8")
     rc = run(["setup", "--auto", "--service", "winsched", "--force"])
-    assert rc == 0 and "X-Tokdash-Managed" in task_path.read_bytes().decode("utf-16")
+    assert rc == 0 and "X-TokenDashboard-Managed" in task_path.read_bytes().decode("utf-16")
 
 
 def test_windows_uninstall_removes_winsched(windows_env, fake_winsched, capsys):
@@ -400,17 +400,17 @@ def test_windows_doctor_reports_winsched(windows_env, fake_winsched, capsys):
     assert payload["winsched"] is True
     assert payload["service"]["type"] == "winsched"
     assert payload["service"]["enabled"] is True and payload["service"]["active"] is True
-    # The autouse `_isolate` fixture stubs detect.probe_port to always report closed/not-tokdash,
+    # The autouse `_isolate` fixture stubs detect.probe_port to always report closed/not-token_dashboard,
     # so doctor correctly flags that (stubbed) mismatch -- mirrors
-    # test_doctor_flags_active_service_without_tokdash_port for systemd in test_onboard.py.
+    # test_doctor_flags_active_service_without_token_dashboard_port for systemd in test_onboard.py.
     assert rc == 1 and any("not answering" in i for i in payload["issues"])
 
 
 def test_windows_update_restarts_winsched(windows_env, fake_winsched, monkeypatch, capsys):
     svc = {"type": "winsched", "unit": str(paths.winsched_task_path()), "name": winsched.TASK_NAME,
-           "created_by_setup": True, "marker": "X-Tokdash-Managed id=x"}
+           "created_by_setup": True, "marker": "X-TokenDashboard-Managed id=x"}
     man = manifest.build_manifest(
-        install_method="pipx", runtime_kind="pipx", runtime_command=["/p/python", "-m", "tokdash"],
+        install_method="pipx", runtime_kind="pipx", runtime_command=["/p/python", "-m", "token_dashboard"],
         runtime_owned_by_setup=False, python_path="/p/python", python_version="3.12.0", service=svc,
         runtime_marker=None, data_dir=str(paths.data_dir()), bind="127.0.0.1", port=55423,
     )
@@ -428,7 +428,7 @@ def test_windows_update_restarts_winsched(windows_env, fake_winsched, monkeypatc
 
 
 def test_cli_service_choices_include_winsched():
-    args = cli.build_parser("tokdash").parse_args(["setup", "--service", "winsched", "--auto"])
+    args = cli.build_parser("token_dashboard").parse_args(["setup", "--service", "winsched", "--auto"])
     assert args.service == "winsched"
 
 # --- per-user LogonTrigger (standard-user registration) ----------------------------
@@ -440,7 +440,7 @@ def test_task_logon_trigger_names_current_user(monkeypatch):
     # trigger must name the invoking user to stay registerable non-elevated.
     monkeypatch.setenv("USERDOMAIN", "HOWARD")
     monkeypatch.setenv("USERNAME", "H1937")
-    text = winsched.render_task(["C:\\rt\\python.exe", "-m", "tokdash"], "127.0.0.1", 1, marker_id="x")
+    text = winsched.render_task(["C:\\rt\\python.exe", "-m", "token_dashboard"], "127.0.0.1", 1, marker_id="x")
     trig = text.split("<LogonTrigger>")[1].split("</LogonTrigger>")[0]
     assert "<UserId>HOWARD\\H1937</UserId>" in trig
 
@@ -448,7 +448,7 @@ def test_task_logon_trigger_names_current_user(monkeypatch):
 def test_task_logon_trigger_uses_bare_username_without_domain(monkeypatch):
     monkeypatch.delenv("USERDOMAIN", raising=False)
     monkeypatch.setenv("USERNAME", "H1937")
-    text = winsched.render_task(["C:\\rt\\python.exe", "-m", "tokdash"], "127.0.0.1", 1, marker_id="x")
+    text = winsched.render_task(["C:\\rt\\python.exe", "-m", "token_dashboard"], "127.0.0.1", 1, marker_id="x")
     assert "<UserId>H1937</UserId>" in text
 
 
@@ -457,14 +457,14 @@ def test_task_logon_trigger_falls_back_without_user(monkeypatch):
     # (pre-fix behaviour, needs elevation) rather than render an invalid definition.
     monkeypatch.delenv("USERDOMAIN", raising=False)
     monkeypatch.delenv("USERNAME", raising=False)
-    text = winsched.render_task(["py.exe", "-m", "tokdash"], "127.0.0.1", 1, marker_id="x")
+    text = winsched.render_task(["py.exe", "-m", "token_dashboard"], "127.0.0.1", 1, marker_id="x")
     assert "<UserId>" not in text
 
 
 def test_task_logon_trigger_escapes_user(monkeypatch):
     monkeypatch.setenv("USERDOMAIN", "DOM&CO")
     monkeypatch.setenv("USERNAME", "U")
-    text = winsched.render_task(["py.exe", "-m", "tokdash"], "127.0.0.1", 1, marker_id="x")
+    text = winsched.render_task(["py.exe", "-m", "token_dashboard"], "127.0.0.1", 1, marker_id="x")
     assert "<UserId>DOM&amp;CO\\U</UserId>" in text
 
 
@@ -488,7 +488,7 @@ def test_windows_setup_stops_previous_instance_before_start(windows_env, monkeyp
     monkeypatch.setattr(
         engine,
         "_wait_for_service_ready",
-        lambda bind, port, **k: {"ok": True, "port": {"port": port, "open": True, "is_tokdash": True, "version": "test"}},
+        lambda bind, port, **k: {"ok": True, "port": {"port": port, "open": True, "is_token_dashboard": True, "version": "test"}},
     )
     rc, payload = run_json(["setup", "--auto", "--service", "winsched", "--json"], capsys)
     assert rc == 0
@@ -509,14 +509,14 @@ def test_windows_setup_create_access_denied_suggests_elevation(windows_env, monk
 
 
 def test_readiness_refuses_foreign_responder(monkeypatch):
-    # Port answers with Tokdash's fingerprint (e.g. a WSL distro's mirrored
+    # Port answers with TokenDashboard's fingerprint (e.g. a WSL distro's mirrored
     # localhost) but our own service is not running: readiness must not pass.
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": True, "is_tokdash": True, "version": "1.9.0"},
+        lambda port=55423, *a, **k: {"port": port, "open": True, "is_token_dashboard": True, "version": "1.9.0"},
     )
     r = engine._wait_for_service_ready(
-        "127.0.0.1", 55423, timeout=0.5, service_up=lambda: False, service_desc="the Task Scheduler task Tokdash"
+        "127.0.0.1", 55423, timeout=0.5, service_up=lambda: False, service_desc="the Task Scheduler task TokenDashboard"
     )
     assert r["ok"] is False
     assert "foreign/relayed" in r["error"]
@@ -527,7 +527,7 @@ def test_readiness_refuses_wrong_holder(monkeypatch):
     # service's runtime, not a relay/foreign process answering on its behalf.
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": True, "is_tokdash": True, "version": "1.9.0"},
+        lambda port=55423, *a, **k: {"port": port, "open": True, "is_token_dashboard": True, "version": "1.9.0"},
     )
     monkeypatch.setattr(detect, "port_holder_process", lambda port: "wslrelay.exe")
     r = engine._wait_for_service_ready(
@@ -540,7 +540,7 @@ def test_readiness_refuses_wrong_holder(monkeypatch):
 def test_readiness_accepts_expected_holder(monkeypatch):
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": True, "is_tokdash": True, "version": "2.0.0"},
+        lambda port=55423, *a, **k: {"port": port, "open": True, "is_token_dashboard": True, "version": "2.0.0"},
     )
     monkeypatch.setattr(detect, "port_holder_process", lambda port: "pythonw.exe")
     r = engine._wait_for_service_ready(
@@ -554,7 +554,7 @@ def test_readiness_ignores_unknown_holder(monkeypatch):
     # Holder lookup failed (None) -> the gate must not veto a healthy service.
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": True, "is_tokdash": True, "version": "2.0.0"},
+        lambda port=55423, *a, **k: {"port": port, "open": True, "is_token_dashboard": True, "version": "2.0.0"},
     )
     monkeypatch.setattr(detect, "port_holder_process", lambda port: None)
     r = engine._wait_for_service_ready(
@@ -566,7 +566,7 @@ def test_readiness_ignores_unknown_holder(monkeypatch):
 def test_readiness_passes_when_service_running(monkeypatch):
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": True, "is_tokdash": True, "version": "2.0.0"},
+        lambda port=55423, *a, **k: {"port": port, "open": True, "is_token_dashboard": True, "version": "2.0.0"},
     )
     r = engine._wait_for_service_ready("127.0.0.1", 55423, timeout=0.5, service_up=lambda: True)
     assert r["ok"] is True
@@ -584,7 +584,7 @@ def test_readiness_passes_when_service_running(monkeypatch):
 def test_port_release_wait_passes_when_port_free(monkeypatch):
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": False, "is_tokdash": False, "version": None},
+        lambda port=55423, *a, **k: {"port": port, "open": False, "is_token_dashboard": False, "version": None},
     )
     assert engine._wait_for_port_release(55423, kill_names={"pythonw.exe"}, timeout=1.0) is None
 
@@ -595,7 +595,7 @@ def test_port_release_wait_kills_lingering_own_holder(monkeypatch):
     state = {"killed": False}
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": not state["killed"], "is_tokdash": True, "version": "2.0.0"},
+        lambda port=55423, *a, **k: {"port": port, "open": not state["killed"], "is_token_dashboard": True, "version": "2.0.0"},
     )
     monkeypatch.setattr(detect, "port_holder", lambda port: (4242, "pythonw.exe"))
     kills = []
@@ -615,7 +615,7 @@ def test_port_release_wait_never_kills_foreign_holder(monkeypatch):
     # A non-runtime occupant (wslrelay etc.) is reported, never killed.
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": True, "is_tokdash": True, "version": "1.9.0"},
+        lambda port=55423, *a, **k: {"port": port, "open": True, "is_token_dashboard": True, "version": "1.9.0"},
     )
     monkeypatch.setattr(detect, "port_holder", lambda port: (777, "wslrelay.exe"))
 
@@ -631,7 +631,7 @@ def test_port_release_wait_without_kill_names_never_kills(monkeypatch):
     # No kill authority (a port this install does not own): report, never touch.
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": True, "is_tokdash": True, "version": "2.0.0"},
+        lambda port=55423, *a, **k: {"port": port, "open": True, "is_token_dashboard": True, "version": "2.0.0"},
     )
     monkeypatch.setattr(detect, "port_holder", lambda port: (4242, "pythonw.exe"))
 
@@ -644,10 +644,10 @@ def test_port_release_wait_without_kill_names_never_kills(monkeypatch):
 
 
 def test_runtime_holder_names_accepts_pythonw_twin():
-    assert engine._runtime_holder_names({"command": [r"C:\rt\python.exe", "-m", "tokdash"]}) == {
+    assert engine._runtime_holder_names({"command": [r"C:\rt\python.exe", "-m", "token_dashboard"]}) == {
         "python.exe", "pythonw.exe", "pythonw"
     }
-    assert engine._runtime_holder_names({"command": [r"C:\rt\tokdash.exe"]}) == {"tokdash.exe"}
+    assert engine._runtime_holder_names({"command": [r"C:\rt\token_dashboard.exe"]}) == {"token_dashboard.exe"}
     assert engine._runtime_holder_names(None) is None
 
 
@@ -656,7 +656,7 @@ def test_windows_resetup_kills_stale_holder_before_starting_replacement(windows_
     state = {"killed": False}
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": not state["killed"], "is_tokdash": True, "version": "2.0.0"},
+        lambda port=55423, *a, **k: {"port": port, "open": not state["killed"], "is_token_dashboard": True, "version": "2.0.0"},
     )
     monkeypatch.setattr(detect, "port_holder", lambda port: (4242, "pythonw.exe"))
 
@@ -677,7 +677,7 @@ def test_windows_resetup_kills_stale_holder_before_starting_replacement(windows_
     monkeypatch.setattr(
         engine,
         "_wait_for_service_ready",
-        lambda bind, port, **k: {"ok": True, "port": {"port": port, "open": True, "is_tokdash": True, "version": "test"}},
+        lambda bind, port, **k: {"ok": True, "port": {"port": port, "open": True, "is_token_dashboard": True, "version": "test"}},
     )
     # The runtime the plan sees must be a Windows venv python.exe (the test host's
     # interpreter would not match the holder's image name).
@@ -685,7 +685,7 @@ def test_windows_resetup_kills_stale_holder_before_starting_replacement(windows_
         runtime, "resolve",
         lambda flag, detection: {
             "kind": "existing", "install_method": "manual",
-            "command": [r"C:\rt\python.exe", "-m", "tokdash"], "python": r"C:\rt\python.exe",
+            "command": [r"C:\rt\python.exe", "-m", "token_dashboard"], "python": r"C:\rt\python.exe",
             "owned_by_setup": False, "needs_create": False, "error": None,
         },
     )
@@ -695,13 +695,13 @@ def test_windows_resetup_kills_stale_holder_before_starting_replacement(windows_
     task_path.parent.mkdir(parents=True, exist_ok=True)
     task_path.write_bytes(
         codecs.BOM_UTF16_LE
-        + winsched.render_task([r"C:\rt\python.exe", "-m", "tokdash"], "127.0.0.1", 55423, marker_id="x").encode("utf-16-le")
+        + winsched.render_task([r"C:\rt\python.exe", "-m", "token_dashboard"], "127.0.0.1", 55423, marker_id="x").encode("utf-16-le")
     )
     svc = {"type": "winsched", "unit": str(task_path), "name": winsched.TASK_NAME,
-           "created_by_setup": True, "marker": "X-Tokdash-Managed id=x"}
+           "created_by_setup": True, "marker": "X-TokenDashboard-Managed id=x"}
     man = manifest.build_manifest(
         install_method="manual", runtime_kind="existing",
-        runtime_command=[r"C:\rt\python.exe", "-m", "tokdash"],
+        runtime_command=[r"C:\rt\python.exe", "-m", "token_dashboard"],
         runtime_owned_by_setup=False, python_path=r"C:\rt\python.exe", python_version="3.13.5",
         service=svc, runtime_marker=None, data_dir=str(paths.data_dir()),
         bind="127.0.0.1", port=55423,
@@ -723,12 +723,12 @@ def test_readiness_accepts_holder_match_when_task_state_unreadable(monkeypatch):
     # check must carry readiness on its own, or a healthy service fails setup.
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": True, "is_tokdash": True, "version": "2.0.0"},
+        lambda port=55423, *a, **k: {"port": port, "open": True, "is_token_dashboard": True, "version": "2.0.0"},
     )
     monkeypatch.setattr(detect, "port_holder_process", lambda port: "pythonw.exe")
     r = engine._wait_for_service_ready(
         "127.0.0.1", 55423, timeout=0.5, service_up=lambda: False,
-        service_desc="the Task Scheduler task Tokdash", expected_holders={"pythonw.exe", "python.exe"},
+        service_desc="the Task Scheduler task TokenDashboard", expected_holders={"pythonw.exe", "python.exe"},
     )
     assert r["ok"] is True
 
@@ -736,28 +736,28 @@ def test_readiness_accepts_holder_match_when_task_state_unreadable(monkeypatch):
 def test_readiness_fast_fails_mismatched_holder_even_when_task_running(monkeypatch):
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": True, "is_tokdash": True, "version": "1.9.0"},
+        lambda port=55423, *a, **k: {"port": port, "open": True, "is_token_dashboard": True, "version": "1.9.0"},
     )
     monkeypatch.setattr(detect, "port_holder_process", lambda port: "wslrelay.exe")
     r = engine._wait_for_service_ready(
         "127.0.0.1", 55423, timeout=2.0, service_up=lambda: True,
-        service_desc="the Task Scheduler task Tokdash", expected_holders={"pythonw.exe"},
+        service_desc="the Task Scheduler task TokenDashboard", expected_holders={"pythonw.exe"},
     )
     assert r["ok"] is False
     assert "wslrelay.exe" in r["error"]
 
 
-def test_port_release_wait_requires_tokdash_fingerprint_to_kill(monkeypatch):
-    # A pythonw holding the recorded port that does NOT serve Tokdash (an unrelated
+def test_port_release_wait_requires_token_dashboard_fingerprint_to_kill(monkeypatch):
+    # A pythonw holding the recorded port that does NOT serve TokenDashboard (an unrelated
     # app that moved in after a hand-deleted task) must be reported, never killed.
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": True, "is_tokdash": False, "version": None},
+        lambda port=55423, *a, **k: {"port": port, "open": True, "is_token_dashboard": False, "version": None},
     )
     monkeypatch.setattr(detect, "port_holder", lambda port: (4242, "pythonw.exe"))
 
     def boom(*a, **k):
-        raise AssertionError("taskkill must not run for a non-Tokdash holder")
+        raise AssertionError("taskkill must not run for a non-TokenDashboard holder")
 
     monkeypatch.setattr(engine.subprocess, "run", boom)
     err = engine._wait_for_port_release(55423, kill_names={"pythonw.exe"}, timeout=0.8)
@@ -806,7 +806,7 @@ def test_windows_update_waits_for_port_release_before_run(windows_env, monkeypat
     state = {"killed": False}
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": not state["killed"], "is_tokdash": True, "version": "2.0.0"},
+        lambda port=55423, *a, **k: {"port": port, "open": not state["killed"], "is_token_dashboard": True, "version": "2.0.0"},
     )
     monkeypatch.setattr(detect, "port_holder", lambda port: (4242, "pythonw.exe"))
 
@@ -823,10 +823,10 @@ def test_windows_update_waits_for_port_release_before_run(windows_env, monkeypat
     monkeypatch.setattr(detect, "find_pipx", lambda: "/usr/bin/pipx")
 
     svc = {"type": "winsched", "unit": str(paths.winsched_task_path()), "name": winsched.TASK_NAME,
-           "created_by_setup": True, "marker": "X-Tokdash-Managed id=x"}
+           "created_by_setup": True, "marker": "X-TokenDashboard-Managed id=x"}
     man = manifest.build_manifest(
         install_method="pipx", runtime_kind="pipx",
-        runtime_command=[r"C:\rt\python.exe", "-m", "tokdash"],
+        runtime_command=[r"C:\rt\python.exe", "-m", "token_dashboard"],
         runtime_owned_by_setup=False, python_path=r"C:\rt\python.exe", python_version="3.13.5",
         service=svc, runtime_marker=None, data_dir=str(paths.data_dir()),
         bind="127.0.0.1", port=55423,
@@ -850,7 +850,7 @@ def test_windows_uninstall_kills_lingering_holder_before_delete(windows_env, mon
 
     def probe(port=55423, *a, **k):
         open_ = (port == 55423 and state["open_55423"] and not state["killed"])
-        return {"port": port, "open": open_, "is_tokdash": open_, "version": "2.0.0" if open_ else None}
+        return {"port": port, "open": open_, "is_token_dashboard": open_, "version": "2.0.0" if open_ else None}
 
     monkeypatch.setattr(detect, "probe_port", probe)
     monkeypatch.setattr(detect, "port_holder", lambda port: (4242, "pythonw.exe"))
@@ -870,13 +870,13 @@ def test_windows_uninstall_kills_lingering_holder_before_delete(windows_env, mon
     monkeypatch.setattr(
         engine,
         "_wait_for_service_ready",
-        lambda bind, port, **k: {"ok": True, "port": {"port": port, "open": True, "is_tokdash": True, "version": "test"}},
+        lambda bind, port, **k: {"ok": True, "port": {"port": port, "open": True, "is_token_dashboard": True, "version": "test"}},
     )
     monkeypatch.setattr(
         runtime, "resolve",
         lambda flag, detection: {
             "kind": "existing", "install_method": "manual",
-            "command": [r"C:\rt\python.exe", "-m", "tokdash"], "python": r"C:\rt\python.exe",
+            "command": [r"C:\rt\python.exe", "-m", "token_dashboard"], "python": r"C:\rt\python.exe",
             "owned_by_setup": False, "needs_create": False, "error": None,
         },
     )
@@ -885,7 +885,7 @@ def test_windows_uninstall_kills_lingering_holder_before_delete(windows_env, mon
     task_path.parent.mkdir(parents=True, exist_ok=True)
     task_path.write_bytes(
         codecs.BOM_UTF16_LE
-        + winsched.render_task([r"C:\rt\python.exe", "-m", "tokdash"], "127.0.0.1", 55423, marker_id="x").encode("utf-16-le")
+        + winsched.render_task([r"C:\rt\python.exe", "-m", "token_dashboard"], "127.0.0.1", 55423, marker_id="x").encode("utf-16-le")
     )
 
     rc, payload = run_json(["setup", "--auto", "--service", "winsched", "--json"], capsys)
@@ -905,7 +905,7 @@ def test_windows_uninstall_kills_lingering_holder_before_delete(windows_env, mon
 
 def test_windows_uninstall_skips_foreign_holder(windows_env, monkeypatch, capsys):
     # The host's own configuration: the manifest recorded 55423, and wslrelay (a WSL
-    # distro mirroring its Tokdash) holds it. Uninstall must finish cleanly -- the
+    # distro mirroring its TokenDashboard) holds it. Uninstall must finish cleanly -- the
     # foreign holder is not ours to stop, and failing the uninstall on it would loop
     # forever on such machines.
     monkeypatch.setattr(
@@ -913,7 +913,7 @@ def test_windows_uninstall_skips_foreign_holder(windows_env, monkeypatch, capsys
         lambda port=55423, *a, **k: {
             "port": port,
             "open": port == 55423,
-            "is_tokdash": port == 55423,
+            "is_token_dashboard": port == 55423,
             "version": "1.9.0" if port == 55423 else None,
         },
     )
@@ -936,13 +936,13 @@ def test_windows_uninstall_skips_foreign_holder(windows_env, monkeypatch, capsys
     task_path.parent.mkdir(parents=True, exist_ok=True)
     task_path.write_bytes(
         codecs.BOM_UTF16_LE
-        + winsched.render_task([r"C:\rt\python.exe", "-m", "tokdash"], "127.0.0.1", 55423, marker_id="x").encode("utf-16-le")
+        + winsched.render_task([r"C:\rt\python.exe", "-m", "token_dashboard"], "127.0.0.1", 55423, marker_id="x").encode("utf-16-le")
     )
     svc = {"type": "winsched", "unit": str(task_path), "name": winsched.TASK_NAME,
-           "created_by_setup": True, "marker": "X-Tokdash-Managed id=x"}
+           "created_by_setup": True, "marker": "X-TokenDashboard-Managed id=x"}
     man = manifest.build_manifest(
         install_method="pipx", runtime_kind="pipx",
-        runtime_command=[r"C:\rt\python.exe", "-m", "tokdash"],
+        runtime_command=[r"C:\rt\python.exe", "-m", "token_dashboard"],
         runtime_owned_by_setup=False, python_path=r"C:\rt\python.exe", python_version="3.13.5",
         service=svc, runtime_marker=None, data_dir=str(paths.data_dir()),
         bind="127.0.0.1", port=55423,
@@ -959,12 +959,12 @@ def test_windows_uninstall_skips_foreign_holder(windows_env, monkeypatch, capsys
 
 
 def test_port_release_wait_refuses_path_mismatch(monkeypatch):
-    # Same image name + Tokdash fingerprint, but a DIFFERENT interpreter (a manual
+    # Same image name + TokenDashboard fingerprint, but a DIFFERENT interpreter (a manual
     # serve from another venv): expected_exe positively identifies it as not ours ->
     # never killed, reported on timeout.
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": True, "is_tokdash": True, "version": "2.0.0"},
+        lambda port=55423, *a, **k: {"port": port, "open": True, "is_token_dashboard": True, "version": "2.0.0"},
     )
     monkeypatch.setattr(detect, "port_holder", lambda port: (4242, "pythonw.exe"))
     monkeypatch.setattr(detect, "process_image_path", lambda pid: r"C:\other\venv\Scripts\pythonw.exe")
@@ -984,7 +984,7 @@ def test_port_release_wait_kills_matching_path(monkeypatch):
     state = {"killed": False}
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": not state["killed"], "is_tokdash": True, "version": "2.0.0"},
+        lambda port=55423, *a, **k: {"port": port, "open": not state["killed"], "is_token_dashboard": True, "version": "2.0.0"},
     )
     monkeypatch.setattr(detect, "port_holder", lambda port: (4242, "pythonw.exe"))
     monkeypatch.setattr(detect, "process_image_path", lambda pid: r"C:\rt\pythonw.exe")
@@ -1018,7 +1018,7 @@ def test_port_release_wait_caches_holder_lookup(monkeypatch):
 
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": True, "is_tokdash": False, "version": None},
+        lambda port=55423, *a, **k: {"port": port, "open": True, "is_token_dashboard": False, "version": None},
     )
     monkeypatch.setattr(detect, "port_holder", counting_holder)
 
@@ -1047,7 +1047,7 @@ def test_windows_uninstall_stops_wedged_own_instance(windows_env, monkeypatch, c
     state = {"killed": False}
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": not state["killed"], "is_tokdash": False, "version": None},
+        lambda port=55423, *a, **k: {"port": port, "open": not state["killed"], "is_token_dashboard": False, "version": None},
     )
     monkeypatch.setattr(detect, "port_holder", lambda port: (4242, "pythonw.exe"))
     # The exact interpreter path resolves (the os.name guard in the real
@@ -1071,13 +1071,13 @@ def test_windows_uninstall_stops_wedged_own_instance(windows_env, monkeypatch, c
     task_path.parent.mkdir(parents=True, exist_ok=True)
     task_path.write_bytes(
         codecs.BOM_UTF16_LE
-        + winsched.render_task([r"C:\rt\python.exe", "-m", "tokdash"], "127.0.0.1", 55423, marker_id="x").encode("utf-16-le")
+        + winsched.render_task([r"C:\rt\python.exe", "-m", "token_dashboard"], "127.0.0.1", 55423, marker_id="x").encode("utf-16-le")
     )
     svc = {"type": "winsched", "unit": str(task_path), "name": winsched.TASK_NAME,
-           "created_by_setup": True, "marker": "X-Tokdash-Managed id=x"}
+           "created_by_setup": True, "marker": "X-TokenDashboard-Managed id=x"}
     man = manifest.build_manifest(
         install_method="pipx", runtime_kind="pipx",
-        runtime_command=[r"C:\rt\python.exe", "-m", "tokdash"],
+        runtime_command=[r"C:\rt\python.exe", "-m", "token_dashboard"],
         runtime_owned_by_setup=False, python_path=r"C:\rt\python.exe", python_version="3.13.5",
         service=svc, runtime_marker=None, data_dir=str(paths.data_dir()),
         bind="127.0.0.1", port=55423,
@@ -1098,7 +1098,7 @@ def test_windows_update_fails_fast_on_foreign_holder(windows_env, monkeypatch, c
     monkeypatch.setattr(
         detect, "probe_port",
         lambda port=55423, *a, **k: {
-            "port": port, "open": port == 55423, "is_tokdash": port == 55423,
+            "port": port, "open": port == 55423, "is_token_dashboard": port == 55423,
             "version": "1.9.0" if port == 55423 else None,
         },
     )
@@ -1119,13 +1119,13 @@ def test_windows_update_fails_fast_on_foreign_holder(windows_env, monkeypatch, c
     task_path.parent.mkdir(parents=True, exist_ok=True)
     task_path.write_bytes(
         codecs.BOM_UTF16_LE
-        + winsched.render_task([r"C:\rt\python.exe", "-m", "tokdash"], "127.0.0.1", 55423, marker_id="x").encode("utf-16-le")
+        + winsched.render_task([r"C:\rt\python.exe", "-m", "token_dashboard"], "127.0.0.1", 55423, marker_id="x").encode("utf-16-le")
     )
     svc = {"type": "winsched", "unit": str(task_path), "name": winsched.TASK_NAME,
-           "created_by_setup": True, "marker": "X-Tokdash-Managed id=x"}
+           "created_by_setup": True, "marker": "X-TokenDashboard-Managed id=x"}
     man = manifest.build_manifest(
         install_method="pipx", runtime_kind="pipx",
-        runtime_command=[r"C:\rt\python.exe", "-m", "tokdash"],
+        runtime_command=[r"C:\rt\python.exe", "-m", "token_dashboard"],
         runtime_owned_by_setup=False, python_path=r"C:\rt\python.exe", python_version="3.13.5",
         service=svc, runtime_marker=None, data_dir=str(paths.data_dir()),
         bind="127.0.0.1", port=55423,
@@ -1158,7 +1158,7 @@ def test_classifier_dying_own_instance_is_ours(monkeypatch):
     # "ours" (wait for release), never "foreign".
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": True, "is_tokdash": False, "version": None},
+        lambda port=55423, *a, **k: {"port": port, "open": True, "is_token_dashboard": False, "version": None},
     )
     monkeypatch.setattr(detect, "port_holder", lambda port: (21372, "pythonw.exe"))
     monkeypatch.setattr(detect, "process_image_path", lambda pid: None)
@@ -1172,7 +1172,7 @@ def test_classifier_unresolvable_holder_on_own_port_is_ours(monkeypatch):
     # wait (the kill gate never kills an unidentifiable holder), do not fast-fail.
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": True, "is_tokdash": False, "version": None},
+        lambda port=55423, *a, **k: {"port": port, "open": True, "is_token_dashboard": False, "version": None},
     )
     monkeypatch.setattr(detect, "port_holder", lambda port: None)
     assert engine._classify_port_holder(55423, {"pythonw.exe"}) == ("ours", None)
@@ -1183,7 +1183,7 @@ def test_classifier_foreign_name_stays_foreign(monkeypatch):
     # release it, so the caller fails fast with the holder named.
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": True, "is_tokdash": True, "version": "1.9.0"},
+        lambda port=55423, *a, **k: {"port": port, "open": True, "is_token_dashboard": True, "version": "1.9.0"},
     )
     monkeypatch.setattr(detect, "port_holder", lambda port: (777, "wslrelay.exe"))
     verdict, holder = engine._classify_port_holder(55423, {"pythonw.exe"})
@@ -1193,10 +1193,10 @@ def test_classifier_foreign_name_stays_foreign(monkeypatch):
 
 def test_classifier_no_kill_names_is_foreign(monkeypatch):
     # A port this install does not record: any occupant is foreign (never waited
-    # on as ours, never killed) — even another Tokdash under the same image name.
+    # on as ours, never killed) — even another TokenDashboard under the same image name.
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": True, "is_tokdash": True, "version": "2.0.0"},
+        lambda port=55423, *a, **k: {"port": port, "open": True, "is_token_dashboard": True, "version": "2.0.0"},
     )
     monkeypatch.setattr(detect, "port_holder", lambda port: (4242, "pythonw.exe"))
     assert engine._classify_port_holder(55423, None) == ("foreign", (4242, "pythonw.exe"))
@@ -1209,7 +1209,7 @@ def test_port_release_wait_initial_holder_not_auto_authorized(monkeypatch):
     # interpreter, the holder is waited on and reported, never killed.
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": True, "is_tokdash": False, "version": None},
+        lambda port=55423, *a, **k: {"port": port, "open": True, "is_token_dashboard": False, "version": None},
     )
     monkeypatch.setattr(detect, "port_holder", lambda port: (4242, "pythonw.exe"))
     monkeypatch.setattr(detect, "process_image_path", lambda pid: r"C:\other\venv\Scripts\pythonw.exe")
@@ -1236,7 +1236,7 @@ def test_port_release_wait_initial_holder_matching_path_kills(monkeypatch):
 
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": not state["killed"], "is_tokdash": False, "version": None},
+        lambda port=55423, *a, **k: {"port": port, "open": not state["killed"], "is_token_dashboard": False, "version": None},
     )
     monkeypatch.setattr(detect, "port_holder", counting_holder)
     monkeypatch.setattr(detect, "process_image_path", lambda pid: r"C:\rt\pythonw.exe")
@@ -1270,7 +1270,7 @@ def test_windows_resetup_waits_for_dying_instance(windows_env, monkeypatch, caps
         lambda port=55423, *a, **k: {
             "port": port,
             "open": not state["released"],
-            "is_tokdash": False,  # uvicorn shutdown: /health no longer answers
+            "is_token_dashboard": False,  # uvicorn shutdown: /health no longer answers
             "version": None,
         },
     )
@@ -1303,13 +1303,13 @@ def test_windows_resetup_waits_for_dying_instance(windows_env, monkeypatch, caps
     monkeypatch.setattr(
         engine,
         "_wait_for_service_ready",
-        lambda bind, port, **k: {"ok": True, "port": {"port": port, "open": True, "is_tokdash": True, "version": "test"}},
+        lambda bind, port, **k: {"ok": True, "port": {"port": port, "open": True, "is_token_dashboard": True, "version": "test"}},
     )
     monkeypatch.setattr(
         runtime, "resolve",
         lambda flag, detection: {
             "kind": "existing", "install_method": "manual",
-            "command": [r"C:\rt\python.exe", "-m", "tokdash"], "python": r"C:\rt\python.exe",
+            "command": [r"C:\rt\python.exe", "-m", "token_dashboard"], "python": r"C:\rt\python.exe",
             "owned_by_setup": False, "needs_create": False, "error": None,
         },
     )
@@ -1319,13 +1319,13 @@ def test_windows_resetup_waits_for_dying_instance(windows_env, monkeypatch, caps
     task_path.parent.mkdir(parents=True, exist_ok=True)
     task_path.write_bytes(
         codecs.BOM_UTF16_LE
-        + winsched.render_task([r"C:\rt\python.exe", "-m", "tokdash"], "127.0.0.1", 55423, marker_id="x").encode("utf-16-le")
+        + winsched.render_task([r"C:\rt\python.exe", "-m", "token_dashboard"], "127.0.0.1", 55423, marker_id="x").encode("utf-16-le")
     )
     svc = {"type": "winsched", "unit": str(task_path), "name": winsched.TASK_NAME,
-           "created_by_setup": True, "marker": "X-Tokdash-Managed id=x"}
+           "created_by_setup": True, "marker": "X-TokenDashboard-Managed id=x"}
     man = manifest.build_manifest(
         install_method="manual", runtime_kind="existing",
-        runtime_command=[r"C:\rt\python.exe", "-m", "tokdash"],
+        runtime_command=[r"C:\rt\python.exe", "-m", "token_dashboard"],
         runtime_owned_by_setup=False, python_path=r"C:\rt\python.exe", python_version="3.13.5",
         service=svc, runtime_marker=None, data_dir=str(paths.data_dir()),
         bind="127.0.0.1", port=55423,

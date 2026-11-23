@@ -2,7 +2,7 @@
 
 Covers the plan §19 testing matrix without touching the real system: systemd calls and
 managed-venv creation are monkeypatched, the port probe is stubbed, and all state is
-redirected under a throwaway TOKDASH_DATA_DIR / XDG_CONFIG_HOME.
+redirected under a throwaway TOKEN_DASHBOARD_DATA_DIR / XDG_CONFIG_HOME.
 """
 from __future__ import annotations
 
@@ -11,9 +11,9 @@ import subprocess
 
 import pytest
 
-from tokdash import cli
-from tokdash.onboard import detect, engine, launchd, manifest, paths, plan, runtime, systemd, tailscale, updatecheck
-from tokdash.onboard.engine import run_lifecycle
+from token_dashboard import cli
+from token_dashboard.onboard import detect, engine, launchd, manifest, paths, plan, runtime, systemd, tailscale, updatecheck
+from token_dashboard.onboard.engine import run_lifecycle
 
 
 # --- harness --------------------------------------------------------------------
@@ -23,10 +23,10 @@ from tokdash.onboard.engine import run_lifecycle
 def _isolate(monkeypatch, tmp_path):
     """Redirect every onboarding path into tmp and stub the OS-touching probes."""
     data_dir = tmp_path / "dd"
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(data_dir))
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "cfg"))
     # Deterministic, offline detection by default; individual tests override.
-    monkeypatch.setattr(detect, "probe_port", lambda port=55423, *a, **k: {"port": port, "open": False, "is_tokdash": False, "version": None})
+    monkeypatch.setattr(detect, "probe_port", lambda port=55423, *a, **k: {"port": port, "open": False, "is_token_dashboard": False, "version": None})
     monkeypatch.setattr(detect, "os_kind", lambda: "linux")
     monkeypatch.setattr(detect, "is_tty", lambda: True)
     monkeypatch.setattr(detect, "systemd_user_available", lambda: True)
@@ -45,17 +45,17 @@ def _ok_proc():
 def fake_systemd(monkeypatch):
     """Make systemctl calls no-ops that report a healthy, enabled+active service."""
     monkeypatch.setattr(systemd, "daemon_reload", lambda: None)
-    monkeypatch.setattr(systemd, "enable_now", lambda name="tokdash": _ok_proc())
-    monkeypatch.setattr(systemd, "disable_now", lambda name="tokdash": _ok_proc())
-    monkeypatch.setattr(systemd, "restart", lambda name="tokdash": _ok_proc())
-    monkeypatch.setattr(systemd, "is_enabled", lambda name="tokdash": True)
-    monkeypatch.setattr(systemd, "is_active", lambda name="tokdash": True)
-    monkeypatch.setattr(systemd, "is_active_strict", lambda name="tokdash": True)
-    monkeypatch.setattr(systemd, "fragment_path", lambda name="tokdash": str(paths.systemd_unit_path()))
+    monkeypatch.setattr(systemd, "enable_now", lambda name="token_dashboard": _ok_proc())
+    monkeypatch.setattr(systemd, "disable_now", lambda name="token_dashboard": _ok_proc())
+    monkeypatch.setattr(systemd, "restart", lambda name="token_dashboard": _ok_proc())
+    monkeypatch.setattr(systemd, "is_enabled", lambda name="token_dashboard": True)
+    monkeypatch.setattr(systemd, "is_active", lambda name="token_dashboard": True)
+    monkeypatch.setattr(systemd, "is_active_strict", lambda name="token_dashboard": True)
+    monkeypatch.setattr(systemd, "fragment_path", lambda name="token_dashboard": str(paths.systemd_unit_path()))
     monkeypatch.setattr(
         engine,
         "_wait_for_service_ready",
-        lambda bind, port, **k: {"ok": True, "port": {"port": port, "open": True, "is_tokdash": True, "version": "test"}},
+        lambda bind, port, **k: {"ok": True, "port": {"port": port, "open": True, "is_token_dashboard": True, "version": "test"}},
     )
 
 
@@ -65,7 +65,7 @@ def macos(monkeypatch, tmp_path):
     monkeypatch.setattr(detect, "os_kind", lambda: "macos")
     monkeypatch.setattr(detect, "launchd_available", lambda: True)
     monkeypatch.setattr(detect, "systemd_user_available", lambda: False)
-    plist = tmp_path / "LaunchAgents" / "com.tokdash.tokdash.plist"
+    plist = tmp_path / "LaunchAgents" / "com.token_dashboard.token_dashboard.plist"
     monkeypatch.setattr(paths, "launchd_plist_path", lambda: plist)
 
 
@@ -80,12 +80,12 @@ def fake_launchd(monkeypatch):
     monkeypatch.setattr(
         engine,
         "_wait_for_service_ready",
-        lambda bind, port, **k: {"ok": True, "port": {"port": port, "open": True, "is_tokdash": True, "version": "test"}},
+        lambda bind, port, **k: {"ok": True, "port": {"port": port, "open": True, "is_token_dashboard": True, "version": "test"}},
     )
 
 
 def run(argv):
-    args = cli.build_parser("tokdash").parse_args(argv)
+    args = cli.build_parser("token_dashboard").parse_args(argv)
     return run_lifecycle(args)
 
 
@@ -100,7 +100,7 @@ def run_json(argv, capsys):
 
 
 def test_paths_follow_data_dir(tmp_path, monkeypatch):
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(tmp_path / "x"))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path / "x"))
     monkeypatch.setattr(paths, "_windows_venv_layout", lambda: False)
     assert paths.manifest_path() == tmp_path / "x" / "install.json"
     assert paths.managed_venv_python() == tmp_path / "x" / "runtime" / "python-venv" / "bin" / "python"
@@ -115,13 +115,13 @@ def test_probe_port_fail_closed_on_socket_error(monkeypatch):
 
     monkeypatch.setattr(detect.socket, "socket", boom)
     info = detect.probe_port(55423)
-    assert info["open"] is False and info["is_tokdash"] is False
+    assert info["open"] is False and info["is_token_dashboard"] is False
 
 
 def test_manifest_round_trip():
     man = manifest.build_manifest(
         install_method="managed-venv", runtime_kind="venv",
-        runtime_command=["/p/python", "-m", "tokdash"], runtime_owned_by_setup=True,
+        runtime_command=["/p/python", "-m", "token_dashboard"], runtime_owned_by_setup=True,
         python_path="/p/python", python_version="3.12.0", service=None,
         runtime_marker=str(paths.runtime_marker_path()), data_dir=str(paths.data_dir()),
         bind="127.0.0.1", port=55423,
@@ -143,35 +143,35 @@ def test_manifest_bad_file_returns_none():
 
 
 def test_unit_carries_marker_and_execstart():
-    text = systemd.render_unit(["/v/bin/python", "-m", "tokdash"], "127.0.0.1", 55423, marker_id="abc123")
-    assert "X-Tokdash-Managed id=abc123" in text
-    assert "ExecStart=/v/bin/python -m tokdash serve --bind 127.0.0.1 --port 55423 --no-open" in text
-    assert "Environment=TOKDASH_DATA_DIR" not in text  # default data dir => no env line
+    text = systemd.render_unit(["/v/bin/python", "-m", "token_dashboard"], "127.0.0.1", 55423, marker_id="abc123")
+    assert "X-TokenDashboard-Managed id=abc123" in text
+    assert "ExecStart=/v/bin/python -m token_dashboard serve --bind 127.0.0.1 --port 55423 --no-open" in text
+    assert "Environment=TOKEN_DASHBOARD_DATA_DIR" not in text  # default data dir => no env line
 
 
 def test_unit_env_line_when_non_default_data_dir():
-    text = systemd.render_unit(["py", "-m", "tokdash"], "127.0.0.1", 55423, marker_id="x", env_data_dir="/custom/dd")
-    assert "Environment=TOKDASH_DATA_DIR=/custom/dd" in text
+    text = systemd.render_unit(["py", "-m", "token_dashboard"], "127.0.0.1", 55423, marker_id="x", env_data_dir="/custom/dd")
+    assert "Environment=TOKEN_DASHBOARD_DATA_DIR=/custom/dd" in text
 
 
 def test_unit_quotes_paths_with_spaces():
     # systemd splits ExecStart on whitespace; a venv/data path with spaces must be quoted.
     text = systemd.render_unit(
-        ["/opt/my venv/bin/python", "-m", "tokdash"], "127.0.0.1", 55423,
+        ["/opt/my venv/bin/python", "-m", "token_dashboard"], "127.0.0.1", 55423,
         marker_id="x", env_data_dir="/data dir/dd",
     )
-    assert 'ExecStart="/opt/my venv/bin/python" -m tokdash serve --bind 127.0.0.1 --port 55423 --no-open' in text
-    assert 'Environment="TOKDASH_DATA_DIR=/data dir/dd"' in text
+    assert 'ExecStart="/opt/my venv/bin/python" -m token_dashboard serve --bind 127.0.0.1 --port 55423 --no-open' in text
+    assert 'Environment="TOKEN_DASHBOARD_DATA_DIR=/data dir/dd"' in text
 
 
 def test_unit_is_managed_detection(tmp_path):
-    unit = tmp_path / "tokdash.service"
-    unit.write_text(systemd.render_unit(["py", "-m", "tokdash"], "127.0.0.1", 1, marker_id="deadbeef"), encoding="utf-8")
+    unit = tmp_path / "token_dashboard.service"
+    unit.write_text(systemd.render_unit(["py", "-m", "token_dashboard"], "127.0.0.1", 1, marker_id="deadbeef"), encoding="utf-8")
     assert systemd.unit_is_managed(unit) is True
     assert systemd.unit_is_managed(unit, "deadbeef") is True
     assert systemd.unit_is_managed(unit, "other") is False
     unmarked = tmp_path / "manual.service"
-    unmarked.write_text("[Service]\nExecStart=python -m tokdash serve\n", encoding="utf-8")
+    unmarked.write_text("[Service]\nExecStart=python -m token_dashboard serve\n", encoding="utf-8")
     assert systemd.unit_is_managed(unmarked) is False
 
 
@@ -187,9 +187,9 @@ def test_systemd_lifecycle_commands_allow_service_manager_timeout(monkeypatch):
     systemd.restart()
     systemd.disable_now()
     assert seen == [
-        (["enable", "--now", "tokdash"], systemd.LIFECYCLE_TIMEOUT),
-        (["restart", "tokdash"], systemd.LIFECYCLE_TIMEOUT),
-        (["disable", "--now", "tokdash"], systemd.LIFECYCLE_TIMEOUT),
+        (["enable", "--now", "token_dashboard"], systemd.LIFECYCLE_TIMEOUT),
+        (["restart", "token_dashboard"], systemd.LIFECYCLE_TIMEOUT),
+        (["disable", "--now", "token_dashboard"], systemd.LIFECYCLE_TIMEOUT),
     ]
 
 
@@ -205,7 +205,7 @@ def _detection(**over):
 def test_runtime_existing_not_owned():
     rt = runtime.resolve("existing", _detection())
     assert rt["owned_by_setup"] is False and rt["needs_create"] is False
-    assert rt["command"][-2:] == ["-m", "tokdash"]
+    assert rt["command"][-2:] == ["-m", "token_dashboard"]
 
 
 def test_runtime_venv_is_owned():
@@ -215,9 +215,9 @@ def test_runtime_venv_is_owned():
 
 
 def test_runtime_pipx_requires_existing_pipx():
-    rt = runtime.resolve("pipx", _detection(pipx_tokdash=None))
+    rt = runtime.resolve("pipx", _detection(pipx_token_dashboard=None))
     assert rt["error"] and "pipx install" in rt["error"]
-    rt2 = runtime.resolve("pipx", _detection(pipx_tokdash="/p/pipx/venvs/tokdash/bin/python"))
+    rt2 = runtime.resolve("pipx", _detection(pipx_token_dashboard="/p/pipx/venvs/token-dashboard/bin/python"))
     assert rt2["owned_by_setup"] is False and rt2["kind"] == "pipx"
 
 
@@ -243,24 +243,24 @@ def test_interactive_non_loopback_warns():
 def test_blocked_plan_separates_changes(monkeypatch):
     # When blocked, would-run actions move to blocked_changes; `changes` is empty so a
     # bundler reading the JSON never mistakes "would do" for "will do".
-    monkeypatch.setattr(detect, "probe_port", lambda *a, **k: {"port": 55423, "open": False, "is_tokdash": False, "version": None})
+    monkeypatch.setattr(detect, "probe_port", lambda *a, **k: {"port": 55423, "open": False, "is_token_dashboard": False, "version": None})
     p = plan.build_setup_plan(plan.Options(auto=True, bind="0.0.0.0"), _detection())
     assert p["ok"] is False
     assert p["changes"] == [] and p["blocked_changes"]
 
 
-def test_busy_tokdash_port_is_reused_when_ours(monkeypatch, tmp_path):
-    # Re-setup/upgrade: the port's Tokdash is this install's own previous service
+def test_busy_token_dashboard_port_is_reused_when_ours(monkeypatch, tmp_path):
+    # Re-setup/upgrade: the port's TokenDashboard is this install's own previous service
     # (a marked unit) — keep the port and point the new service at it.
-    unit = tmp_path / "tokdash.service"
-    unit.write_text("# X-Tokdash-Managed id=abc\n[Service]\n", encoding="utf-8")
-    monkeypatch.setattr(detect, "probe_port", lambda *a, **k: {"port": 55423, "open": True, "is_tokdash": True, "version": "0.6.2"})
+    unit = tmp_path / "token_dashboard.service"
+    unit.write_text("# X-TokenDashboard-Managed id=abc\n[Service]\n", encoding="utf-8")
+    monkeypatch.setattr(detect, "probe_port", lambda *a, **k: {"port": 55423, "open": True, "is_token_dashboard": True, "version": "0.6.2"})
     d = _detection(
         existing_service={"systemd_unit": str(unit), "launchd_plist": None, "winsched_task": None},
         manifest={"port": 55423, "service": {"type": "systemd-user"}},
     )
     p = plan.build_setup_plan(plan.Options(auto=True), d)
-    assert p["port"] == 55423 and any("already serves Tokdash" in n for n in p["notes"])
+    assert p["port"] == 55423 and any("already serves TokenDashboard" in n for n in p["notes"])
 
 
 def test_resetup_keeps_port_when_previous_service_not_answering(monkeypatch, tmp_path):
@@ -268,11 +268,11 @@ def test_resetup_keeps_port_when_previous_service_not_answering(monkeypatch, tmp
     # silent. The plan must still keep the recorded port (manifest + marker are
     # the ownership proof); a live-fingerprint requirement would silently
     # auto-pick a new port and strand the install on a different URL.
-    unit = tmp_path / "tokdash.service"
-    unit.write_text("# X-Tokdash-Managed id=abc\n[Service]\n", encoding="utf-8")
+    unit = tmp_path / "token_dashboard.service"
+    unit.write_text("# X-TokenDashboard-Managed id=abc\n[Service]\n", encoding="utf-8")
     monkeypatch.setattr(
         detect, "probe_port",
-        lambda *a, **k: {"port": 55423, "open": True, "is_tokdash": False, "version": None},
+        lambda *a, **k: {"port": 55423, "open": True, "is_token_dashboard": False, "version": None},
     )
     d = _detection(
         existing_service={"systemd_unit": str(unit), "launchd_plist": None, "winsched_task": None},
@@ -284,14 +284,14 @@ def test_resetup_keeps_port_when_previous_service_not_answering(monkeypatch, tmp
 
 def test_resetup_adopts_previous_port(monkeypatch, tmp_path):
     # The regression: after setup auto-picked 55424 (55423 held by the WSL relay's
-    # Tokdash), a plain re-setup must keep 55424 — not fall back to the default
+    # TokenDashboard), a plain re-setup must keep 55424 — not fall back to the default
     # 55423 and mistake the relayed fingerprint for our own endpoint.
-    unit = tmp_path / "tokdash.service"
-    unit.write_text("# X-Tokdash-Managed id=abc\n[Service]\n", encoding="utf-8")
+    unit = tmp_path / "token_dashboard.service"
+    unit.write_text("# X-TokenDashboard-Managed id=abc\n[Service]\n", encoding="utf-8")
 
     def _probe(port=55423, *a, **k):
         busy = port in (55423, 55424)
-        return {"port": port, "open": busy, "is_tokdash": busy,
+        return {"port": port, "open": busy, "is_token_dashboard": busy,
                 "version": "1.9.0" if port == 55423 else "2.0.0"}
 
     monkeypatch.setattr(detect, "probe_port", _probe)
@@ -302,16 +302,16 @@ def test_resetup_adopts_previous_port(monkeypatch, tmp_path):
     )
     p = plan.build_setup_plan(plan.Options(auto=True), d)
     assert p["port"] == 55424
-    assert any("already serves Tokdash" in n for n in p["notes"])
+    assert any("already serves TokenDashboard" in n for n in p["notes"])
 
 
-def test_busy_foreign_tokdash_port_auto_picks(monkeypatch):
-    # The port answers with Tokdash's fingerprint but no service we wrote holds it
-    # (e.g. a WSL distro mirroring its own Tokdash onto the host via wslrelay):
+def test_busy_foreign_token_dashboard_port_auto_picks(monkeypatch):
+    # The port answers with TokenDashboard's fingerprint but no service we wrote holds it
+    # (e.g. a WSL distro mirroring its own TokenDashboard onto the host via wslrelay):
     # our service would crash-loop binding it, so auto-pick a free port instead.
     def _probe(port=55423, *a, **k):
         busy = port == 55423
-        return {"port": port, "open": busy, "is_tokdash": busy, "version": "0.6.2" if busy else None}
+        return {"port": port, "open": busy, "is_token_dashboard": busy, "version": "0.6.2" if busy else None}
 
     monkeypatch.setattr(detect, "probe_port", _probe)
     monkeypatch.setattr(detect, "port_holder_process", lambda port: "wslrelay.exe")
@@ -320,12 +320,12 @@ def test_busy_foreign_tokdash_port_auto_picks(monkeypatch):
     assert any("wslrelay.exe" in n and "WSL" in n for n in p["notes"])
 
 
-def test_busy_foreign_tokdash_port_blocks_without_auto(monkeypatch):
-    monkeypatch.setattr(detect, "probe_port", lambda *a, **k: {"port": 55423, "open": True, "is_tokdash": True, "version": "0.6.2"})
+def test_busy_foreign_token_dashboard_port_blocks_without_auto(monkeypatch):
+    monkeypatch.setattr(detect, "probe_port", lambda *a, **k: {"port": 55423, "open": True, "is_token_dashboard": True, "version": "0.6.2"})
     monkeypatch.setattr(detect, "port_holder_process", lambda port: None)
     p = plan.build_setup_plan(plan.Options(auto=False), _detection())
     assert p["ok"] is False
-    assert any("another Tokdash install" in b for b in p["blockers"])
+    assert any("another TokenDashboard install" in b for b in p["blockers"])
 
 
 def test_systemd_unavailable_falls_back(monkeypatch):
@@ -361,17 +361,17 @@ def test_setup_auto_systemd_writes_unit_and_manifest(fake_systemd, capsys):
     rc, payload = run_json(["setup", "--auto", "--service", "systemd", "--json"], capsys)
     assert rc == 0 and payload["service"]["type"] == "systemd-user"
     unit = paths.systemd_unit_path()
-    assert unit.is_file() and "X-Tokdash-Managed" in unit.read_text(encoding="utf-8")
+    assert unit.is_file() and "X-TokenDashboard-Managed" in unit.read_text(encoding="utf-8")
     man = manifest.read_manifest()
     assert man["service"]["created_by_setup"] is True
     assert "service:systemd-user" in payload["changed"]
 
 
 def test_setup_systemd_fails_if_loaded_unit_is_different(fake_systemd, monkeypatch, capsys, tmp_path):
-    # systemctl operates by unit name. If an existing tokdash.service is already loaded from
+    # systemctl operates by unit name. If an existing token_dashboard.service is already loaded from
     # another path, setup must not report success for the newly-written unit.
-    loaded = tmp_path / "real" / "tokdash.service"
-    monkeypatch.setattr(systemd, "fragment_path", lambda name="tokdash": str(loaded))
+    loaded = tmp_path / "real" / "token_dashboard.service"
+    monkeypatch.setattr(systemd, "fragment_path", lambda name="token_dashboard": str(loaded))
     rc, payload = run_json(["setup", "--auto", "--service", "systemd", "--json"], capsys)
     assert rc == 1 and payload["ok"] is False
     assert str(loaded) in payload["error"]
@@ -385,7 +385,7 @@ def test_setup_systemd_fails_if_service_never_answers(fake_systemd, monkeypatch,
         lambda bind, port, **k: {
             "ok": False,
             "error": "service did not become ready: nothing answered on 127.0.0.1:55423",
-            "port": {"port": port, "open": False, "is_tokdash": False, "version": None},
+            "port": {"port": port, "open": False, "is_token_dashboard": False, "version": None},
         },
     )
     rc, payload = run_json(["setup", "--auto", "--service", "systemd", "--json"], capsys)
@@ -395,33 +395,33 @@ def test_setup_systemd_fails_if_service_never_answers(fake_systemd, monkeypatch,
 
 
 def test_setup_refuses_existing_unmarked_unit(fake_systemd):
-    # A hand-installed tokdash.service (no marker) must not be silently overwritten.
+    # A hand-installed token_dashboard.service (no marker) must not be silently overwritten.
     unit = paths.systemd_unit_path()
     unit.parent.mkdir(parents=True, exist_ok=True)
-    unit.write_text("[Service]\nExecStart=python -m tokdash serve\n", encoding="utf-8")
+    unit.write_text("[Service]\nExecStart=python -m token_dashboard serve\n", encoding="utf-8")
     rc = run(["setup", "--auto", "--service", "systemd"])
     assert rc == 1
-    assert "X-Tokdash-Managed" not in unit.read_text(encoding="utf-8")
+    assert "X-TokenDashboard-Managed" not in unit.read_text(encoding="utf-8")
     assert not paths.manifest_path().exists()
 
 
 def test_setup_force_overwrites_unmarked_unit(fake_systemd):
     unit = paths.systemd_unit_path()
     unit.parent.mkdir(parents=True, exist_ok=True)
-    unit.write_text("[Service]\nExecStart=python -m tokdash serve\n", encoding="utf-8")
+    unit.write_text("[Service]\nExecStart=python -m token_dashboard serve\n", encoding="utf-8")
     rc = run(["setup", "--auto", "--service", "systemd", "--force"])
-    assert rc == 0 and "X-Tokdash-Managed" in unit.read_text(encoding="utf-8")
+    assert rc == 0 and "X-TokenDashboard-Managed" in unit.read_text(encoding="utf-8")
 
 
 def test_setup_systemd_restarts_after_writing_unit(fake_systemd, monkeypatch):
     restarted = {}
-    monkeypatch.setattr(systemd, "restart", lambda name="tokdash": restarted.setdefault("proc", _ok_proc()))
+    monkeypatch.setattr(systemd, "restart", lambda name="token_dashboard": restarted.setdefault("proc", _ok_proc()))
     rc = run(["setup", "--auto", "--service", "systemd"])
     assert rc == 0 and restarted.get("proc") is not None
 
 
 def test_setup_systemd_restart_timeout_succeeds_when_service_is_ready(fake_systemd, monkeypatch, capsys):
-    def slow_restart(name="tokdash"):
+    def slow_restart(name="token_dashboard"):
         raise subprocess.TimeoutExpired(["systemctl", "--user", "restart", name], 20)
 
     monkeypatch.setattr(systemd, "restart", slow_restart)
@@ -433,7 +433,7 @@ def test_setup_systemd_restart_timeout_succeeds_when_service_is_ready(fake_syste
 
 
 def test_setup_systemd_restart_timeout_fails_closed_when_not_ready(fake_systemd, monkeypatch, capsys):
-    def slow_restart(name="tokdash"):
+    def slow_restart(name="token_dashboard"):
         raise subprocess.TimeoutExpired(["systemctl", "--user", "restart", name], 20)
 
     monkeypatch.setattr(systemd, "restart", slow_restart)
@@ -443,7 +443,7 @@ def test_setup_systemd_restart_timeout_fails_closed_when_not_ready(fake_systemd,
         lambda bind, port, **k: {
             "ok": False,
             "error": "service did not become ready: nothing answered on 127.0.0.1:55423",
-            "port": {"port": port, "open": False, "is_tokdash": False, "version": None},
+            "port": {"port": port, "open": False, "is_token_dashboard": False, "version": None},
         },
     )
     rc, payload = run_json(["setup", "--auto", "--service", "systemd", "--json"], capsys)
@@ -483,10 +483,10 @@ def test_setup_open_dashboard_uses_detached_opener(monkeypatch):
 
 
 def test_setup_open_dashboard_records_note(monkeypatch):
-    # Deliberately lifts the conftest TOKDASH_SETUP_NO_OPEN switch: this test
+    # Deliberately lifts the conftest TOKEN_DASHBOARD_SETUP_NO_OPEN switch: this test
     # exercises the open path itself (the no-open behavior is pinned by
     # test_setup_interactive_never_spawns_browser).
-    monkeypatch.delenv("TOKDASH_SETUP_NO_OPEN", raising=False)
+    monkeypatch.delenv("TOKEN_DASHBOARD_SETUP_NO_OPEN", raising=False)
     monkeypatch.setattr(engine, "_has_display", lambda: True)
     monkeypatch.setattr(engine, "_open_dashboard_url", lambda url: True)
     result = {"ok": True, "url": "http://127.0.0.1:55423"}
@@ -512,7 +512,7 @@ def test_setup_opens_dashboard_after_quota_wizard(monkeypatch, fake_systemd):
 def test_setup_interactive_never_spawns_browser(monkeypatch, fake_systemd):
     # Regression: `setup` must spawn no browser under test (incident history:
     # tests/conftest.py::no_browser_open). `_has_display` is pinned True so the
-    # conftest TOKDASH_SETUP_NO_OPEN switch is the guard under test — otherwise
+    # conftest TOKEN_DASHBOARD_SETUP_NO_OPEN switch is the guard under test — otherwise
     # the display check short-circuits first in CI/SSH and this test is vacuous
     # there. If the switch is removed, the conftest sink backstop fails the
     # test; if the whole fixture is removed, the Popen spy below catches the
@@ -596,12 +596,12 @@ def test_setup_yes_skips_update_check_prompt(monkeypatch):
 
 @pytest.mark.parametrize("kill_value", ["0", "off", "false", "no", "OFF", "False"])
 def test_setup_update_check_kill_switch_skips_prompt(monkeypatch, fake_systemd, kill_value):
-    # TOKDASH_UPDATE_CHECK's disabling forms (0/false/no/off, case-insensitive) are a hard
+    # TOKEN_DASHBOARD_UPDATE_CHECK's disabling forms (0/false/no/off, case-insensitive) are a hard
     # kill switch: even in an otherwise fully interactive setup, offering to enable something
     # the env is force-disabling would be misleading, so the prompt must not appear at all.
     # Regression: the step once matched only the literal "0", so off/false/no slipped through
     # and could persist dormant consent that silently activated once the env var was removed.
-    monkeypatch.setenv("TOKDASH_UPDATE_CHECK", kill_value)
+    monkeypatch.setenv("TOKEN_DASHBOARD_UPDATE_CHECK", kill_value)
     prompts = []
 
     def fake_confirm(prompt, default=True):
@@ -631,7 +631,7 @@ def test_setup_venv_creates_managed_runtime(monkeypatch, fake_systemd, capsys):
 
     def fake_create(builder_python=None):
         paths.runtime_dir().mkdir(parents=True, exist_ok=True)
-        paths.runtime_marker_path().write_text("created-by=tokdash-setup\n", encoding="utf-8")
+        paths.runtime_marker_path().write_text("created-by=token-dashboard-setup\n", encoding="utf-8")
         created["yes"] = True
         return str(paths.managed_venv_python())
 
@@ -652,8 +652,8 @@ def test_doctor_reports_no_manifest(capsys):
     assert rc == 0 and payload["ok"] is True
 
 
-def test_doctor_reports_tokdash_version(capsys):
-    from tokdash import __version__
+def test_doctor_reports_token_dashboard_version(capsys):
+    from token_dashboard import __version__
 
     rc, payload = run_json(["doctor", "--json"], capsys)
     assert rc == 0 and payload["version"] == __version__
@@ -662,30 +662,30 @@ def test_doctor_reports_tokdash_version(capsys):
 def test_doctor_flags_manual_unit_without_manifest(fake_systemd, capsys):
     unit = paths.systemd_unit_path()
     unit.parent.mkdir(parents=True, exist_ok=True)
-    unit.write_text("[Service]\nExecStart=python -m tokdash serve --port 55423\n", encoding="utf-8")
+    unit.write_text("[Service]\nExecStart=python -m token_dashboard serve --port 55423\n", encoding="utf-8")
     rc, payload = run_json(["doctor", "--json"], capsys)
     assert rc == 1 and payload["ok"] is False
-    assert any("no Tokdash setup manifest" in i and "--force" in i for i in payload["issues"])
+    assert any("no TokenDashboard setup manifest" in i and "--force" in i for i in payload["issues"])
 
 
 def test_doctor_flags_prefingerprint_service_without_manifest(fake_systemd, monkeypatch, capsys):
     unit = paths.systemd_unit_path()
     unit.parent.mkdir(parents=True, exist_ok=True)
-    unit.write_text("[Service]\nExecStart=python -m tokdash serve --port 55423\n", encoding="utf-8")
+    unit.write_text("[Service]\nExecStart=python -m token_dashboard serve --port 55423\n", encoding="utf-8")
     monkeypatch.setattr(
         detect,
         "probe_port",
-        lambda port=55423, *a, **k: {"port": port, "open": True, "is_tokdash": False, "version": None},
+        lambda port=55423, *a, **k: {"port": port, "open": True, "is_token_dashboard": False, "version": None},
     )
     rc, payload = run_json(["doctor", "--json"], capsys)
     assert rc == 1 and payload["ok"] is False
-    assert any("does not expose Tokdash's /health fingerprint" in i for i in payload["issues"])
+    assert any("does not expose TokenDashboard's /health fingerprint" in i for i in payload["issues"])
 
 
 def test_doctor_probes_manifest_port(monkeypatch, capsys):
     # After setup auto-picks a port, `doctor` (no --port) must diagnose that port.
     man = manifest.build_manifest(
-        install_method="existing", runtime_kind="existing", runtime_command=["py", "-m", "tokdash"],
+        install_method="existing", runtime_kind="existing", runtime_command=["py", "-m", "token_dashboard"],
         runtime_owned_by_setup=False, python_path="py", python_version="3.11", service=None,
         runtime_marker=None, data_dir=str(paths.data_dir()), bind="127.0.0.1", port=55999,
     )
@@ -704,7 +704,7 @@ def test_doctor_probes_manifest_port(monkeypatch, capsys):
 
 def test_doctor_probes_manifest_bind(monkeypatch, capsys):
     man = manifest.build_manifest(
-        install_method="existing", runtime_kind="existing", runtime_command=["py", "-m", "tokdash"],
+        install_method="existing", runtime_kind="existing", runtime_command=["py", "-m", "token_dashboard"],
         runtime_owned_by_setup=False, python_path="py", python_version="3.11", service=None,
         runtime_marker=None, data_dir=str(paths.data_dir()), bind="192.0.2.10", port=55999,
     )
@@ -713,7 +713,7 @@ def test_doctor_probes_manifest_bind(monkeypatch, capsys):
 
     def fake_probe(port=55423, host="127.0.0.1", *a, **k):
         calls.append((port, host))
-        return {"port": port, "open": False, "is_tokdash": False, "version": None}
+        return {"port": port, "open": False, "is_token_dashboard": False, "version": None}
 
     monkeypatch.setattr(detect, "probe_port", fake_probe)
     run(["doctor", "--json"])
@@ -722,7 +722,7 @@ def test_doctor_probes_manifest_bind(monkeypatch, capsys):
 
 def test_doctor_flags_data_dir_mismatch(capsys):
     man = manifest.build_manifest(
-        install_method="existing", runtime_kind="existing", runtime_command=["py", "-m", "tokdash"],
+        install_method="existing", runtime_kind="existing", runtime_command=["py", "-m", "token_dashboard"],
         runtime_owned_by_setup=False, python_path="py", python_version="3.11", service=None,
         runtime_marker=None, data_dir="/somewhere/else", bind="127.0.0.1", port=55423,
     )
@@ -731,7 +731,7 @@ def test_doctor_flags_data_dir_mismatch(capsys):
     assert rc == 1 and any("data_dir" in i for i in payload["issues"])
 
 
-def test_doctor_flags_active_service_without_tokdash_port(fake_systemd, capsys):
+def test_doctor_flags_active_service_without_token_dashboard_port(fake_systemd, capsys):
     run(["setup", "--auto", "--service", "systemd"])
     rc, payload = run_json(["doctor", "--json"], capsys)
     assert rc == 1 and payload["ok"] is False
@@ -740,8 +740,8 @@ def test_doctor_flags_active_service_without_tokdash_port(fake_systemd, capsys):
 
 def test_doctor_flags_systemd_fragment_mismatch(fake_systemd, monkeypatch, capsys, tmp_path):
     run(["setup", "--auto", "--service", "systemd"])
-    loaded = tmp_path / "real" / "tokdash.service"
-    monkeypatch.setattr(systemd, "fragment_path", lambda name="tokdash": str(loaded))
+    loaded = tmp_path / "real" / "token_dashboard.service"
+    monkeypatch.setattr(systemd, "fragment_path", lambda name="token_dashboard": str(loaded))
     rc, payload = run_json(["doctor", "--json"], capsys)
     assert rc == 1 and payload["ok"] is False
     assert any(str(loaded) in i and "manifest unit" in i for i in payload["issues"])
@@ -761,11 +761,11 @@ def test_uninstall_keeps_not_owned_runtime_and_data(fake_systemd, capsys):
 
 def test_uninstall_systemd_fragment_mismatch_does_not_disable_foreign_service(fake_systemd, monkeypatch, capsys, tmp_path):
     run(["setup", "--auto", "--service", "systemd"])
-    loaded = tmp_path / "real" / "tokdash.service"
-    monkeypatch.setattr(systemd, "fragment_path", lambda name="tokdash": str(loaded))
+    loaded = tmp_path / "real" / "token_dashboard.service"
+    monkeypatch.setattr(systemd, "fragment_path", lambda name="token_dashboard": str(loaded))
     called = {}
 
-    def fail_if_called(name="tokdash"):
+    def fail_if_called(name="token_dashboard"):
         called["disable"] = name
         return subprocess.CompletedProcess([], 1, "", "should not be called")
 
@@ -781,7 +781,7 @@ def test_uninstall_removes_setup_owned_venv(monkeypatch, fake_systemd, capsys):
     def fake_create(builder_python=None):
         paths.managed_venv_python().parent.mkdir(parents=True, exist_ok=True)
         paths.managed_venv_python().write_text("#!/bin/sh\n", encoding="utf-8")
-        paths.runtime_marker_path().write_text("created-by=tokdash-setup\n", encoding="utf-8")
+        paths.runtime_marker_path().write_text("created-by=token-dashboard-setup\n", encoding="utf-8")
         return str(paths.managed_venv_python())
 
     monkeypatch.setattr(runtime, "create_managed_venv", fake_create)
@@ -830,7 +830,7 @@ def test_uninstall_refuses_unmarked_unit_without_manifest(capsys):
     # A manually-installed unit (no marker) and no manifest must NOT be removed.
     unit = paths.systemd_unit_path()
     unit.parent.mkdir(parents=True, exist_ok=True)
-    unit.write_text("[Service]\nExecStart=python -m tokdash serve\n", encoding="utf-8")
+    unit.write_text("[Service]\nExecStart=python -m token_dashboard serve\n", encoding="utf-8")
     rc = run(["uninstall", "--auto"])
     assert rc == 1 and unit.exists()
 
@@ -838,7 +838,7 @@ def test_uninstall_refuses_unmarked_unit_without_manifest(capsys):
 def test_uninstall_adopts_unmarked_unit_with_force(fake_systemd):
     unit = paths.systemd_unit_path()
     unit.parent.mkdir(parents=True, exist_ok=True)
-    unit.write_text("[Service]\nExecStart=python -m tokdash serve\n", encoding="utf-8")
+    unit.write_text("[Service]\nExecStart=python -m token_dashboard serve\n", encoding="utf-8")
     rc = run(["uninstall", "--auto", "--force"])
     assert rc == 0 and not unit.exists()
 
@@ -847,7 +847,7 @@ def test_uninstall_marked_unit_without_manifest(fake_systemd):
     # Manifest gone but the unit carries our marker => safe to remove.
     unit = paths.systemd_unit_path()
     unit.parent.mkdir(parents=True, exist_ok=True)
-    unit.write_text(systemd.render_unit(["py", "-m", "tokdash"], "127.0.0.1", 1, marker_id="abc"), encoding="utf-8")
+    unit.write_text(systemd.render_unit(["py", "-m", "token_dashboard"], "127.0.0.1", 1, marker_id="abc"), encoding="utf-8")
     rc = run(["uninstall", "--auto"])
     assert rc == 0 and not unit.exists()
 
@@ -857,16 +857,16 @@ def test_uninstall_refuses_manifest_unit_replaced_by_manual(fake_systemd):
     # one at the same path. uninstall must NOT trust the manifest and delete the manual unit.
     run(["setup", "--auto", "--service", "systemd"])
     unit = paths.systemd_unit_path()
-    unit.write_text("[Service]\nExecStart=python -m tokdash serve\n", encoding="utf-8")
+    unit.write_text("[Service]\nExecStart=python -m token_dashboard serve\n", encoding="utf-8")
     rc = run(["uninstall", "--auto"])
     assert rc == 1 and unit.exists()
-    assert "X-Tokdash-Managed" not in unit.read_text(encoding="utf-8")
+    assert "X-TokenDashboard-Managed" not in unit.read_text(encoding="utf-8")
 
 
 def test_uninstall_force_removes_replaced_unit(fake_systemd):
     run(["setup", "--auto", "--service", "systemd"])
     unit = paths.systemd_unit_path()
-    unit.write_text("[Service]\nExecStart=python -m tokdash serve\n", encoding="utf-8")
+    unit.write_text("[Service]\nExecStart=python -m token_dashboard serve\n", encoding="utf-8")
     rc = run(["uninstall", "--auto", "--force"])
     assert rc == 0 and not unit.exists()
 
@@ -876,7 +876,7 @@ def test_uninstall_removes_orphaned_marked_runtime_without_manifest(fake_systemd
     # writing the manifest must still be cleanable (§12.2/§12.3 partial-safe).
     paths.managed_venv_python().parent.mkdir(parents=True, exist_ok=True)
     paths.managed_venv_python().write_text("#!/bin/sh\n", encoding="utf-8")
-    paths.runtime_marker_path().write_text("created-by=tokdash-setup\n", encoding="utf-8")
+    paths.runtime_marker_path().write_text("created-by=token-dashboard-setup\n", encoding="utf-8")
     assert manifest.read_manifest() is None and detect.managed_runtime_present()
     rc, payload = run_json(["uninstall", "--auto", "--json"], capsys)
     assert rc == 0 and "runtime" in payload["changed"]
@@ -912,7 +912,7 @@ def test_uninstall_wizard_purges_when_confirmed(monkeypatch, fake_systemd):
 
 def _manifest(method, *, service=None, python="/p/python", marker=None, owned=False):
     return manifest.build_manifest(
-        install_method=method, runtime_kind=method, runtime_command=[python, "-m", "tokdash"],
+        install_method=method, runtime_kind=method, runtime_command=[python, "-m", "token_dashboard"],
         runtime_owned_by_setup=owned, python_path=python, python_version="3.12",
         service=service, runtime_marker=marker, data_dir=str(paths.data_dir()),
         bind="127.0.0.1", port=55423,
@@ -921,8 +921,8 @@ def _manifest(method, *, service=None, python="/p/python", marker=None, owned=Fa
 
 def _svc_block():
     return {
-        "type": "systemd-user", "unit": str(paths.systemd_unit_path()), "name": "tokdash",
-        "created_by_setup": True, "marker": "X-Tokdash-Managed id=x",
+        "type": "systemd-user", "unit": str(paths.systemd_unit_path()), "name": "token_dashboard",
+        "created_by_setup": True, "marker": "X-TokenDashboard-Managed id=x",
     }
 
 
@@ -944,15 +944,15 @@ def test_update_pipx_upgrades_and_restarts(monkeypatch, capsys):
     calls = _capture_run(monkeypatch)
     restarted = {}
 
-    def fake_restart(name="tokdash"):
+    def fake_restart(name="token_dashboard"):
         restarted["n"] = name
         return _ok_proc()
 
     monkeypatch.setattr(systemd, "restart", fake_restart)
     rc, payload = run_json(["update", "--json"], capsys)
     assert rc == 0 and payload["ok"] is True
-    assert ["pipx", "upgrade", "tokdash"] in calls["cmds"]
-    assert payload["service_restarted"] is True and restarted["n"] == "tokdash"
+    assert ["pipx", "upgrade", "token_dashboard"] in calls["cmds"]
+    assert payload["service_restarted"] is True and restarted["n"] == "token_dashboard"
 
 
 def test_update_restart_failure_is_reported(monkeypatch, capsys):
@@ -961,7 +961,7 @@ def test_update_restart_failure_is_reported(monkeypatch, capsys):
     manifest.write_manifest(_manifest("pipx", service=_svc_block()))
     monkeypatch.setattr(detect, "find_pipx", lambda: "/usr/bin/pipx")
     _capture_run(monkeypatch)  # pipx upgrade "succeeds"
-    monkeypatch.setattr(systemd, "restart", lambda name="tokdash": subprocess.CompletedProcess([], 1, "", "boom"))
+    monkeypatch.setattr(systemd, "restart", lambda name="token_dashboard": subprocess.CompletedProcess([], 1, "", "boom"))
     rc, payload = run_json(["update", "--json"], capsys)
     assert rc == 1 and payload["ok"] is False
     assert payload["restart_failed"] is True and payload["service_restarted"] is False
@@ -972,19 +972,19 @@ def test_update_managed_venv_pip_installs(monkeypatch, capsys):
     manifest.write_manifest(_manifest("managed-venv", python=py, owned=True))
     calls = _capture_run(monkeypatch)
     rc, payload = run_json(["update", "--json"], capsys)
-    assert rc == 0 and [py, "-m", "pip", "install", "-U", "tokdash"] in calls["cmds"]
+    assert rc == 0 and [py, "-m", "pip", "install", "-U", "token_dashboard"] in calls["cmds"]
     assert payload["service_restarted"] is False  # no managed service in this manifest
 
 
 def test_update_reports_version_before_and_after(monkeypatch, capsys):
     py = str(paths.managed_venv_python())
     manifest.write_manifest(_manifest("managed-venv", python=py, owned=True))
-    versions = iter(["tokdash 1.0.1\n", "tokdash 1.0.2\n"])
+    versions = iter(["token_dashboard 1.0.1\n", "token_dashboard 1.0.2\n"])
     calls = []
 
     def fake_run(cmd, *a, **k):
         calls.append(cmd)
-        if cmd == [py, "-m", "tokdash", "--version"]:
+        if cmd == [py, "-m", "token_dashboard", "--version"]:
             return subprocess.CompletedProcess(cmd, 0, next(versions), "")
         return subprocess.CompletedProcess(cmd, 0, "", "")
 
@@ -994,7 +994,7 @@ def test_update_reports_version_before_and_after(monkeypatch, capsys):
     assert payload["version_before"] == "1.0.1"
     assert payload["version_after"] == "1.0.2"
     assert payload["updated"] is True
-    assert [py, "-m", "pip", "install", "-U", "tokdash"] in calls
+    assert [py, "-m", "pip", "install", "-U", "token_dashboard"] in calls
 
 
 def test_update_human_reports_no_version_change(monkeypatch, capsys):
@@ -1002,8 +1002,8 @@ def test_update_human_reports_no_version_change(monkeypatch, capsys):
     manifest.write_manifest(_manifest("managed-venv", python=py, owned=True))
 
     def fake_run(cmd, *a, **k):
-        if cmd == [py, "-m", "tokdash", "--version"]:
-            return subprocess.CompletedProcess(cmd, 0, "tokdash 1.0.2\n", "")
+        if cmd == [py, "-m", "token_dashboard", "--version"]:
+            return subprocess.CompletedProcess(cmd, 0, "token_dashboard 1.0.2\n", "")
         return subprocess.CompletedProcess(cmd, 0, "", "")
 
     monkeypatch.setattr(engine.subprocess, "run", fake_run)
@@ -1011,7 +1011,7 @@ def test_update_human_reports_no_version_change(monkeypatch, capsys):
     rc = run(["update"])
     out = capsys.readouterr().out
     assert rc == 0
-    assert "Tokdash is already at 1.0.2 via managed-venv." in out
+    assert "TokenDashboard is already at 1.0.2 via managed-venv." in out
 
 
 def test_update_existing_runtime_only_guides(monkeypatch, capsys):
@@ -1061,7 +1061,7 @@ def test_macos_setup_writes_plist_and_manifest(macos, fake_launchd, capsys):
     rc, payload = run_json(["setup", "--auto", "--service", "launchd", "--json"], capsys)
     assert rc == 0 and payload["service"]["type"] == "launchd"
     plist = paths.launchd_plist_path()
-    assert plist.is_file() and "X-Tokdash-Managed" in plist.read_text(encoding="utf-8")
+    assert plist.is_file() and "X-TokenDashboard-Managed" in plist.read_text(encoding="utf-8")
     assert manifest.read_manifest()["service"]["type"] == "launchd"
     assert "service:launchd" in payload["changed"]
 
@@ -1074,7 +1074,7 @@ def test_launchd_lifecycle_commands_allow_service_manager_timeout(macos, monkeyp
         return _ok_proc()
 
     monkeypatch.setattr(launchd, "_run", fake_run)
-    plist = tmp_path / "com.tokdash.tokdash.plist"
+    plist = tmp_path / "com.token_dashboard.token_dashboard.plist"
     launchd.bootstrap(plist)
     launchd.kickstart()
     launchd.bootout()
@@ -1105,7 +1105,7 @@ def test_macos_setup_bootstrap_error_fails_closed_when_not_ready(macos, fake_lau
         lambda bind, port, **k: {
             "ok": False,
             "error": "service did not become ready: nothing answered on 127.0.0.1:55423",
-            "port": {"port": port, "open": False, "is_tokdash": False, "version": None},
+            "port": {"port": port, "open": False, "is_token_dashboard": False, "version": None},
         },
     )
     rc, payload = run_json(["setup", "--auto", "--service", "launchd", "--json"], capsys)
@@ -1120,7 +1120,7 @@ def test_macos_setup_refuses_unmarked_plist(macos, fake_launchd):
     plist.parent.mkdir(parents=True, exist_ok=True)
     plist.write_text("<plist></plist>", encoding="utf-8")
     rc = run(["setup", "--auto", "--service", "launchd"])
-    assert rc == 1 and "X-Tokdash-Managed" not in plist.read_text(encoding="utf-8")
+    assert rc == 1 and "X-TokenDashboard-Managed" not in plist.read_text(encoding="utf-8")
 
 
 def test_macos_uninstall_removes_launchd(macos, fake_launchd, capsys):
@@ -1133,7 +1133,7 @@ def test_macos_uninstall_removes_launchd(macos, fake_launchd, capsys):
 
 def test_macos_update_restarts_launchd(macos, fake_launchd, monkeypatch, capsys):
     svc = {"type": "launchd", "unit": str(paths.launchd_plist_path()), "name": launchd.LABEL,
-           "created_by_setup": True, "marker": "X-Tokdash-Managed id=x"}
+           "created_by_setup": True, "marker": "X-TokenDashboard-Managed id=x"}
     manifest.write_manifest(_manifest("pipx", service=svc))
     monkeypatch.setattr(detect, "find_pipx", lambda: "/usr/bin/pipx")
     _capture_run(monkeypatch)
@@ -1153,26 +1153,26 @@ def test_macos_update_restarts_launchd(macos, fake_launchd, monkeypatch, capsys)
 
 def test_tailscale_command_pairing():
     assert tailscale.serve_command(55423)[:2] == ["tailscale", "serve"]
-    assert "--set-path=/tokdash" in tailscale.serve_command(55423)
+    assert "--set-path=/token-dashboard" in tailscale.serve_command(55423)
     assert tailscale.teardown_command()[-1] == "off"
-    assert "--set-path=/tokdash" in tailscale.teardown_command()
+    assert "--set-path=/token-dashboard" in tailscale.teardown_command()
     blk = tailscale.manifest_block(55423)
     assert blk["configured_by_setup"] is True and blk["teardown_command"][-1] == "off"
-    assert blk["path"] == "/tokdash"
+    assert blk["path"] == "/token-dashboard"
 
 
 def test_tailscale_parse_serve_status_url():
-    status = """https://tokdash-node.example.test (tailnet only)
-|-- /tokdash proxy http://127.0.0.1:55423
+    status = """https://token-dashboard-node.example.test (tailnet only)
+|-- /token-dashboard proxy http://127.0.0.1:55423
 """
-    assert tailscale.parse_serve_url(status, 55423) == "https://tokdash-node.example.test/tokdash"
+    assert tailscale.parse_serve_url(status, 55423) == "https://token-dashboard-node.example.test/token-dashboard"
 
 
 def test_parse_serve_url_fallback_scopes_to_path():
     # Status layout where the target line never resolves: the fallback must still scope the
-    # host URL to /tokdash rather than advertising the bare tailnet host root.
-    status = "https://tokdash-node.example.test (tailnet only)\n"
-    assert tailscale.parse_serve_url(status, 55423) == "https://tokdash-node.example.test/tokdash"
+    # host URL to /token-dashboard rather than advertising the bare tailnet host root.
+    status = "https://token-dashboard-node.example.test (tailnet only)\n"
+    assert tailscale.parse_serve_url(status, 55423) == "https://token-dashboard-node.example.test/token-dashboard"
 
 
 def test_write_manifest_removes_tmp_on_replace_failure(monkeypatch, tmp_path):
@@ -1190,15 +1190,15 @@ def test_write_manifest_removes_tmp_on_replace_failure(monkeypatch, tmp_path):
 
 def test_uninstall_runs_recorded_tailscale_teardown(fake_systemd, monkeypatch, capsys):
     mid = "tsmark"
-    svc = {"type": "systemd-user", "unit": str(paths.systemd_unit_path()), "name": "tokdash",
+    svc = {"type": "systemd-user", "unit": str(paths.systemd_unit_path()), "name": "token_dashboard",
            "created_by_setup": True, "marker": manifest.marker_token(mid)}
     man = _manifest("existing", service=svc)
     man["tailscale_serve"] = {"configured_by_setup": True, "target": "x",
-                              "teardown_command": ["tailscale", "serve", "--https=443", "--set-path=/tokdash", "off"]}
+                              "teardown_command": ["tailscale", "serve", "--https=443", "--set-path=/token-dashboard", "off"]}
     manifest.write_manifest(man)
     unit = paths.systemd_unit_path()
     unit.parent.mkdir(parents=True, exist_ok=True)
-    unit.write_text(systemd.render_unit(["py", "-m", "tokdash"], "127.0.0.1", 1, marker_id=mid), encoding="utf-8")
+    unit.write_text(systemd.render_unit(["py", "-m", "token_dashboard"], "127.0.0.1", 1, marker_id=mid), encoding="utf-8")
     calls = {}
 
     def fake_run(cmd, *a, **k):
@@ -1208,7 +1208,7 @@ def test_uninstall_runs_recorded_tailscale_teardown(fake_systemd, monkeypatch, c
     monkeypatch.setattr(engine.subprocess, "run", fake_run)
     rc, payload = run_json(["uninstall", "--auto", "--json"], capsys)
     assert rc == 0 and "tailscale" in payload["changed"]
-    assert calls["cmd"] == ["tailscale", "serve", "--https=443", "--set-path=/tokdash", "off"]
+    assert calls["cmd"] == ["tailscale", "serve", "--https=443", "--set-path=/token-dashboard", "off"]
 
 
 def test_setup_interactive_offers_and_records_tailscale(monkeypatch, fake_systemd):
@@ -1218,8 +1218,8 @@ def test_setup_interactive_offers_and_records_tailscale(monkeypatch, fake_system
         lambda port, **k: {
             "ok": True,
             "command": ["tailscale", "serve"],
-            "block": tailscale.manifest_block(port, url="https://tokdash-node.example.test/tokdash"),
-            "url": "https://tokdash-node.example.test/tokdash",
+            "block": tailscale.manifest_block(port, url="https://token-dashboard-node.example.test/token-dashboard"),
+            "url": "https://token-dashboard-node.example.test/token-dashboard",
             "error": None,
         },
     )
@@ -1229,19 +1229,19 @@ def test_setup_interactive_offers_and_records_tailscale(monkeypatch, fake_system
     assert rc == 0
     man = manifest.read_manifest()
     assert man["tailscale_serve"]["configured_by_setup"] is True
-    assert man["tailscale_serve"]["url"] == "https://tokdash-node.example.test/tokdash"
+    assert man["tailscale_serve"]["url"] == "https://token-dashboard-node.example.test/token-dashboard"
 
 
 def test_setup_result_hides_generic_remote_hint_after_tailscale_url():
     notes = engine._setup_result_notes({
-        "tailscale_url": "https://tokdash-node.example.test/tokdash",
+        "tailscale_url": "https://token-dashboard-node.example.test/token-dashboard",
         "notes": [
             "Remote access (optional, explicit): `tailscale serve ...`",
-            "Tailscale URL: https://tokdash-node.example.test/tokdash (tailnet only; write actions stay disabled through Serve).",
+            "Tailscale URL: https://token-dashboard-node.example.test/token-dashboard (tailnet only; write actions stay disabled through Serve).",
         ],
     })
     assert notes == [
-        "Tailscale URL: https://tokdash-node.example.test/tokdash (tailnet only; write actions stay disabled through Serve)."
+        "Tailscale URL: https://token-dashboard-node.example.test/token-dashboard (tailnet only; write actions stay disabled through Serve)."
     ]
 
 
@@ -1320,8 +1320,8 @@ def test_setup_tailscale_final_url_write_failure_does_not_crash(monkeypatch, fak
         lambda port, **k: {
             "ok": True,
             "command": ["tailscale", "serve"],
-            "block": tailscale.manifest_block(port, url="https://tokdash-node.example.test/tokdash"),
-            "url": "https://tokdash-node.example.test/tokdash",
+            "block": tailscale.manifest_block(port, url="https://token-dashboard-node.example.test/token-dashboard"),
+            "url": "https://token-dashboard-node.example.test/token-dashboard",
             "error": None,
         },
     )
@@ -1362,9 +1362,9 @@ def test_auto_never_runs_tailscale_but_prints_hint(monkeypatch, fake_systemd):
 
 
 def test_updatecheck_enabled_via_env(monkeypatch):
-    monkeypatch.setenv("TOKDASH_UPDATE_CHECK", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_UPDATE_CHECK", "1")
     assert updatecheck.is_enabled() is True
-    monkeypatch.setenv("TOKDASH_UPDATE_CHECK", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_UPDATE_CHECK", "0")
     assert updatecheck.is_enabled() is False  # hard kill switch wins
 
 
@@ -1372,13 +1372,13 @@ def test_updatecheck_enabled_via_env(monkeypatch):
 def test_updatecheck_kill_switch_forms(monkeypatch, value):
     # kill_switched() and is_enabled() must agree on every disabling form (case-insensitive,
     # whitespace-trimmed), so the setup consent step and the runtime never diverge on "off".
-    monkeypatch.setenv("TOKDASH_UPDATE_CHECK", value)
+    monkeypatch.setenv("TOKEN_DASHBOARD_UPDATE_CHECK", value)
     assert updatecheck.kill_switched() is True
     assert updatecheck.is_enabled() is False
 
 
 def test_updatecheck_enable_writes_config(monkeypatch):
-    monkeypatch.delenv("TOKDASH_UPDATE_CHECK", raising=False)
+    monkeypatch.delenv("TOKEN_DASHBOARD_UPDATE_CHECK", raising=False)
     assert updatecheck.is_enabled() is False
     updatecheck.enable()
     assert updatecheck.is_enabled() is True
@@ -1410,7 +1410,7 @@ def test_updatecheck_detects_newer(monkeypatch):
 
 
 def test_doctor_reports_update_when_enabled(monkeypatch, capsys):
-    monkeypatch.setenv("TOKDASH_UPDATE_CHECK", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_UPDATE_CHECK", "1")
     monkeypatch.setattr(
         updatecheck, "check",
         lambda v, **k: {"current": v, "latest": "9.9.9", "update_available": True, "error": None, "cached": False},
@@ -1420,7 +1420,7 @@ def test_doctor_reports_update_when_enabled(monkeypatch, capsys):
 
 
 def test_doctor_update_disabled_by_default(monkeypatch, capsys):
-    monkeypatch.delenv("TOKDASH_UPDATE_CHECK", raising=False)
+    monkeypatch.delenv("TOKEN_DASHBOARD_UPDATE_CHECK", raising=False)
     rc, payload = run_json(["doctor", "--json"], capsys)
     assert payload["update_check"] == {"enabled": False}
 
@@ -1434,7 +1434,7 @@ def test_uninstall_removes_orphaned_marked_unit_when_manifest_says_no_service(fa
     # still stop+remove the setup-owned marked unit (not silently leave it running).
     run(["setup", "--auto", "--service", "systemd"])
     unit = paths.systemd_unit_path()
-    assert unit.is_file() and "X-Tokdash-Managed" in unit.read_text(encoding="utf-8")
+    assert unit.is_file() and "X-TokenDashboard-Managed" in unit.read_text(encoding="utf-8")
     run(["setup", "--auto", "--no-service"])  # manifest now records service:None
     assert manifest.read_manifest()["service"] is None
     assert unit.is_file()  # not torn down by setup
@@ -1449,22 +1449,22 @@ def test_uninstall_no_service_manifest_leaves_unmarked_unit(fake_systemd):
     run(["setup", "--auto", "--no-service"])
     unit = paths.systemd_unit_path()
     unit.parent.mkdir(parents=True, exist_ok=True)
-    unit.write_text("[Service]\nExecStart=python -m tokdash serve\n", encoding="utf-8")
+    unit.write_text("[Service]\nExecStart=python -m token_dashboard serve\n", encoding="utf-8")
     rc = run(["uninstall", "--auto"])
     assert rc == 0 and unit.exists()  # left alone, no block
 
 
 def test_uninstall_tailscale_teardown_failure_is_reported(fake_systemd, monkeypatch, capsys):
     mid = "tsfail"
-    svc = {"type": "systemd-user", "unit": str(paths.systemd_unit_path()), "name": "tokdash",
+    svc = {"type": "systemd-user", "unit": str(paths.systemd_unit_path()), "name": "token_dashboard",
            "created_by_setup": True, "marker": manifest.marker_token(mid)}
     man = _manifest("existing", service=svc)
     man["tailscale_serve"] = {"configured_by_setup": True, "target": "x",
-                              "teardown_command": ["tailscale", "serve", "--https=443", "--set-path=/tokdash", "off"]}
+                              "teardown_command": ["tailscale", "serve", "--https=443", "--set-path=/token-dashboard", "off"]}
     manifest.write_manifest(man)
     unit = paths.systemd_unit_path()
     unit.parent.mkdir(parents=True, exist_ok=True)
-    unit.write_text(systemd.render_unit(["py", "-m", "tokdash"], "127.0.0.1", 1, marker_id=mid), encoding="utf-8")
+    unit.write_text(systemd.render_unit(["py", "-m", "token_dashboard"], "127.0.0.1", 1, marker_id=mid), encoding="utf-8")
     # tailscale present but the `off` command fails -> exposure may still be live.
     monkeypatch.setattr(engine.subprocess, "run", lambda c, *a, **k: subprocess.CompletedProcess(c, 1, "", "serve config error"))
     rc, payload = run_json(["uninstall", "--auto", "--json"], capsys)
@@ -1506,21 +1506,21 @@ def test_resetup_from_managed_venv_keeps_ownership(monkeypatch, fake_systemd):
     # owned_by_setup=True so uninstall can still remove the venv.
     paths.managed_venv_python().parent.mkdir(parents=True, exist_ok=True)
     paths.managed_venv_python().write_text("#!/bin/sh\n", encoding="utf-8")
-    paths.runtime_marker_path().write_text("created-by=tokdash-setup\n", encoding="utf-8")
+    paths.runtime_marker_path().write_text("created-by=token-dashboard-setup\n", encoding="utf-8")
     monkeypatch.setattr(
         detect, "classify_current_runtime",
         lambda: {"kind": "venv", "install_method": "managed-venv",
                  "python": str(paths.managed_venv_python()),
-                 "command": [str(paths.managed_venv_python()), "-m", "tokdash"]},
+                 "command": [str(paths.managed_venv_python()), "-m", "token_dashboard"]},
     )
     rt = runtime.resolve("auto", detect.detect_all(55423))
     assert rt["owned_by_setup"] is True and rt["install_method"] == "managed-venv"
 
 
-def test_setup_honors_tokdash_port(monkeypatch, capsys):
-    # Goes through the real cli.cli() entrypoint (where TOKDASH_PORT is resolved, symmetric
+def test_setup_honors_token_dashboard_port(monkeypatch, capsys):
+    # Goes through the real cli.cli() entrypoint (where TOKEN_DASHBOARD_PORT is resolved, symmetric
     # with serve) — not the run() helper, which bypasses that dispatch.
-    monkeypatch.setenv("TOKDASH_PORT", "9123")
+    monkeypatch.setenv("TOKEN_DASHBOARD_PORT", "9123")
     capsys.readouterr()
     rc = cli.cli(["setup", "--auto", "--no-service", "--dry-run", "--json"])
     payload = json.loads(capsys.readouterr().out)
@@ -1529,9 +1529,9 @@ def test_setup_honors_tokdash_port(monkeypatch, capsys):
 
 def test_setup_implicit_port_stays_none_for_manifest_adoption(monkeypatch):
     # An implicit setup port must reach the planner as None so a re-setup can adopt
-    # the manifest-recorded port; only an explicit --port or a present TOKDASH_PORT
+    # the manifest-recorded port; only an explicit --port or a present TOKEN_DASHBOARD_PORT
     # may pin it ahead of the manifest.
-    import tokdash.onboard.engine as eng
+    import token_dashboard.onboard.engine as eng
     seen = {}
 
     def _fake(opts):
@@ -1539,24 +1539,24 @@ def test_setup_implicit_port_stays_none_for_manifest_adoption(monkeypatch):
         return 0
 
     monkeypatch.setattr(eng, "run_lifecycle", _fake)
-    monkeypatch.delenv("TOKDASH_PORT", raising=False)
+    monkeypatch.delenv("TOKEN_DASHBOARD_PORT", raising=False)
     assert cli.cli(["setup", "--no-service"]) == 0
     assert seen["port"] is None
 
 
-def test_setup_malformed_tokdash_port_still_rejected(monkeypatch):
-    import tokdash.onboard.engine as eng
+def test_setup_malformed_token_dashboard_port_still_rejected(monkeypatch):
+    import token_dashboard.onboard.engine as eng
     monkeypatch.setattr(eng, "run_lifecycle", lambda opts: 0)
-    monkeypatch.setenv("TOKDASH_PORT", "notaport")
-    with pytest.raises(SystemExit, match="Invalid TOKDASH_PORT"):
+    monkeypatch.setenv("TOKEN_DASHBOARD_PORT", "notaport")
+    with pytest.raises(SystemExit, match="Invalid TOKEN_DASHBOARD_PORT"):
         cli.cli(["setup", "--no-service"])
 
 
-def test_doctor_ignores_tokdash_port_prefers_manifest(monkeypatch, capsys):
-    # doctor must NOT take TOKDASH_PORT over the manifest-recorded port.
-    monkeypatch.setenv("TOKDASH_PORT", "9123")
+def test_doctor_ignores_token_dashboard_port_prefers_manifest(monkeypatch, capsys):
+    # doctor must NOT take TOKEN_DASHBOARD_PORT over the manifest-recorded port.
+    monkeypatch.setenv("TOKEN_DASHBOARD_PORT", "9123")
     man = manifest.build_manifest(
-        install_method="existing", runtime_kind="existing", runtime_command=["py", "-m", "tokdash"],
+        install_method="existing", runtime_kind="existing", runtime_command=["py", "-m", "token_dashboard"],
         runtime_owned_by_setup=False, python_path="py", python_version="3.11", service=None,
         runtime_marker=None, data_dir=str(paths.data_dir()), bind="127.0.0.1", port=55555,
     )
@@ -1568,20 +1568,20 @@ def test_doctor_ignores_tokdash_port_prefers_manifest(monkeypatch, capsys):
 
 
 def test_interactive_busy_foreign_port_blocks_service(monkeypatch):
-    monkeypatch.setattr(detect, "probe_port", lambda *a, **k: {"port": 55423, "open": True, "is_tokdash": False, "version": None})
+    monkeypatch.setattr(detect, "probe_port", lambda *a, **k: {"port": 55423, "open": True, "is_token_dashboard": False, "version": None})
     p = plan.build_setup_plan(plan.Options(auto=False, service="systemd"), detect.detect_all(55423))
     assert p["ok"] is False and any("busy" in b.lower() for b in p["blockers"])
 
 
-def test_force_unmarked_systemd_allows_prefingerprint_tokdash_port(monkeypatch):
+def test_force_unmarked_systemd_allows_prefingerprint_token_dashboard_port(monkeypatch):
     # Migration path for pre-1.0 manual services: the old service occupies 55423 but its
-    # /health lacks the Tokdash fingerprint, so the port probe says "not Tokdash". With
-    # --force and an unmarked tokdash.service at the managed path, setup should replace and
+    # /health lacks the TokenDashboard fingerprint, so the port probe says "not TokenDashboard". With
+    # --force and an unmarked token_dashboard.service at the managed path, setup should replace and
     # restart that unit instead of blocking on its own old process.
     unit = paths.systemd_unit_path()
     unit.parent.mkdir(parents=True, exist_ok=True)
-    unit.write_text("[Service]\nExecStart=python -m tokdash serve --port 55423\n", encoding="utf-8")
-    monkeypatch.setattr(detect, "probe_port", lambda *a, **k: {"port": 55423, "open": True, "is_tokdash": False, "version": None})
+    unit.write_text("[Service]\nExecStart=python -m token_dashboard serve --port 55423\n", encoding="utf-8")
+    monkeypatch.setattr(detect, "probe_port", lambda *a, **k: {"port": 55423, "open": True, "is_token_dashboard": False, "version": None})
     p = plan.build_setup_plan(plan.Options(auto=False, service="systemd", force=True), detect.detect_all(55423))
     assert p["ok"] is True
     assert p["port"] == 55423
@@ -1589,7 +1589,7 @@ def test_force_unmarked_systemd_allows_prefingerprint_tokdash_port(monkeypatch):
 
 
 def test_interactive_busy_foreign_port_ok_when_no_service(monkeypatch):
-    monkeypatch.setattr(detect, "probe_port", lambda *a, **k: {"port": 55423, "open": True, "is_tokdash": False, "version": None})
+    monkeypatch.setattr(detect, "probe_port", lambda *a, **k: {"port": 55423, "open": True, "is_token_dashboard": False, "version": None})
     p = plan.build_setup_plan(plan.Options(auto=False, no_service=True), detect.detect_all(55423))
     assert p["ok"] is True  # no service to bind -> just a warning
 
@@ -1605,7 +1605,7 @@ def test_db_dry_run_rejected_for_resync():
 
 def test_update_launchd_restart_failure_is_reported(macos, fake_launchd, monkeypatch, capsys):
     svc = {"type": "launchd", "unit": str(paths.launchd_plist_path()), "name": launchd.LABEL,
-           "created_by_setup": True, "marker": "X-Tokdash-Managed id=x"}
+           "created_by_setup": True, "marker": "X-TokenDashboard-Managed id=x"}
     manifest.write_manifest(_manifest("pipx", service=svc))
     monkeypatch.setattr(detect, "find_pipx", lambda: "/usr/bin/pipx")
     _capture_run(monkeypatch)
@@ -1642,8 +1642,8 @@ def test_version_compare_fallback_handles_trailing_zero(monkeypatch):
 
 
 def test_quota_wizard_separates_local_credential_and_minimax_network_consent(monkeypatch):
-    from tokdash.sources.quota import config as quota_config
-    from tokdash.sources.quota import credential_sources
+    from token_dashboard.sources.quota import config as quota_config
+    from token_dashboard.sources.quota import credential_sources
 
     answers = iter(["", "y", "y", ""])
     monkeypatch.setattr("builtins.input", lambda _prompt: next(answers))
@@ -1658,8 +1658,8 @@ def test_quota_wizard_separates_local_credential_and_minimax_network_consent(mon
 
 
 def test_quota_wizard_eof_does_not_persist_partial_provider_answers(monkeypatch):
-    from tokdash.sources.quota import config as quota_config
-    from tokdash.sources.quota import credential_sources
+    from token_dashboard.sources.quota import config as quota_config
+    from token_dashboard.sources.quota import credential_sources
 
     answers = iter(["", "y", "y"])
 
@@ -1688,8 +1688,8 @@ def test_quota_wizard_rerun_with_empty_answers_preserves_existing_consent(monkey
     # Re-run safety: a repeat setup where the user presses Enter through every prompt
     # must be a no-op, not a silent mass opt-out. Each prompt defaults to the current
     # persisted choice, so empty answers leave prior consent intact.
-    from tokdash.sources.quota import config as quota_config
-    from tokdash.sources.quota import credential_sources
+    from token_dashboard.sources.quota import config as quota_config
+    from token_dashboard.sources.quota import credential_sources
 
     quota_config.set_quota_enabled(True)
     quota_config.set_quota_consent({"credential_scan": True, "minimax_api": True, "kimi_api": False})
@@ -1714,7 +1714,7 @@ def test_quota_wizard_rerun_with_empty_answers_preserves_existing_consent(monkey
 
 def test_update_launchd_restart_failure_message_uses_launchctl(macos, fake_launchd, monkeypatch, capsys):
     svc = {"type": "launchd", "unit": str(paths.launchd_plist_path()), "name": launchd.LABEL,
-           "created_by_setup": True, "marker": "X-Tokdash-Managed id=x"}
+           "created_by_setup": True, "marker": "X-TokenDashboard-Managed id=x"}
     manifest.write_manifest(_manifest("pipx", service=svc))
     monkeypatch.setattr(detect, "find_pipx", lambda: "/usr/bin/pipx")
     _capture_run(monkeypatch)
@@ -1761,7 +1761,7 @@ def test_uninstall_systemd_disable_failure_preserves_manifest(monkeypatch, fake_
     run(["setup", "--auto", "--service", "systemd"])
     monkeypatch.setattr(
         systemd, "disable_now",
-        lambda name="tokdash": subprocess.CompletedProcess([], 1, "", "Job failed: timeout stopping service"),
+        lambda name="token_dashboard": subprocess.CompletedProcess([], 1, "", "Job failed: timeout stopping service"),
     )
     rc, payload = run_json(["uninstall", "--auto", "--json"], capsys)
     assert rc == 1 and payload["ok"] is False
@@ -1780,9 +1780,9 @@ def test_uninstall_systemd_disable_nonzero_but_inactive_is_benign(monkeypatch, f
     run(["setup", "--auto", "--service", "systemd"])
     monkeypatch.setattr(
         systemd, "disable_now",
-        lambda name="tokdash": subprocess.CompletedProcess([], 1, "", "Unit file tokdash.service does not exist."),
+        lambda name="token_dashboard": subprocess.CompletedProcess([], 1, "", "Unit file token_dashboard.service does not exist."),
     )
-    monkeypatch.setattr(systemd, "is_active_strict", lambda name="tokdash": False)
+    monkeypatch.setattr(systemd, "is_active_strict", lambda name="token_dashboard": False)
     rc, payload = run_json(["uninstall", "--auto", "--json"], capsys)
     assert rc == 0 and payload["ok"] is True and "service" in payload["changed"]
     assert not paths.manifest_path().exists()
@@ -1795,10 +1795,10 @@ def test_uninstall_systemd_disable_unconfirmable_fails_closed(monkeypatch, fake_
     run(["setup", "--auto", "--service", "systemd"])
     monkeypatch.setattr(
         systemd, "disable_now",
-        lambda name="tokdash": subprocess.CompletedProcess([], 1, "", "stop timed out"),
+        lambda name="token_dashboard": subprocess.CompletedProcess([], 1, "", "stop timed out"),
     )
 
-    def hung(name="tokdash"):
+    def hung(name="token_dashboard"):
         raise subprocess.TimeoutExpired("systemctl", 10)
 
     monkeypatch.setattr(systemd, "is_active_strict", hung)
@@ -1855,7 +1855,7 @@ def test_update_systemd_restart_exception_is_reported_not_raised(monkeypatch, ca
     monkeypatch.setattr(detect, "find_pipx", lambda: "/usr/bin/pipx")
     _capture_run(monkeypatch)  # pipx upgrade "succeeds"
 
-    def boom(name="tokdash"):
+    def boom(name="token_dashboard"):
         raise subprocess.TimeoutExpired("systemctl", 20)
 
     monkeypatch.setattr(systemd, "restart", boom)
@@ -1866,7 +1866,7 @@ def test_update_systemd_restart_exception_is_reported_not_raised(monkeypatch, ca
 
 def test_update_launchd_restart_exception_is_reported_not_raised(macos, fake_launchd, monkeypatch, capsys):
     svc = {"type": "launchd", "unit": str(paths.launchd_plist_path()), "name": launchd.LABEL,
-           "created_by_setup": True, "marker": "X-Tokdash-Managed id=x"}
+           "created_by_setup": True, "marker": "X-TokenDashboard-Managed id=x"}
     manifest.write_manifest(_manifest("pipx", service=svc))
     monkeypatch.setattr(detect, "find_pipx", lambda: "/usr/bin/pipx")
     _capture_run(monkeypatch)
@@ -1881,10 +1881,10 @@ def test_update_launchd_restart_exception_is_reported_not_raised(macos, fake_lau
 
 def test_update_launchd_restart_message_uses_label_when_name_missing(macos, fake_launchd, monkeypatch, capsys):
     # A manifest whose launchd service block lacks 'name' must still produce a remediation
-    # command targeting the real label (com.tokdash.tokdash), not the literal "tokdash".
+    # command targeting the real label (com.token_dashboard.token_dashboard), not the literal "token_dashboard".
     # (Regression: update-launchd-service-name-fallback.)
     svc = {"type": "launchd", "unit": str(paths.launchd_plist_path()),
-           "created_by_setup": True, "marker": "X-Tokdash-Managed id=x"}  # no 'name'
+           "created_by_setup": True, "marker": "X-TokenDashboard-Managed id=x"}  # no 'name'
     manifest.write_manifest(_manifest("pipx", service=svc))
     monkeypatch.setattr(detect, "find_pipx", lambda: "/usr/bin/pipx")
     _capture_run(monkeypatch)
@@ -1892,7 +1892,7 @@ def test_update_launchd_restart_message_uses_label_when_name_missing(macos, fake
     capsys.readouterr()
     rc = run(["update"])  # human output
     out = capsys.readouterr().out
-    assert rc == 1 and "com.tokdash.tokdash" in out and out.rstrip().endswith("com.tokdash.tokdash")
+    assert rc == 1 and "com.token_dashboard.token_dashboard" in out and out.rstrip().endswith("com.token_dashboard.token_dashboard")
 
 
 def test_purge_data_removes_pricing_override(monkeypatch):
@@ -1929,7 +1929,7 @@ def test_update_dryrun_and_live_share_managed_service_key(monkeypatch, capsys):
     manifest.write_manifest(_manifest("pipx", service=_svc_block()))
     monkeypatch.setattr(detect, "find_pipx", lambda: "/usr/bin/pipx")
     _capture_run(monkeypatch)
-    monkeypatch.setattr(systemd, "restart", lambda name="tokdash": _ok_proc())
+    monkeypatch.setattr(systemd, "restart", lambda name="token_dashboard": _ok_proc())
     _, dry = run_json(["update", "--dry-run", "--json"], capsys)
     _, live = run_json(["update", "--json"], capsys)
     assert "has_managed_service" in dry and "restart_service" not in dry
@@ -1937,15 +1937,15 @@ def test_update_dryrun_and_live_share_managed_service_key(monkeypatch, capsys):
     assert dry["has_managed_service"] is True and live["has_managed_service"] is True
 
 
-def test_update_uninstall_tolerate_malformed_tokdash_port(monkeypatch, fake_systemd):
-    # update/uninstall never bind a port, so a malformed TOKDASH_PORT must NOT make them die
-    # with "Invalid TOKDASH_PORT". Driven through cli.cli (where the port is resolved), unlike
+def test_update_uninstall_tolerate_malformed_token_dashboard_port(monkeypatch, fake_systemd):
+    # update/uninstall never bind a port, so a malformed TOKEN_DASHBOARD_PORT must NOT make them die
+    # with "Invalid TOKEN_DASHBOARD_PORT". Driven through cli.cli (where the port is resolved), unlike
     # the run() helper. setup STILL validates it. (Regression:
-    # update-uninstall-spurious-tokdash-port-validation.)
+    # update-uninstall-spurious-token-dashboard-port-validation.)
     import pytest as _pytest
 
     run(["setup", "--auto", "--service", "systemd"])  # manifest + marked unit exist
-    monkeypatch.setenv("TOKDASH_PORT", "notaport")
+    monkeypatch.setenv("TOKEN_DASHBOARD_PORT", "notaport")
     assert cli.cli(["uninstall", "--auto"]) == 0  # tolerates the bad port (uninstalls cleanly)
     with _pytest.raises(SystemExit):
         cli.cli(["setup", "--auto", "--service", "systemd"])  # the one command that binds a port
@@ -1956,7 +1956,7 @@ def test_update_restart_message_label_when_name_is_null(macos, fake_launchd, mon
     # a valid remediation label, not "...restart None". (Regression:
     # update-restart-remediation-none-on-explicit-null-name.)
     svc = {"type": "launchd", "unit": str(paths.launchd_plist_path()), "name": None,
-           "created_by_setup": True, "marker": "X-Tokdash-Managed id=x"}
+           "created_by_setup": True, "marker": "X-TokenDashboard-Managed id=x"}
     manifest.write_manifest(_manifest("pipx", service=svc))
     monkeypatch.setattr(detect, "find_pipx", lambda: "/usr/bin/pipx")
     _capture_run(monkeypatch)
@@ -1964,7 +1964,7 @@ def test_update_restart_message_label_when_name_is_null(macos, fake_launchd, mon
     capsys.readouterr()
     rc = run(["update"])  # human output
     out = capsys.readouterr().out
-    assert rc == 1 and "com.tokdash.tokdash" in out and "None" not in out
+    assert rc == 1 and "com.token_dashboard.token_dashboard" in out and "None" not in out
 
 
 def test_confirm_non_strict_returns_false_on_eof_not_traceback(monkeypatch):

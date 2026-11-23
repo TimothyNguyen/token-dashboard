@@ -4,8 +4,8 @@ from datetime import datetime, timezone
 
 import pytest
 
-from tokdash import sessions
-from tokdash.sessions import SESSION_TOOLS, get_sessions_data, reload_pricing_db
+from token_dashboard import sessions
+from token_dashboard.sessions import SESSION_TOOLS, get_sessions_data, reload_pricing_db
 
 # Fixed past instants so ``period="all"`` always covers them.
 CODE_TS_MS = int(datetime(2026, 6, 1, 12, 0, 0, tzinfo=timezone.utc).timestamp() * 1000)
@@ -254,11 +254,11 @@ def _write_workspaces_json(code_root, workspaces):
 def test_workspaces_json_gives_one_project_name_per_workspace(_isolated_kimi_roots):
     """Sessions in one workspace agree even when only some recorded a cwd."""
     code_root, _ = _isolated_kimi_roots
-    workspace = "wd_tokdash_project_4ac9ada67742"
+    workspace = "wd_token_dashboard_project_4ac9ada67742"
     _write_code_session(
         code_root,
         [
-            {"type": "config.update", "cwd": "/mnt/h/Developing/Agent/Tokdash_Project", "time": CODE_TS_MS},
+            {"type": "config.update", "cwd": "/mnt/h/Developing/Agent/TokenDashboard_Project", "time": CODE_TS_MS},
             _usage_record(100, 20, 0, 0),
         ],
         workspace=workspace,
@@ -272,11 +272,11 @@ def test_workspaces_json_gives_one_project_name_per_workspace(_isolated_kimi_roo
     )
     _write_workspaces_json(
         code_root,
-        {workspace: {"root": "/mnt/h/Developing/Agent/Tokdash_Project", "name": "Tokdash_Project"}},
+        {workspace: {"root": "/mnt/h/Developing/Agent/TokenDashboard_Project", "name": "TokenDashboard_Project"}},
     )
 
     raw = sessions._kimi_sessions()
-    assert {session["project"] for session in raw.values()} == {"Tokdash_Project"}
+    assert {session["project"] for session in raw.values()} == {"TokenDashboard_Project"}
 
 
 def test_workspaces_json_falls_back_to_the_slug_when_absent(_isolated_kimi_roots):
@@ -310,7 +310,7 @@ def test_workspaces_json_ignores_unknown_and_malformed_entries(_isolated_kimi_ro
 def test_workspace_project_rename_updates_a_stand_in_display_name(_isolated_kimi_roots):
     """A display name that was only the old project label follows the correction."""
     code_root, _ = _isolated_kimi_roots
-    workspace = "wd_tokdash_project_4ac9ada67742"
+    workspace = "wd_token_dashboard_project_4ac9ada67742"
     _write_code_session(
         code_root,
         [_usage_record(100, 20, 0, 0)],
@@ -318,12 +318,12 @@ def test_workspace_project_rename_updates_a_stand_in_display_name(_isolated_kimi
         session="session_noprompt",
     )
     _write_workspaces_json(
-        code_root, {workspace: {"root": "/mnt/h/Developing/Agent/Tokdash_Project"}}
+        code_root, {workspace: {"root": "/mnt/h/Developing/Agent/TokenDashboard_Project"}}
     )
 
     session = sessions._kimi_sessions()["session_noprompt"]
-    assert session["project"] == "Tokdash_Project"
-    assert session["display_name"] == "Tokdash_Project"
+    assert session["project"] == "TokenDashboard_Project"
+    assert session["display_name"] == "TokenDashboard_Project"
 
 
 def _totals(data):
@@ -352,11 +352,11 @@ def test_stored_and_live_paths_agree(monkeypatch, _isolated_kimi_roots):
     )
     _write_legacy_session(legacy_root, [_status_update(10, 5, 0, 0, "m1")])
 
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     reload_pricing_db()
     live = get_sessions_data("kimi", "all")
 
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     reload_pricing_db()
     cached = get_sessions_data("kimi", "all")
     warm = get_sessions_data("kimi", "all")
@@ -392,7 +392,7 @@ def test_store_reparses_an_agent_file_that_grew(_isolated_kimi_roots):
 
 def test_store_forgets_a_deleted_file_when_not_durable(monkeypatch, _isolated_kimi_roots):
     code_root, _ = _isolated_kimi_roots
-    monkeypatch.setenv("TOKDASH_USAGE_DB_DURABLE", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_DURABLE", "0")
     kept = _write_code_session(code_root, [_usage_record(1000, 200, 0, 0)], session="session_keep")
     dropped = _write_code_session(code_root, [_usage_record(500, 100, 0, 0)], session="session_drop")
 
@@ -490,11 +490,11 @@ def test_windowed_cached_read_keeps_main_agent_metadata(monkeypatch, _isolated_k
     # Window covers the subagent's day only; the main agent ran three days earlier.
     window = {"period": "custom", "date_from": "2026-06-04", "date_to": "2026-06-04"}
 
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     reload_pricing_db()
     live = get_sessions_data("kimi", **window)
 
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     reload_pricing_db()
     cached = get_sessions_data("kimi", **window)
 

@@ -19,8 +19,8 @@ import pytest
 
 textual = pytest.importorskip("textual", reason="the TUI tests need textual")
 
-import tokdash.tui.app as app_mod  # noqa: E402
-from tokdash.tui.data import FetchOutcome  # noqa: E402
+import token_dashboard.tui.app as app_mod  # noqa: E402
+from token_dashboard.tui.data import FetchOutcome  # noqa: E402
 from support.tui import (  # noqa: E402
     SPEED_ACROSS,
     api,  # noqa: F401  (the fixture these tests ask pytest for)

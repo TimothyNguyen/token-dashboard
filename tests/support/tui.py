@@ -7,10 +7,10 @@ population a share divides, and whether a late reply can be painted under a new
 label. Shared synthetic rows that flatter every endpoint at once would prove
 nothing, so each source gets its own shape. Every figure here is synthetic.
 
-The fetch seams are the ``fetch_*`` names inside ``tokdash.tui.app`` -- the very
+The fetch seams are the ``fetch_*`` names inside ``token_dashboard.tui.app`` -- the very
 names the workers call -- so the workers, the generation guard, the progressive
 paints and the failure paths stay under test while the network and the disk do
-not. The suite's conftest keeps TOKDASH_TUI_NO_REMOTE on, so no pilot can reach
+not. The suite's conftest keeps TOKEN_DASHBOARD_TUI_NO_REMOTE on, so no pilot can reach
 a live service or the real usage database.
 
 A test module calls ``pytest.importorskip("textual")`` first and then imports
@@ -36,9 +36,9 @@ textual = pytest.importorskip("textual", reason="the TUI tests need textual")
 from textual.widgets import Button, DataTable  # noqa: E402
 from textual.worker import WorkerState  # noqa: E402
 
-import tokdash.tui.app as app_mod  # noqa: E402
-from tokdash.tui.app import ChoicePicker, TokdashApp  # noqa: E402
-from tokdash.tui.data import FetchOutcome  # noqa: E402
+import token_dashboard.tui.app as app_mod  # noqa: E402
+from token_dashboard.tui.app import ChoicePicker, TokenDashboardApp  # noqa: E402
+from token_dashboard.tui.data import FetchOutcome  # noqa: E402
 
 TODAY = datetime.date(2026, 10, 18)
 
@@ -147,7 +147,7 @@ SESSIONS_BY_TOOL = {
     "codex": {
         "tool": "codex", "tool_label": "Codex", "period": "today",
         "sessions": [
-            {"tool": "codex", "session_id": "cx-1", "project": "tokdash",
+            {"tool": "codex", "session_id": "cx-1", "project": "token_dashboard",
              "model": SHARED_MODEL, "token_events": 14, "tokens": 500_000,
              "cost": 3.0, "started_at": "2026-10-18T09:00:00+00:00",
              "last_seen_at": "2026-10-18T10:00:00+00:00"},
@@ -215,7 +215,7 @@ INSIGHTS = {
     "range": {"days": 1, "recognized": True},
     "timezone": "BST",
     "totals": {"tokens": 900_000, "cost": 11.0, "messages": 36, "entries": 500},
-    # Shapes copied from tokdash/insights.py: hourly buckets carry "hour",
+    # Shapes copied from token_dashboard/insights.py: hourly buckets carry "hour",
     # weekday buckets carry "weekday" + "name", and the agent table joins the
     # "tools" facet onto active time.
     "hourly": {
@@ -242,7 +242,7 @@ INSIGHTS = {
         "most_used": SHARED_MODEL, "highest_cost": SHARED_MODEL},
     "projects": {
         "projects": [
-            {"project": "tokdash", "tokens": 500_000, "cost": 7.0, "messages": 20,
+            {"project": "token_dashboard", "tokens": 500_000, "cost": 7.0, "messages": 20,
              "entries": 300},
             {"project": "reports", "tokens": 100_000, "cost": 1.0, "messages": 4,
              "entries": 60}],
@@ -323,7 +323,7 @@ SPEED_TREND = {
 
 PRICING_DB = {
     "path": "/tmp/override/pricing_db.json",
-    "baseline_path": "/site-packages/tokdash/pricing_db.json",
+    "baseline_path": "/site-packages/token-dashboard/pricing_db.json",
     "baseline_version": "2026-10-11",
     "source": "override",
     "data": {
@@ -547,7 +547,7 @@ class FakeApi:
 
 @pytest.fixture
 def api(monkeypatch):
-    """Patch every fetch seam in tokdash.tui.app with a FakeApi answer."""
+    """Patch every fetch seam in token_dashboard.tui.app with a FakeApi answer."""
     fake = FakeApi()
     seams = {
         "fetch_usage": ("usage", lambda *a, **k: fake.usage),
@@ -569,7 +569,7 @@ def api(monkeypatch):
     monkeypatch.setattr(app_mod, "db_summary", lambda: "test db · 0 rows", raising=True)
     monkeypatch.setattr(app_mod, "ensure_usage_db_compatible", lambda: None, raising=True)
     monkeypatch.setattr(app_mod, "_local_today", lambda: TODAY, raising=True)
-    import tokdash.cli as cli_mod
+    import token_dashboard.cli as cli_mod
 
     def poll(**kwargs):
         fake.calls_poll.append(dict(kwargs))
@@ -588,7 +588,7 @@ def api(monkeypatch):
 
 def run(api, body, size=(120, 36)):
     """One pilot run. House style: plain asyncio.run, no plugin."""
-    app = TokdashApp()
+    app = TokenDashboardApp()
 
     async def _main():
         async with app.run_test(size=size) as pilot:
@@ -766,7 +766,7 @@ def press(app, widget_id: str):
     app.query_one(f"#{widget_id}", Button).press()
 
 
-_STAMPED_REFITS = (TokdashApp._refit_activity, TokdashApp._refit_speed_series)
+_STAMPED_REFITS = (TokenDashboardApp._refit_activity, TokenDashboardApp._refit_speed_series)
 
 
 def paint_with_refits_flushed_early(app, paint) -> None:
@@ -810,8 +810,8 @@ def line_text(app) -> str:
 
 
 def _open(api, initial_period, body, size=(120, 36)):
-    """Start the app the way ``tokdash tui --period <token>`` does, then look."""
-    app = TokdashApp(initial_period=initial_period)
+    """Start the app the way ``token_dashboard tui --period <token>`` does, then look."""
+    app = TokenDashboardApp(initial_period=initial_period)
 
     async def _main():
         async with app.run_test(size=size) as pilot:

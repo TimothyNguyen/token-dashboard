@@ -1,4 +1,4 @@
-# Tokdash Companion - Implementation Spec
+# TokenDashboard Companion - Implementation Spec
 
 This document is the **implementation authority** for the companion apps. It
 reconciles the older planning Markdown (`COMPANION_APP_PLAN.md`,
@@ -34,7 +34,7 @@ always visible; there is no view switching.
 
 ```
 ┌─ Header ──────────────────────────────────────┐
-│ [logo] Tokdash   • Local · Connected   [gear]  │
+│ [logo] TokenDashboard   • Local · Connected   [gear]  │
 ├────────────────────────────────────────────────┤
 │ (busy/offline banner, only when applicable)    │
 ├────────────────────────────────────────────────┤
@@ -91,11 +91,11 @@ dimmed last-good data; it never replaces the hero.
 |---|---|---|
 | **loading** (no prior data) | "Connecting…" | Real layout with skeleton placeholders for main values. No full-screen spinner. |
 | **refreshing** (prior data) | Connected (unchanged) | All data visible. Only the Refresh affordance pulses (respect reduced motion). |
-| **offline** | "Offline" (red dot) | Banner: "Tokdash is not reachable / Start Tokdash, or check the server address in Settings. [Retry] [Settings]". Last-good data dimmed below. Footer appends "· stale". |
-| **busy** (503) | "Busy" (amber dot) | Banner: "Tokdash is busy - retrying / Last data from 3 min ago. Backing off automatically." Last-good data dimmed. Do not translate 503 into "offline". |
+| **offline** | "Offline" (red dot) | Banner: "TokenDashboard is not reachable / Start TokenDashboard, or check the server address in Settings. [Retry] [Settings]". Last-good data dimmed below. Footer appends "· stale". |
+| **busy** (503) | "Busy" (amber dot) | Banner: "TokenDashboard is busy - retrying / Last data from 3 min ago. Backing off automatically." Last-good data dimmed. Do not translate 503 into "offline". |
 | **partial** | Connected (unchanged) | Successful sections render normally. Failed section shows inline warning: "Quota data unavailable - will retry shortly. [Retry now]". |
-| **empty** | Connected (unchanged) | Hero: "No usage recorded today / Tokdash is running. Today's totals will appear as tools report usage." Month context still shows. Activity line omitted. |
-| **wrong service** | (offline path) | If `/health` returns `service != "tokdash"`: "This address is not a Tokdash service". Do not call usage endpoints. |
+| **empty** | Connected (unchanged) | Hero: "No usage recorded today / TokenDashboard is running. Today's totals will appear as tools report usage." Month context still shows. Activity line omitted. |
+| **wrong service** | (offline path) | If `/health` returns `service != "token-dashboard"`: "This address is not a TokenDashboard service". Do not call usage endpoints. |
 
 ## 4. Data mapping (API -> UI)
 
@@ -114,7 +114,7 @@ dimmed last-good data; it never replaces the hero.
 | Estimated badge | same | provider-level `estimated: true` |
 | Activity line | `GET /api/usage?period=today` | leading tool by cost from `by_tool`; leading model from `top_models_by_cost[0]`, falling back to a maximum by cost over `combined_models`. Not `top_models`: it is the five biggest by tokens, which need not include the costliest |
 | Freshness | same responses | `timestamp` and `response_cache.age_seconds` when available |
-| Connection | `GET /health` | `service == "tokdash"` required |
+| Connection | `GET /health` | `service == "token-dashboard"` required |
 
 ### Quota row construction
 
@@ -136,8 +136,8 @@ consent in the companion.
 ### macOS (SwiftUI MenuBarExtra)
 
 - `MenuBarExtra(.window)` with `LSUIElement = true`.
-- One monochrome template icon in the menu bar. Accessible name "Tokdash".
-- Tooltip: "Tokdash - Today $3.42 · 18.7M tokens".
+- One monochrome template icon in the menu bar. Accessible name "TokenDashboard".
+- Tooltip: "TokenDashboard - Today $3.42 · 18.7M tokens".
 - Standard SwiftUI controls adopt Liquid Glass on macOS 26 automatically. Do
   not paint custom glass over controls.
 - Test Reduce Transparency, Reduce Motion, Increase Contrast.
@@ -148,7 +148,7 @@ consent in the companion.
   macOS 26.5 SDK on the MacBook.
 
 ```
-TokdashCompanionApp
+TokenDashboardCompanionApp
   MenuBarExtra(.window)
     CompanionPopover
       HeaderSection
@@ -161,7 +161,7 @@ TokdashCompanionApp
       FreshnessFooter
   Settings scene
 
-TokdashClient actor         (URLSession)
+TokenDashboardClient actor         (URLSession)
   health() -> HealthResponse
   usage(period:) -> UsageResponse
   quota() -> QuotaResponse
@@ -179,10 +179,10 @@ CompanionStore @MainActor
 - `Shell_NotifyIconW` with `NOTIFYICON_VERSION_4` through an isolated interop
   layer (hidden message-only window). The Windows App SDK has no modern tray
   abstraction.
-- One stable icon. Tooltip: "Tokdash - Today $3.42 · 18.7M tokens". Offline
+- One stable icon. Tooltip: "TokenDashboard - Today $3.42 · 18.7M tokens". Offline
   swaps stroke opacity only; do not animate rapid changes.
 - Single click and keyboard activation open the flyout. Right-click opens a
-  short native menu: Open Tokdash, Refresh, Settings, Exit.
+  short native menu: Open TokenDashboard, Refresh, Settings, Exit.
 - Flyout is a **WPF** window (`AllowsTransparency`, `WindowStyle=None`,
   `Topmost`, 8px rounded corners) positioned against the notification-area
   work area. Handles top/side taskbars, multiple displays, DPI changes, focus,
@@ -210,7 +210,7 @@ App (single instance, WPF)
     Acrylic via SetWindowCompositionAttribute
     taskbar-edge positioning + light dismiss
 
-TokdashClient              (HttpClient)
+TokenDashboardClient              (HttpClient)
   health / usage / quota
 
 CompanionViewModel          (BindableBase / INotifyPropertyChanged)
@@ -223,9 +223,9 @@ CompanionViewModel          (BindableBase / INotifyPropertyChanged)
 ## 6. API client behavior
 
 - Base URL configurable, default `http://127.0.0.1:55423`. Support Tailscale
-  HTTPS URLs (e.g. `https://wsl.tail76535.ts.net/tokdash`). Join endpoint
-  paths correctly when the base URL contains `/tokdash`.
-- Verify endpoint with `GET /health`; require `service == "tokdash"`. On
+  HTTPS URLs (e.g. `https://wsl.tail76535.ts.net/token-dashboard`). Join endpoint
+  paths correctly when the base URL contains `/token-dashboard`.
+- Verify endpoint with `GET /health`; require `service == "token-dashboard"`. On
   mismatch, show "wrong service" state and do not call usage endpoints.
 - Short connection timeout for `/health`; longer timeout for usage requests
   (cold parse).
@@ -244,7 +244,7 @@ CompanionViewModel          (BindableBase / INotifyPropertyChanged)
 
 - Fetch immediately when the flyout opens if data older than 60 seconds.
 - While open, refresh no more often than every 60 seconds.
-- While resident and closed, check every 10 minutes (matches Tokdash's 600s
+- While resident and closed, check every 10 minutes (matches TokenDashboard's 600s
   response cache).
 - Pause periodic work during sleep; resume with one coalesced request.
 - Back off after failures: 15s, 30s, 60s, 5min.
@@ -271,9 +271,9 @@ CompanionViewModel          (BindableBase / INotifyPropertyChanged)
 ## 8. Out of scope (MVP)
 
 - Session browsing, charts, pricing editing, contribution heatmaps.
-- Provider consent and other Tokdash configuration writes.
-- Reading Tokdash logs, SQLite data, or provider credential files directly.
-- Automatic Tokdash installation, startup, upgrade, or repair.
+- Provider consent and other TokenDashboard configuration writes.
+- Reading TokenDashboard logs, SQLite data, or provider credential files directly.
+- Automatic TokenDashboard installation, startup, upgrade, or repair.
 - Multiple simultaneous server profiles.
 - Persistent usage history in the companion.
 - Electron, Tauri, webview, telemetry, credential scanning, third-party UI
@@ -281,7 +281,7 @@ CompanionViewModel          (BindableBase / INotifyPropertyChanged)
 
 ## 9. Forbidden changes
 
-- Do not modify the Tokdash server unless an evidenced API-contract gap
+- Do not modify the TokenDashboard server unless an evidenced API-contract gap
   requires it. Document the gap and ask before changing the server.
 - Release-preparation work may add packaging, CI, documentation, and unsigned
   build validation. Publishing, signing, or creating a tag still
@@ -320,12 +320,12 @@ checklist and signing decision remain release gates.
 Both companions check whether a newer companion build has been published, and
 say so. They never download or install one: releases are unsigned, so the only
 action offered is opening the release page in the browser. This is distinct from
-§8's "automatic Tokdash installation, startup, upgrade, or repair", which is
-about the Tokdash *server* and remains out of scope.
+§8's "automatic TokenDashboard installation, startup, upgrade, or repair", which is
+about the TokenDashboard *server* and remains out of scope.
 
 ### Source
 
-`GET https://api.github.com/repos/JingbiaoMei/Tokdash/releases?per_page=100`,
+`GET https://api.github.com/repos/TimothyNguyen/token-dashboard/releases?per_page=100`,
 unauthenticated, no credentials sent.
 
 `/releases/latest` is **not** usable here: the companion shares the repository
@@ -372,7 +372,7 @@ rate-limit (403/429) states never show it.
 
 `View update` opens the release page only after validating it as an HTTPS URL
 whose host is exactly `github.com` and whose path is under
-`/JingbiaoMei/Tokdash/releases/` (owner/repo compared case-insensitively). A
+`/TimothyNguyen/token-dashboard/releases/` (owner/repo compared case-insensitively). A
 missing or non-conforming `html_url` falls back to a tag URL built entirely from
 the parsed numeric version, so no server-supplied text ever reaches the browser.
 

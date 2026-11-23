@@ -2,7 +2,7 @@
 
 Covers case-insensitive lookup, provider prefix stripping, and release date suffix removal.
 """
-from tokdash.pricing import PricingDatabase
+from token_dashboard.pricing import PricingDatabase
 
 
 def test_pricing_lookup_is_case_insensitive_and_ignores_provider_prefixes():

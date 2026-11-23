@@ -22,9 +22,9 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import clientpaths, compute
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import (
+from token_dashboard import clientpaths, compute
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import (
     BaseParser,
     CodingToolsUsageTracker,
     ReasonixParser,
@@ -35,8 +35,8 @@ from tokdash.sources.coding_tools import (
 @pytest.fixture(autouse=True)
 def _isolated_reasonix(monkeypatch, tmp_path):
     monkeypatch.setenv("REASONIX_HOME", str(tmp_path / "reasonix-home"))
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(tmp_path / "data"))
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path / "data"))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     _sig_cache.clear()
     BaseParser._entry_cache.clear()
     yield tmp_path
@@ -182,7 +182,7 @@ def test_deduped_rows_belong_to_the_file_that_sorts_first():
 
 def test_deleting_the_copy_keeps_the_rows_the_original_still_records(monkeypatch):
     """Without cross-file stable keys the last file written owned the rows and took them on deletion."""
-    monkeypatch.setenv("TOKDASH_USAGE_DB_DURABLE", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_DURABLE", "0")
     _write("a-2026-09-15.jsonl", [R1, R2])
     _write("b-2026-09-15-copy.jsonl", [R1, R2])
     _stored()
@@ -192,7 +192,7 @@ def test_deleting_the_copy_keeps_the_rows_the_original_still_records(monkeypatch
 
 
 def test_deleting_the_original_leaves_the_copy_to_carry_the_rows(monkeypatch):
-    monkeypatch.setenv("TOKDASH_USAGE_DB_DURABLE", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_DURABLE", "0")
     _write("a-2026-09-15.jsonl", [R1, R2])
     _write("b-2026-09-15-copy.jsonl", [R1, R2])
     _stored()

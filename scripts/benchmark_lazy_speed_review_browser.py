@@ -21,7 +21,7 @@ def run(pw,arm,src,common,out,reps):
     data=out/'data';out.mkdir(parents=True,exist_ok=True)
     for name in ('usage.sqlite3','output_speed.sqlite3'):
         backup(common/'prepared'/name,data/name)
-    server=Server(common/'corpus',data,out/'xdg',os.environ.get('TOKDASH_BENCH_PYTHON',sys.executable),src,'codex,dsh,qwen_code,opencode,kilocode,mimo')
+    server=Server(common/'corpus',data,out/'xdg',os.environ.get('TOKEN_DASHBOARD_BENCH_PYTHON',sys.executable),src,'codex,dsh,qwen_code,opencode,kilocode,mimo')
     browser=pw.chromium.launch(headless=True,args=BROWSER_ARGS)
     page=browser.new_page(viewport={'width':1440,'height':1100},reduced_motion='reduce')
     result=dict(arm=arm,device=out.stat().st_dev,src_device=src.stat().st_dev,measurements={},checks=[],page_errors=[])

@@ -30,7 +30,7 @@ from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError
 
-# Allow running from a plain checkout (editable installs already resolve `tokdash`).
+# Allow running from a plain checkout (editable installs already resolve `token_dashboard`).
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _SRC = _REPO_ROOT / "src"
 if _SRC.is_dir() and str(_SRC) not in sys.path:
@@ -128,7 +128,7 @@ def _write(out_dir: Path, name: str, payload: Any) -> None:
 def probe_codex(out_dir: Path, timeout: float) -> None:
     import urllib.request
 
-    from tokdash.sources.quota import codex
+    from token_dashboard.sources.quota import codex
 
     print("Codex:")
     token, account, _claims = codex._read_auth()
@@ -150,7 +150,7 @@ def probe_codex(out_dir: Path, timeout: float) -> None:
 def probe_antigravity(out_dir: Path, timeout: float) -> None:
     import urllib.request
 
-    from tokdash.sources.quota import antigravity
+    from token_dashboard.sources.quota import antigravity
 
     print("Antigravity:")
     token, _meta = antigravity._read_token()
@@ -183,7 +183,7 @@ def probe_antigravity(out_dir: Path, timeout: float) -> None:
 def probe_minimax(out_dir: Path, timeout: float) -> None:
     import urllib.request
 
-    from tokdash.sources.quota import minimax
+    from token_dashboard.sources.quota import minimax
 
     print("MiniMax:")
     credentials = minimax._credentials()
@@ -198,7 +198,7 @@ def probe_minimax(out_dir: Path, timeout: float) -> None:
                 "Authorization": f"Bearer {credential.token}",
                 "Accept": "application/json",
                 "Content-Type": "application/json",
-                "User-Agent": "tokdash-quota-probe",
+                "User-Agent": "token-dashboard-quota-probe",
             },
         )
         try:
@@ -214,7 +214,7 @@ def probe_kimi(out_dir: Path, timeout: float) -> None:
     import time
     import urllib.request
 
-    from tokdash.sources.quota import kimi
+    from token_dashboard.sources.quota import kimi
 
     print("Kimi:")
     credentials = kimi._credentials()
@@ -230,7 +230,7 @@ def probe_kimi(out_dir: Path, timeout: float) -> None:
             headers={
                 "Authorization": f"Bearer {credential.token}",
                 "Accept": "application/json",
-                "User-Agent": "tokdash-quota-probe",
+                "User-Agent": "token-dashboard-quota-probe",
             },
         )
         try:
@@ -252,7 +252,7 @@ def main(argv: list[str] | None = None) -> int:
 
     out_dir = Path(args.out).expanduser()
     print(f"Writing scrubbed quota fixtures to {out_dir}")
-    from tokdash.sources.quota import config as quota_config
+    from token_dashboard.sources.quota import config as quota_config
 
     if not quota_config.credential_scan_enabled():
         print("Local credential access is not consented. Enable quota.credential_scan first.")

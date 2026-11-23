@@ -8,7 +8,7 @@ from datetime import datetime
 
 from fastapi import HTTPException
 
-import tokdash.api as api
+import token_dashboard.api as api
 
 
 def _write_pricing_db(path, data):
@@ -47,7 +47,7 @@ def test_pricing_db_editor_reads_and_saves_valid_json(tmp_path, monkeypatch):
     }
     _write_pricing_db(pricing_path, original)
     monkeypatch.setattr(api, "PRICING_DB_PATH", pricing_path, raising=False)
-    # Edits persist to the data-dir override (survives `tokdash update`), NOT the packaged baseline.
+    # Edits persist to the data-dir override (survives `token_dashboard update`), NOT the packaged baseline.
     override_path = api._pricing_override_path()
     assert not override_path.exists()
     events = []
@@ -80,8 +80,8 @@ def test_pricing_db_editor_reads_and_saves_valid_json(tmp_path, monkeypatch):
 
 def test_pricing_edit_persists_under_data_dir_not_packaged_file(tmp_path, monkeypatch):
     # The packaged baseline must never be written (it lives in site-packages and is wiped by
-    # `tokdash update`); edits must land under TOKDASH_DATA_DIR so they survive.
-    from tokdash.onboard import paths
+    # `token_dashboard update`); edits must land under TOKEN_DASHBOARD_DATA_DIR so they survive.
+    from token_dashboard.onboard import paths
 
     baseline = tmp_path / "packaged" / "pricing_db.json"
     baseline.parent.mkdir(parents=True)
@@ -119,7 +119,7 @@ def test_pricing_db_response_reports_baseline_version(tmp_path, monkeypatch):
 
 
 def test_corrupt_override_falls_back_to_baseline(tmp_path, monkeypatch):
-    from tokdash.onboard import paths
+    from token_dashboard.onboard import paths
 
     baseline = tmp_path / "packaged" / "pricing_db.json"
     baseline.parent.mkdir(parents=True)

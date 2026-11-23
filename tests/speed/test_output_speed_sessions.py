@@ -20,13 +20,13 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def _timing_reader_mode():
-    from tokdash.speed_mode import collect_timings
+    from token_dashboard.speed_mode import collect_timings
     with collect_timings():
         yield
 
 
-from tokdash import sessions
-from tokdash.output_speed import (
+from token_dashboard import sessions
+from token_dashboard.output_speed import (
     BASIS_INCLUDING,
     BASIS_UNSPECIFIED,
     KIND_POST_FIRST_TOKEN,
@@ -36,7 +36,7 @@ from tokdash.output_speed import (
     STATUS_MISSING_TIMING,
     turn_measurement_summary,
 )
-from tokdash.sessions import (
+from token_dashboard.sessions import (
     _parse_kimi_session_file,
     _parse_omp_session_file,
     _parse_pi_session_file,
@@ -373,8 +373,8 @@ def test_the_parsers_that_gained_timing_declare_a_version_bump():
     rows that were never given a timing column, and the report would call that
     "no measurements" forever.
     """
-    from tokdash.sessions import _SESSION_FILE_PARSER_VERSIONS
-    from tokdash.sources.coding_tools import KimiParser, OmpParser
+    from token_dashboard.sessions import _SESSION_FILE_PARSER_VERSIONS
+    from token_dashboard.sources.coding_tools import KimiParser, OmpParser
 
     assert _SESSION_FILE_PARSER_VERSIONS["_parse_kimi_session_file"] == 3
     assert KimiParser.persistent_parser_version == 4

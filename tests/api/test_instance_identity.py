@@ -1,6 +1,6 @@
 """Issue #108 P0: ``/health`` carries a stable per-daemon ``instance_id``.
 
-The dashboard decides whether two URLs are one Tokdash or two from this one field, so
+The dashboard decides whether two URLs are one TokenDashboard or two from this one field, so
 everything the merge depends on is pinned here: the id is UUID-shaped, survives a restart,
 two daemons over one data dir agree on it, two over two dirs do not, and a state dir that
 cannot hold it leaves the field out instead of substituting a guess.
@@ -23,9 +23,9 @@ pytest.importorskip("fastapi")
 
 from fastapi.testclient import TestClient
 
-import tokdash.api as api
-from tokdash import instance_identity
-from tokdash.clientpaths import tokdash_data_dir
+import token_dashboard.api as api
+from token_dashboard import instance_identity
+from token_dashboard.clientpaths import token_dashboard_data_dir
 
 
 @pytest.fixture(autouse=True)
@@ -33,7 +33,7 @@ def _fresh_identity_cache():
     """Keep the accessor's path-keyed cache out of every other test.
 
     ``conftest.isolated_usage_db`` gives each test its own data dir, but a test that
-    repoints ``TOKDASH_DATA_DIR`` twice inside one test would otherwise inherit the id
+    repoints ``TOKEN_DASHBOARD_DATA_DIR`` twice inside one test would otherwise inherit the id
     its neighbour cached against the earlier path.
     """
     instance_identity.clear_instance_id_cache()
@@ -132,7 +132,7 @@ def test_health_reports_uuid_shaped_instance_id():
     # Built without `with` on purpose: that skips the lifespan, which is why the accessor
     # resolves lazily rather than depending on a startup hook alone.
     body = TestClient(api.app).get("/health").json()
-    assert body["service"] == "tokdash"
+    assert body["service"] == "token_dashboard"
     assert uuid.UUID(body["instance_id"]).version == 4
 
 
@@ -270,7 +270,7 @@ def test_a_publish_that_fills_the_name_later_loses_the_race(monkeypatch):
 
 def test_publishing_leaves_no_temp_files_behind():
     assert instance_identity.get_instance_id()
-    strays = [p.name for p in tokdash_data_dir().iterdir()
+    strays = [p.name for p in token_dashboard_data_dir().iterdir()
               if p.name != instance_identity.INSTANCE_FILENAME]
     assert strays == []
 
@@ -303,7 +303,7 @@ def test_empty_file_is_retried_then_adopted():
 
 def test_second_data_dir_gets_a_different_id(monkeypatch, tmp_path):
     first = instance_identity.get_instance_id()
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(tmp_path / "other-tokdash"))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path / "other-token_dashboard"))
     second = instance_identity.get_instance_id()
 
     assert first != second
@@ -314,7 +314,7 @@ def test_id_is_never_derived_from_the_data_dir_path(monkeypatch, tmp_path):
     """A hash of the path would merge two machines that happen to share one string."""
     here = instance_identity.get_instance_id()
     twin = tmp_path / "same-path-different-machine"
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(twin))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(twin))
     assert instance_identity.get_instance_id() != here
 
 
@@ -334,16 +334,16 @@ def _unwritable_dir(tmp_path) -> Path:
 
 
 def test_unwritable_data_dir_omits_the_field(monkeypatch, tmp_path):
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(_unwritable_dir(tmp_path)))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(_unwritable_dir(tmp_path)))
 
     assert instance_identity.get_instance_id() is None
     body = TestClient(api.app).get("/health").json()
-    assert body["service"] == "tokdash"
+    assert body["service"] == "token_dashboard"
     assert "instance_id" not in body
 
 
 def test_malformed_file_is_left_alone():
-    """Someone else's file in the data dir is not Tokdash's to overwrite."""
+    """Someone else's file in the data dir is not TokenDashboard's to overwrite."""
     path = _write_identity("{not json")
     assert instance_identity.get_instance_id() is None
     assert path.read_text(encoding="utf-8") == "{not json"
@@ -360,7 +360,7 @@ def test_malformed_file_is_given_up_on_rather_than_retried_forever(
     """
     _write_identity("{not json")
 
-    with caplog.at_level(logging.WARNING, logger="tokdash.instance_identity"):
+    with caplog.at_level(logging.WARNING, logger="token_dashboard.instance_identity"):
         for _ in range(4):
             assert instance_identity.get_instance_id() is None
             clock.advance(instance_identity._FAILURE_RETRY_S * 10)
@@ -386,9 +386,9 @@ def test_a_broken_data_dir_warns_once_and_still_retries(
     for a retry but useless for the one failure the user can act on -- so warn once,
     naming the file, and keep retrying quietly, since this failure can heal.
     """
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(_unwritable_dir(tmp_path)))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(_unwritable_dir(tmp_path)))
 
-    with caplog.at_level(logging.WARNING, logger="tokdash.instance_identity"):
+    with caplog.at_level(logging.WARNING, logger="token_dashboard.instance_identity"):
         for _ in range(4):
             assert instance_identity.get_instance_id() is None
             clock.advance(instance_identity._FAILURE_RETRY_S + 1)
@@ -461,8 +461,8 @@ def test_startup_does_not_wait_for_the_identity_lookup(monkeypatch, tmp_path):
         return instance_identity._Result(instance_identity._Outcome.OK, str(uuid.uuid4()))
 
     monkeypatch.setattr(instance_identity, "_resolve", hang)
-    monkeypatch.setenv("TOKDASH_WARM_ON_START", "0")
-    monkeypatch.setenv("TOKDASH_DAILY_WARM", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_WARM_ON_START", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_DAILY_WARM", "0")
 
     client = TestClient(api.app)
     began = time.monotonic()
@@ -497,7 +497,7 @@ def test_failed_identity_is_retried_after_the_backoff(
     """
     blocker = tmp_path / "not-a-directory"
     broken = _unwritable_dir(tmp_path)
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(broken))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(broken))
 
     assert instance_identity.get_instance_id() is None
     assert len(resolves) == 1
@@ -601,7 +601,7 @@ def test_a_broken_data_dir_answers_inline_after_the_first_try(
     broken state dir, one blocked event loop a minute, forever. Now only the first
     attempt leaves the loop and the backoff window answers from memory.
     """
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(_unwritable_dir(tmp_path)))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(_unwritable_dir(tmp_path)))
     hops = _ThreadHops()
     monkeypatch.setattr(instance_identity, "asyncio", hops)
 

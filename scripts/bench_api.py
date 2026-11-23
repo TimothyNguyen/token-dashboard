@@ -9,7 +9,7 @@ _src = str(Path(__file__).resolve().parent.parent / "src")
 if _src not in sys.path:
     sys.path.insert(0, _src)
 
-from tokdash.sources.coding_tools import BaseParser, _sig_cache, OpenCodeParser  # noqa: E402
+from token_dashboard.sources.coding_tools import BaseParser, _sig_cache, OpenCodeParser  # noqa: E402
 
 
 def _clear_caches():
@@ -19,7 +19,7 @@ def _clear_caches():
     OpenCodeParser._query_cache_sig = ()
 
 from fastapi.testclient import TestClient  # noqa: E402
-from tokdash.api import app, _cache  # noqa: E402
+from token_dashboard.api import app, _cache  # noqa: E402
 
 client = TestClient(app)
 

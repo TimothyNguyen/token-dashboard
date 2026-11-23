@@ -2,14 +2,14 @@
 
 Only Hermes needs a real Windows branch (see ``docs/development/technical-notes/WINDOWS_CLIENT_PATHS.md``); every
 other client is already correct on Windows via ``Path.home()`` and is untouched by this
-chunk. Branching is done on ``tokdash.osinfo.is_windows()`` (not ``os.name``) so the
+chunk. Branching is done on ``token_dashboard.osinfo.is_windows()`` (not ``os.name``) so the
 Windows path can be exercised on this Linux host without monkeypatching ``os.name``,
 which would corrupt ``pathlib``'s ``WindowsPath``/``PosixPath`` dispatch process-wide
 (see ``onboard/paths.py::_windows_venv_layout`` for the same pattern).
 """
 from pathlib import Path
 
-from tokdash import clientpaths, osinfo
+from token_dashboard import clientpaths, osinfo
 
 
 def test_hermes_search_dirs_posix_default(monkeypatch, tmp_path):

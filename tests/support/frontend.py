@@ -15,9 +15,9 @@ from pathlib import Path
 
 import pytest
 
-import tokdash
+import token_dashboard
 
-STATIC_DIR = Path(tokdash.__file__).parent / "static"
+STATIC_DIR = Path(token_dashboard.__file__).parent / "static"
 INDEX_HTML = STATIC_DIR / "index.html"
 
 needs_node = pytest.mark.skipif(shutil.which("node") is None, reason="node not available")

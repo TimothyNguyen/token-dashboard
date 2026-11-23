@@ -13,8 +13,8 @@ from urllib.error import HTTPError
 
 import pytest
 
-from tokdash.sources.quota import antigravity, claude, codex, grok, kimi, minimax, zai
-from tokdash.usage_store import _codex_window_used_percent_from_raw
+from token_dashboard.sources.quota import antigravity, claude, codex, grok, kimi, minimax, zai
+from token_dashboard.usage_store import _codex_window_used_percent_from_raw
 
 _FIXTURE_DIR = Path(__file__).parents[1] / "fixtures" / "quota"
 
@@ -1619,7 +1619,7 @@ def _claude_install(tmp_path, monkeypatch, name: str = ".claude"):
 def test_claude_api_requests_limit_resets_as_the_cli_surface(monkeypatch, tmp_path):
     # Anthropic keys the reset program's surface on the User-Agent: Python's default one is
     # answered `ineligible_reason: "surface"` with no grants. The request has to carry the
-    # CLI's prefix, and still names tokdash after it.
+    # CLI's prefix, and still names token_dashboard after it.
     _claude_install(tmp_path, monkeypatch)
     seen = []
 
@@ -1633,7 +1633,7 @@ def test_claude_api_requests_limit_resets_as_the_cli_surface(monkeypatch, tmp_pa
     user_agent = _header(seen[0], "User-Agent")
     assert user_agent.startswith("claude-cli/")
     assert "(external, cli)" in user_agent
-    assert "tokdash/" in user_agent
+    assert "token_dashboard/" in user_agent
     assert "skip_spend" not in seen[0].full_url
 
 

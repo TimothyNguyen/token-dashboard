@@ -1,11 +1,11 @@
 """Tests for package metadata and version configuration.
 
-Tests that pyproject.toml's version matches tokdash.__version__.
+Tests that pyproject.toml's version matches token_dashboard.__version__.
 """
 import re
 from pathlib import Path
 
-from tokdash import __version__
+from token_dashboard import __version__
 
 
 def _get_toml_section(text: str, header: str) -> str:
@@ -34,4 +34,4 @@ def test_pyproject_version_configuration_matches_runtime_version():
 
     attr_match = re.search(r'^\s*version\s*=\s*\{\s*attr\s*=\s*"([^"]+)"\s*\}\s*$', dynamic_body, flags=re.M)
     assert attr_match, "Could not find tool.setuptools.dynamic.version attr"
-    assert attr_match.group(1) == "tokdash.__version__"
+    assert attr_match.group(1) == "token_dashboard.__version__"

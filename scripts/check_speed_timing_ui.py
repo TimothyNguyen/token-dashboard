@@ -22,7 +22,7 @@ def main():
 
     def route(request_route):
         url = urlparse(request_route.request.url)
-        if url.netloc != 'tokdash.test':
+        if url.netloc != 'token_dashboard.test':
             request_route.continue_()
             return
         if url.path == '/api/output-speed':
@@ -49,12 +49,12 @@ def main():
                         range={'from': '2026-10-01', 'to': '2026-10-16'})
             request_route.fulfill(json=body)
         elif url.path == '/health':
-            request_route.fulfill(json=dict(status='ok', service='tokdash', version='0.0.0'))
+            request_route.fulfill(json=dict(status='ok', service='token_dashboard', version='0.0.0'))
         elif url.path.startswith('/api/'):
             request_route.fulfill(json={})
         else:
             relative = url.path.removeprefix('/static/').lstrip('/') or 'index.html'
-            path = ROOT / 'src/tokdash/static' / relative
+            path = ROOT / 'src/token_dashboard/static' / relative
             if path.is_file():
                 request_route.fulfill(path=str(path))
             else:
@@ -67,7 +67,7 @@ def main():
         page.set_default_timeout(8000)
         page.on('pageerror', lambda error: (errors.append(str(error)), print(str(error), flush=True)))
         page.route('**/*', route)
-        page.goto('http://tokdash.test/?tab=speed&range=thisMonth', wait_until='load', timeout=15000)
+        page.goto('http://token-dashboard.test/?tab=speed&range=thisMonth', wait_until='load', timeout=15000)
         page.wait_for_function('usageReportSpeedState.loadedKey && !usageReportSpeedState.loading')
         page.locator('[data-speed-lens="stream"]').click()
         assert page.locator('#usageReportSpeedBody tr[data-speed-id]').count() == 1

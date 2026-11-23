@@ -12,10 +12,10 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import sessions
-from tokdash.pricing import PricingDatabase
-from tokdash.sessions import get_sessions_data, reload_pricing_db
-from tokdash.usage_store import UsageEntryStore
+from token_dashboard import sessions
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sessions import get_sessions_data, reload_pricing_db
+from token_dashboard.usage_store import UsageEntryStore
 
 TS = "2026-05-19T12:00:00Z"
 MODEL = "claude-opus-5"
@@ -27,7 +27,7 @@ DSH_MODEL = "deepseek-v4-flash"
 def _isolated_home(monkeypatch, tmp_path):
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
     monkeypatch.setenv("DSH_HOME", str(tmp_path / ".dsh"))
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     reload_pricing_db()
     yield tmp_path
     reload_pricing_db()
@@ -403,7 +403,7 @@ def test_a_dsh_decoder_version_bump_still_reparses(_isolated_home, counting_pars
     accounting versions; bumping either must reparse, exactly like a parser
     version bump. ``_session_signature_compatible`` ignores only ``pricing``
     and ``cost_basis``, so the ``decoder`` keys are compared."""
-    from tokdash.sources import dsh_log
+    from token_dashboard.sources import dsh_log
 
     home = _isolated_home
     _write_dsh(home, "dsh-1")
@@ -500,7 +500,7 @@ def _seed_legacy_codex_rows(cost_basis: str | None = None) -> UsageEntryStore:
     """
     import sqlite3
 
-    from tokdash import clientpaths
+    from token_dashboard import clientpaths
 
     store = UsageEntryStore()
     parser = sessions._codex_session_parser_signature()
@@ -614,11 +614,11 @@ def test_cached_and_live_payloads_are_identical(_isolated_home, monkeypatch, too
     _write_dsh(home, "dsh-1")
     _write_pricing(_rates())
 
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     reload_pricing_db()
     live = get_sessions_data(tool, "all")
 
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     reload_pricing_db()
     cached = get_sessions_data(tool, "all")
 

@@ -1,4 +1,4 @@
-"""Tests for tokdash.filelock.process_lock (Tier 1 Windows support).
+"""Tests for token_dashboard.filelock.process_lock (Tier 1 Windows support).
 
 Covers:
   - The real POSIX fcntl.flock path (this box is Linux) still excludes a
@@ -19,9 +19,9 @@ import threading
 
 import pytest
 
-from tokdash import filelock
-from tokdash import usage_store
-from tokdash.filelock import process_lock
+from token_dashboard import filelock
+from token_dashboard import usage_store
+from token_dashboard.filelock import process_lock
 
 try:
     import fcntl

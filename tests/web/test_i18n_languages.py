@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pytest
 
-import tokdash  # type: ignore[import-untyped]
+import token_dashboard  # type: ignore[import-untyped]
 
 from support.frontend import extract_i18n_literal, needs_node, run_node
 from support.i18n_profile import (
@@ -29,7 +29,7 @@ from support.i18n_profile import (
 )
 
 
-INDEX_HTML = Path(tokdash.__file__).parent / "static" / "index.html"
+INDEX_HTML = Path(token_dashboard.__file__).parent / "static" / "index.html"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 EXPECTED_LANGUAGES = ("en", "zh", "ja", "ko", "es", "pt")
@@ -177,8 +177,8 @@ for (const browser of ['ja-JP', 'pt-BR', 'fr-FR', 'zh-TW', 'ko-KR', 'es-419', 'e
 navigator.language = 'ko-KR';
 const booted = {};
 for (const stored of [null, 'system', 'ja', 'xx']) {
-  if (stored === null) localStorage.removeItem('tokdash-lang');
-  else localStorage.setItem('tokdash-lang', stored);
+  if (stored === null) localStorage.removeItem('token-dashboard-lang');
+  else localStorage.setItem('token-dashboard-lang', stored);
   booted[String(stored)] = initialLanguage();
 }
 const picker = document.getElementById('langToggle');
@@ -186,7 +186,7 @@ const picked = {};
 for (const choice of ['system', 'pt']) {
   picker.value = choice;
   fire(picker, 'change');
-  picked[choice] = { currentLang, selectedLang, stored: localStorage.getItem('tokdash-lang') };
+  picked[choice] = { currentLang, selectedLang, stored: localStorage.getItem('token-dashboard-lang') };
 }
 print({ detected, booted, picked, repainted: calls('applyI18n').length, rerendered: calls('rerenderPresentation').length });
 """,

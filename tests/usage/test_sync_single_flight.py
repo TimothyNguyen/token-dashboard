@@ -17,12 +17,12 @@ from pathlib import Path
 
 import pytest
 
-import tokdash.compute as compute
-import tokdash.sessions as sessions
-import tokdash.usage_store as usage_store
-from tokdash.sources import coding_tools
-from tokdash.sources.coding_tools import CodingToolsUsageTracker
-from tokdash.usage_store import UsageEntryStore
+import token_dashboard.compute as compute
+import token_dashboard.sessions as sessions
+import token_dashboard.usage_store as usage_store
+from token_dashboard.sources import coding_tools
+from token_dashboard.sources.coding_tools import CodingToolsUsageTracker
+from token_dashboard.usage_store import UsageEntryStore
 
 TS = "2026-05-19T12:00:00Z"
 
@@ -30,8 +30,8 @@ TS = "2026-05-19T12:00:00Z"
 @pytest.fixture(autouse=True)
 def _isolated_home(monkeypatch, tmp_path):
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(tmp_path / ".tokdash"))
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path / ".token_dashboard"))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     for var, relative in (
         ("DSH_HOME", ".dsh"),
         ("GROK_HOME", ".grok"),

@@ -1,6 +1,6 @@
 """The shared range model: what a preset means, and what stepping may do.
 
-`tokdash.tui.ranges` is the single source of truth for the dates four panes
+`token_dashboard.tui.ranges` is the single source of truth for the dates four panes
 display and fetch with, so its rules get locked here rather than inferred from
 screens: calendar presets step by WHOLE calendar windows, rolling presets by
 their own inclusive length, nothing steps into the future, All Time is inert, and
@@ -12,7 +12,7 @@ import datetime as dt
 
 import pytest
 
-from tokdash.tui.ranges import (
+from token_dashboard.tui.ranges import (
     PRESETS,
     PRESET_BY_KEY,
     RANGE_KEYS,
@@ -250,7 +250,7 @@ def test_period_tokens_open_on_a_rolling_window_of_the_right_length(token, expec
 
 def test_all_time_and_an_unknown_token_are_the_two_explicit_answers():
     assert window_for_period("all", TODAY).all_time
-    # `tokdash tui --period` is validated by run_tui; a direct construction with
+    # `token_dashboard tui --period` is validated by run_tui; a direct construction with
     # junk still has to land on a named window rather than on all time.
     assert window_for_period("garbage", TODAY).preset == "today"
     assert window_for_period("", TODAY).preset == "today"

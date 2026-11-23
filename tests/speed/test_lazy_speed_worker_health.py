@@ -10,8 +10,8 @@ from contextlib import closing
 
 import pytest
 from test_lazy_speed_cache import corpus
-from tokdash import speed_cache as cache, speed_worker, compute, speed_process
-from tokdash.sources.coding_tools import CodingToolsUsageTracker
+from token_dashboard import speed_cache as cache, speed_worker, compute, speed_process
+from token_dashboard.sources.coding_tools import CodingToolsUsageTracker
 
 # The corpus fixture stubs the launcher out; the Windows reuse test needs the real one.
 REAL_LAUNCH_WORKER = cache.launch_worker
@@ -30,7 +30,7 @@ def test_dead_worker_is_terminal_without_another_ensure(corpus):
 
 def test_missing_posix_resource_module_does_not_break_publication(corpus, monkeypatch):
     import builtins
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION', '1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION', '1')
     compute._sync_usage_store(CodingToolsUsageTracker())
     request = cache.ensure('2026-09-01', '2026-09-28', source='codex')
     original_import = builtins.__import__
@@ -83,7 +83,7 @@ def test_pid_reuse_and_quiet_live_worker_health(corpus,monkeypatch):
 
 def test_windows_second_enqueue_reuses_worker_without_signalling(corpus,monkeypatch):
     from types import SimpleNamespace
-    from tokdash import speed_cache
+    from token_dashboard import speed_cache
     monkeypatch.setattr(cache,'os',SimpleNamespace(name='nt',kill=lambda *a:pytest.fail('Windows process signalled')))
     monkeypatch.setattr(speed_process,'_windows_snapshot',lambda pid:(True,'windows:123'))
     monkeypatch.setattr(cache.subprocess,'Popen',lambda *a,**k:pytest.fail('second worker launched'))
@@ -105,7 +105,7 @@ def test_optional_resource_rss_units(monkeypatch):
 def test_actual_subscription_finishes_when_worker_dies(corpus):
     import asyncio
     from types import SimpleNamespace
-    from tokdash.api import output_speed_job_events
+    from token_dashboard.api import output_speed_job_events
     with closing(cache.connect()) as conn:
         conn.execute("INSERT INTO speed_jobs(id,request,state,created_at,updated_at,pid,worker_token) VALUES('subscription','{}','building',0,0,2147483647,'dead-instance')")
         conn.commit()

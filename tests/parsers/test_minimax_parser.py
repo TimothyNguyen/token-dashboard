@@ -10,9 +10,9 @@ envelope are verbatim).
 import json
 from pathlib import Path
 
-from tokdash.compute import _collect_parser_tail
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import (
+from token_dashboard.compute import _collect_parser_tail
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import (
     CodingToolsUsageTracker,
     MiniMaxCodeParser,
 )
@@ -126,7 +126,7 @@ class TestDiscovery:
         mmx = tmp_path / "mmdata"
         legacy = tmp_path / "legacy"
         monkeypatch.setenv("MAVIS_DATA_DIR", str(legacy))
-        from tokdash import clientpaths
+        from token_dashboard import clientpaths
         assert clientpaths.minimax_code_data_dir() == legacy
         monkeypatch.setenv("MINIMAX_DATA_DIR", str(mmx))
         assert clientpaths.minimax_code_data_dir() == mmx

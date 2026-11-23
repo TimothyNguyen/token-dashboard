@@ -13,8 +13,8 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import clientpaths, sessions
-from tokdash.sessions import (
+from token_dashboard import clientpaths, sessions
+from token_dashboard.sessions import (
     SESSION_TOOLS,
     get_session_detail,
     get_sessions_data,
@@ -31,7 +31,7 @@ SESSION_ID = "20260601-120000.000000000-MiniMax-M3"
 def _isolated_reasonix_home(monkeypatch, tmp_path):
     home = tmp_path / "reasonix-home"
     monkeypatch.setenv("REASONIX_HOME", str(home))
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     reload_pricing_db()
     yield home
     reload_pricing_db()
@@ -316,7 +316,7 @@ def test_appending_a_turn_is_picked_up(_isolated_reasonix_home):
 
 
 def test_api_routes_serve_reasonix(_isolated_reasonix_home, monkeypatch):
-    from tokdash import api
+    from token_dashboard import api
 
     home = _isolated_reasonix_home
     _write_session(home, meta=_default_meta())

@@ -32,8 +32,8 @@ def prepare(args):
                          ((f'history-{i}', f'history-session-{i % args.scopes}', 1788264000000, 1788264002000, template) for i in range(args.calls)))
         conn.execute('CREATE INDEX IF NOT EXISTS message_session_idx ON message(session_id)')
     configure(Path(args.src), corpus, data)
-    from tokdash import compute, speed_cache, speed_worker, speed_native
-    from tokdash.sources.coding_tools import CodingToolsUsageTracker, _sig_cache
+    from token_dashboard import compute, speed_cache, speed_worker, speed_native
+    from token_dashboard.sources.coding_tools import CodingToolsUsageTracker, _sig_cache
     compute._sync_usage_store(CodingToolsUsageTracker())
     with closing(speed_cache.connect()) as conn:
         conn.execute("INSERT INTO speed_jobs(id,request,state,created_at,updated_at) VALUES('benchmark',?,'building',0,0)", (json.dumps(REQUEST),))
@@ -60,7 +60,7 @@ def measure(args):
     for name in ('usage.sqlite3', 'output_speed.sqlite3'):
         backup(common / 'prepared' / name, data / name)
     configure(Path(args.src), common / 'corpus', data)
-    from tokdash import speed_cache, speed_worker, speed_native
+    from token_dashboard import speed_cache, speed_worker, speed_native
     counts, staged, sql_steps = Counter(), [], []
     signature, progress = speed_native.signature, speed_worker._progress
 

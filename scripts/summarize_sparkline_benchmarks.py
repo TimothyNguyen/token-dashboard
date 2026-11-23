@@ -34,7 +34,7 @@ def main():
         # Preserve each actual revision and prove its production/tests match.
         paths=["src", "tests"]
         if backend and args.backend_campaign:
-            paths=["src", "main.py", "pyproject.toml", ":(exclude)src/tokdash/static"]
+            paths=["src", "main.py", "pyproject.toml", ":(exclude)src/token_dashboard/static"]
         assert subprocess.run(["git", "diff", "--quiet", measured["candidate"], revisions["candidate"],
                                "--", *paths]).returncode == 0, "Production code changed after measurement"
         measured_revisions.add(measured["candidate"])

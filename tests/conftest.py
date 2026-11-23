@@ -10,17 +10,17 @@ import pytest
 def _no_tui_remote_probe():
     """The suite must never probe a real localhost, on ANY code path.
 
-    ``tokdash.tui.remote.probe_service`` answers "no service" before it builds a
-    socket while TOKDASH_TUI_NO_REMOTE is set, so every data/report/app fetch
+    ``token_dashboard.tui.remote.probe_service`` answers "no service" before it builds a
+    socket while TOKEN_DASHBOARD_TUI_NO_REMOTE is set, so every data/report/app fetch
     seam in the suite takes the same in-process path it did before HTTP
     delegation existed — and a suite run beside the live dev service (port 55423
     or whatever the manifest says) can neither see it nor disturb it.
 
     Session-scoped on purpose (setdefault: an outer export still wins): the
-    tests that exercise the remote path monkeypatch ``tokdash.tui.remote``'s
+    tests that exercise the remote path monkeypatch ``token_dashboard.tui.remote``'s
     fake opener seam and ``delenv`` the flag themselves, per test.
     """
-    os.environ.setdefault("TOKDASH_TUI_NO_REMOTE", "1")
+    os.environ.setdefault("TOKEN_DASHBOARD_TUI_NO_REMOTE", "1")
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -29,17 +29,17 @@ def _set_quota_gate_for_tests(tmp_path_factory):
 
     The gates (``sources/quota/config.QUOTA_KEYS``: ``codex_api``,
     ``claude_api``, ``minimax_api``, …) are persisted in
-    ``<data_dir>/config.json`` — unlike ``TOKDASH_QUOTA_POLL`` there is no env
+    ``<data_dir>/config.json`` — unlike ``TOKEN_DASHBOARD_QUOTA_POLL`` there is no env
     var per gate (verified against ``config.network_enabled`` /
     ``read_quota_config``), so what the gates actually read is the data
     directory. ``isolated_usage_db`` already redirects it per test (absent file
     ⇒ every gate reads ``False``); this session-scoped default additionally
     covers anything that reads consent before per-test isolation lands, and
-    keeps a developer's consented ``~/.tokdash/config.json`` — with its network
+    keeps a developer's consented ``~/.token_dashboard/config.json`` — with its network
     polling on — from answering a quota code path in this suite. Individual
     tests grant a gate via ``set_quota_consent`` inside the redirected dir.
     """
-    os.environ.setdefault("TOKDASH_DATA_DIR", str(tmp_path_factory.mktemp("quota-gates-off")))
+    os.environ.setdefault("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path_factory.mktemp("quota-gates-off")))
 
 
 @pytest.fixture(autouse=True)
@@ -47,12 +47,12 @@ def isolated_usage_db(monkeypatch, tmp_path):
     """Keep the default-on persistent usage DB isolated per test.
 
     The runtime default is intentionally controlled by application code, but
-    tests must not share ~/.tokdash/usage.sqlite3 or one test's cached rows can
+    tests must not share ~/.token_dashboard/usage.sqlite3 or one test's cached rows can
     leak into another source fixture.
     """
-    data_dir = tmp_path / ".tokdash-test"
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(data_dir))
-    monkeypatch.setenv("TOKDASH_USAGE_DB_PATH", str(data_dir / "usage.sqlite3"))
+    data_dir = tmp_path / ".token-dashboard-test"
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_PATH", str(data_dir / "usage.sqlite3"))
 
 
 @pytest.fixture(autouse=True)
@@ -62,7 +62,7 @@ def settled_speed_inputs(monkeypatch):
     A fixture corpus is always minutes old at most, which the speed cache would
     otherwise treat as live sessions and defer. Tests of that rule set it back.
     """
-    monkeypatch.setenv("TOKDASH_SPEED_SETTLE_SECONDS", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_SPEED_SETTLE_SECONDS", "0")
 
 
 @pytest.fixture(autouse=True)
@@ -74,7 +74,7 @@ def fresh_store_failure_reports():
     here, autouse, rather than in each module so the rule has one home -- and it
     goes through the module's public reset rather than reaching for the set.
     """
-    from tokdash import store_logging
+    from token_dashboard import store_logging
 
     store_logging.reset_store_failure_reports()
     yield
@@ -92,7 +92,7 @@ def empty_session_assembly_cache():
     would collide, and the loser would read the other's merge. Nothing does that
     today; this is here so nothing has to notice when something starts.
     """
-    from tokdash.sessions import _SESSION_ASSEMBLY
+    from token_dashboard.sessions import _SESSION_ASSEMBLY
 
     _SESSION_ASSEMBLY.clear()
     yield
@@ -113,8 +113,8 @@ def no_background_warmers(monkeypatch):
     ``with TestClient(api.app)`` inherits the same problem. Tests that want a warm call
     the warmers directly.
     """
-    monkeypatch.setenv("TOKDASH_WARM_ON_START", "0")
-    monkeypatch.setenv("TOKDASH_DAILY_WARM", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_WARM_ON_START", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_DAILY_WARM", "0")
 
 
 @pytest.fixture(autouse=True)
@@ -141,7 +141,7 @@ def hermetic_claude_installs(monkeypatch, tmp_path):
     reader gates on is disabled here as well. Tests that mean to exercise those readers
     point the paths somewhere themselves and restore the platform themselves.
     """
-    from tokdash.sources.quota import claude as claude_quota
+    from token_dashboard.sources.quota import claude as claude_quota
 
     home = tmp_path / "claude-free-home"
     home.mkdir()
@@ -149,7 +149,7 @@ def hermetic_claude_installs(monkeypatch, tmp_path):
     monkeypatch.setenv("USERPROFILE", str(home))  # Windows' home, for parity
     monkeypatch.setattr(Path, "home", lambda: home, raising=False)
     monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(home / "no-claude-config-dir"))
-    monkeypatch.delenv("TOKDASH_CLAUDE_PROFILES", raising=False)
+    monkeypatch.delenv("TOKEN_DASHBOARD_CLAUDE_PROFILES", raising=False)
     monkeypatch.delenv("CLAUDE_CODE_OAUTH_TOKEN", raising=False)
     monkeypatch.setattr(claude_quota, "_is_macos", lambda: False)
 
@@ -159,7 +159,7 @@ def no_browser_open(request, monkeypatch):
     """Never let a test spawn a real browser, on ANY code path.
 
     The interactive setup tests fake a TTY (test_onboard._isolate), so on a
-    machine with a display (e.g. WSLg, where DISPLAY=:0) `tokdash setup`'s
+    machine with a display (e.g. WSLg, where DISPLAY=:0) `token_dashboard setup`'s
     optional dashboard-open would Popen a DETACHED xdg-open -> Chrome per test
     — a window the test process never owns and never closes. Unguarded, every
     pytest run leaked a generation of headful browsers onto the dev desktop
@@ -167,7 +167,7 @@ def no_browser_open(request, monkeypatch):
     on a ~25-minute cadence).
 
     Two layers:
-    - TOKDASH_SETUP_NO_OPEN: the engine's supported kill switch for the setup
+    - TOKEN_DASHBOARD_SETUP_NO_OPEN: the engine's supported kill switch for the setup
       path (see engine._maybe_open_dashboard); osinfo.has_display's
       PYTEST_CURRENT_TEST check covers the serve path.
     - Backstop: the two real browser-open sinks fail loudly if ANY test
@@ -177,15 +177,15 @@ def no_browser_open(request, monkeypatch):
       lifts the backstop only — such a test still gets the kill switch, so
       forgetting to stub a sink cannot leak a real browser.
     """
-    monkeypatch.setenv("TOKDASH_SETUP_NO_OPEN", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_SETUP_NO_OPEN", "1")
     if "opens_browser" in request.keywords:
         return
 
-    # Imported here, not at module scope: tokdash.cli pulls in the FastAPI app,
+    # Imported here, not at module scope: token_dashboard.cli pulls in the FastAPI app,
     # and conftest is loaded for every test file including those that never
     # touch it.
-    from tokdash import cli
-    from tokdash.onboard import engine
+    from token_dashboard import cli
+    from token_dashboard.onboard import engine
 
     def _no_open(*_args, **_kwargs):
         pytest.fail("test reached a real browser-open sink (xdg-open/webbrowser)")

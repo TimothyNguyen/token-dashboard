@@ -12,7 +12,7 @@
     "connection": "Busy",
     "dot": "busy",
     "banner": {
-      "title": "Tokdash is busy - retrying",
+      "title": "TokenDashboard is busy - retrying",
       "body_contains": "Backing off"
     },
     "last_good_data": "dimmed"

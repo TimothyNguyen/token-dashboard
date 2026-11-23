@@ -5,7 +5,7 @@ pills to ``docs/assets/agents/pills/``. The white fill + subtle border keeps eve
 pill (including solid-black logos like Codex/Copilot) visible on both GitHub light
 and dark themes.
 
-Run from the repo root. Dependencies are NOT tokdash runtime deps — install them
+Run from the repo root. Dependencies are NOT token_dashboard runtime deps — install them
 into a throwaway venv:
 
     python3 -m venv /tmp/svgvenv

@@ -1,12 +1,12 @@
 <#
 .SYNOPSIS
-    Build the Tokdash Companion MSIX package for Microsoft Store submission.
+    Build the TokenDashboard Companion MSIX package for Microsoft Store submission.
 
 .DESCRIPTION
     Two modes, chosen by whether the Partner Center identity is supplied:
 
     Store mode  (-IdentityName / -Publisher / -PublisherDisplayName, or the matching
-                TOKDASH_MSIX_* environment variables)
+                TOKEN_DASHBOARD_MSIX_* environment variables)
                 Produces an UNSIGNED .msix for upload to Partner Center. The Store
                 re-signs it during certification - do not sign it yourself, and do not
                 expect it to install locally.
@@ -26,16 +26,16 @@
 
 .EXAMPLE
     powershell -NoProfile -File companion/scripts/build_windows_msix.ps1 `
-        -IdentityName "12345Tokdash.TokdashCompanion" `
+        -IdentityName "12345TokenDashboard.TokenDashboardCompanion" `
         -Publisher "CN=01234567-89ab-cdef-0123-456789abcdef" `
-        -PublisherDisplayName "Tokdash"
+        -PublisherDisplayName "TokenDashboard"
 #>
 [CmdletBinding()]
 param(
     [string]$OutputDirectory = "",
-    [string]$IdentityName = $env:TOKDASH_MSIX_IDENTITY_NAME,
-    [string]$Publisher = $env:TOKDASH_MSIX_PUBLISHER,
-    [string]$PublisherDisplayName = $env:TOKDASH_MSIX_PUBLISHER_DISPLAY_NAME,
+    [string]$IdentityName = $env:TOKEN_DASHBOARD_MSIX_IDENTITY_NAME,
+    [string]$Publisher = $env:TOKEN_DASHBOARD_MSIX_PUBLISHER,
+    [string]$PublisherDisplayName = $env:TOKEN_DASHBOARD_MSIX_PUBLISHER_DISPLAY_NAME,
     [switch]$SkipTests,
     [switch]$SelfSignForTesting
 )
@@ -62,9 +62,9 @@ if ([int]($version.Split('.')[0]) -eq 0) {
 
 # Test-mode placeholders. The publisher must match the self-signed certificate subject
 # exactly or Windows refuses to install the package.
-$testIdentityName = "Tokdash.Companion.Test"
-$testPublisher = "CN=Tokdash Companion Test Builds"
-$testPublisherDisplayName = "Tokdash (test build)"
+$testIdentityName = "TokenDashboard.Companion.Test"
+$testPublisher = "CN=TokenDashboard Companion Test Builds"
+$testPublisherDisplayName = "TokenDashboard (test build)"
 
 $storeMode = -not [string]::IsNullOrWhiteSpace($IdentityName)
 
@@ -97,10 +97,10 @@ if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
 $outputRoot = [System.IO.Path]::GetFullPath($OutputDirectory)
 New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
 
-$project = Join-Path $companionRoot "windows\TokdashCompanion\TokdashCompanion.csproj"
-$solution = Join-Path $companionRoot "windows\TokdashCompanion.slnx"
+$project = Join-Path $companionRoot "windows\TokenDashboardCompanion\TokenDashboardCompanion.csproj"
+$solution = Join-Path $companionRoot "windows\TokenDashboardCompanion.slnx"
 $packagingRoot = Join-Path $companionRoot "windows\packaging"
-$workRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("tokdash-companion-msix-" + [guid]::NewGuid())
+$workRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("token-dashboard-companion-msix-" + [guid]::NewGuid())
 $packageStage = Join-Path $workRoot "package"
 
 function Invoke-Checked {
@@ -170,7 +170,7 @@ try {
         "-p:Version=$version"
     )
 
-    $exePath = Join-Path $packageStage "TokdashCompanion.exe"
+    $exePath = Join-Path $packageStage "TokenDashboardCompanion.exe"
     if (-not (Test-Path $exePath)) {
         throw "Publish did not produce $exePath"
     }
@@ -221,7 +221,7 @@ try {
     [System.IO.File]::WriteAllText($manifestPath, $manifest, (New-Object System.Text.UTF8Encoding($false)))
 
     $makeappx = Resolve-SdkTool -Name "makeappx.exe"
-    $msixName = "Tokdash-Companion-$version-windows-x64-$flavor.msix"
+    $msixName = "TokenDashboard-Companion-$version-windows-x64-$flavor.msix"
     $msixPath = Join-Path $outputRoot $msixName
     if (Test-Path $msixPath) { Remove-Item $msixPath -Force }
 
@@ -232,16 +232,16 @@ try {
     if ($SelfSignForTesting) {
         $signtool = Resolve-SdkTool -Name "signtool.exe"
         $pfxPath = Join-Path $workRoot "test-signing.pfx"
-        $cerPath = Join-Path $outputRoot "Tokdash-Companion-test-signing.cer"
+        $cerPath = Join-Path $outputRoot "TokenDashboard-Companion-test-signing.cer"
         # Password is irrelevant: the key exists for the length of this build and the
         # certificate is only ever trusted manually on a developer machine.
-        $password = ConvertTo-SecureString -String "tokdash-test" -Force -AsPlainText
+        $password = ConvertTo-SecureString -String "token-dashboard-test" -Force -AsPlainText
 
         $cert = New-SelfSignedCertificate `
             -Type Custom `
             -Subject $testPublisher `
             -KeyUsage DigitalSignature `
-            -FriendlyName "Tokdash Companion test signing" `
+            -FriendlyName "TokenDashboard Companion test signing" `
             -CertStoreLocation "Cert:\CurrentUser\My" `
             -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
 
@@ -250,7 +250,7 @@ try {
             Export-Certificate -Cert $cert -FilePath $cerPath | Out-Null
             Invoke-Checked -FilePath $signtool -ArgumentList @(
                 "sign", "/fd", "SHA256", "/a", "/f", $pfxPath,
-                "/p", "tokdash-test", $msixPath
+                "/p", "token-dashboard-test", $msixPath
             )
         }
         finally {
@@ -284,7 +284,7 @@ try {
             Write-Host "  Import-Certificate -FilePath '$cerPath' -CertStoreLocation Cert:\LocalMachine\TrustedPeople"
             Write-Host "  Add-AppxPackage -Path '$msixPath'"
             Write-Host "To remove:"
-            Write-Host "  Get-AppxPackage *TokdashCompanion* | Remove-AppxPackage"
+            Write-Host "  Get-AppxPackage *TokenDashboardCompanion* | Remove-AppxPackage"
         } else {
             Write-Host "Pass -SelfSignForTesting to produce a package that can be installed locally."
         }

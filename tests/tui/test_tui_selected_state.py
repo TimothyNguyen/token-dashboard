@@ -17,8 +17,8 @@ textual = pytest.importorskip("textual", reason="the TUI tests need textual")
 from textual.color import Color  # noqa: E402
 from textual.widgets import Button  # noqa: E402
 
-from tokdash.tui.ranges import STRIP_PRESETS  # noqa: E402
-from tokdash.tui.ranges import PRESETS as _ALL_PRESETS  # noqa: E402
+from token_dashboard.tui.ranges import STRIP_PRESETS  # noqa: E402
+from token_dashboard.tui.ranges import PRESETS as _ALL_PRESETS  # noqa: E402
 import support.tui as fx  # noqa: E402  (the layout-law tests call it fx)
 from support.tui import (  # noqa: E402
     api,  # noqa: F401  (the fixture these tests ask pytest for)

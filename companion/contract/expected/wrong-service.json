@@ -5,7 +5,7 @@
   },
   "expected": {
     "connection": null,
-    "message": "This address is not a Tokdash service",
+    "message": "This address is not a TokenDashboard service",
     "usage_calls_made": 0,
     "quota_calls_made": 0
   }

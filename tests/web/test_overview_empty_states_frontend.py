@@ -156,7 +156,7 @@ const { animateNumber, cancelCounter, setCounterText } = await import(
 );
 // The engine itself, so a test can tell "stopped" from "running but ignored".
 const { engine } = await import(pathToFileURL('__ANIME_PATH__').href);
-window.TokDashAnimations = { animateNumber, cancelCounter, setCounterText };
+window.TokenDashboardAnimations = { animateNumber, cancelCounter, setCounterText };
 
 // --- driving ------------------------------------------------------------------
 """
@@ -518,10 +518,10 @@ async function main() {
     // A stand-in for the bar animation that logs, in order, everything that
     // touches the cache bar: an animation started, one stopped, a width written.
     const events = [];
-    window.TokDashAnimations.animateCacheHitBar = (bar, pct) => {
+    window.TokenDashboardAnimations.animateCacheHitBar = (bar, pct) => {
       events.push(`animate:${bar.id}:${pct.toFixed(1)}`);
     };
-    window.TokDashAnimations.stopCacheHitBar = (bar) => { events.push(`stop:${bar.id}`); };
+    window.TokenDashboardAnimations.stopCacheHitBar = (bar) => { events.push(`stop:${bar.id}`); };
     let cacheWidth = '';
     Object.defineProperty(node('compCacheBar').style, 'width', {
       get() { return cacheWidth; },
@@ -701,7 +701,7 @@ def test_an_incomplete_read_shows_the_numbers_it_has(tmp_path):
 
     One server with source errors, or one machine of two that cannot be reached
     at all, sets _has_incomplete_server_rows — and the totals that did come back
-    are still the honest sum of what Tokdash can see. Replacing them with a dash
+    are still the honest sum of what TokenDashboard can see. Replacing them with a dash
     on every card would hide real usage behind a symbol that means "unknown",
     which is worse than the 0 it replaced: a dash cannot be compared, summed, or
     believed.

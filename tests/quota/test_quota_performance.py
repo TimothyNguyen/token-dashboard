@@ -6,10 +6,10 @@ from __future__ import annotations
 
 import time
 
-import tokdash.api as api
-from tokdash.sources.quota import quota_state
-from tokdash.sources.quota.types import QuotaSnapshot
-from tokdash.usage_store import UsageEntryStore
+import token_dashboard.api as api
+from token_dashboard.sources.quota import quota_state
+from token_dashboard.sources.quota.types import QuotaSnapshot
+from token_dashboard.usage_store import UsageEntryStore
 
 N_ROWS = 100_000
 

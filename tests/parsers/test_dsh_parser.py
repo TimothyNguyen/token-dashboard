@@ -13,16 +13,16 @@ from pathlib import Path
 import pytest
 from zstandard import ZstdCompressor
 
-from tokdash import clientpaths
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import BaseParser, DSHParser, _sig_cache
-from tokdash.sources.dsh_log import (
+from token_dashboard import clientpaths
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import BaseParser, DSHParser, _sig_cache
+from token_dashboard.sources.dsh_log import (
     decode_dsh_session_file,
     dsh_file_signatures,
     fold_dsh_usage_samples,
     reset_dsh_diagnostics,
 )
-from tokdash.usage_store import UsageEntryStore
+from token_dashboard.usage_store import UsageEntryStore
 
 TS_BASE = 1786735098528  # fixed epoch ms; all test events derive from it
 
@@ -570,7 +570,7 @@ def test_windows_style_project_dir_discovery(_isolated_dsh_home):
 
 
 def test_usage_store_sync_replaces_chunk_row_with_final(_isolated_dsh_home):
-    from tokdash.compute import _collect_parser_file
+    from token_dashboard.compute import _collect_parser_file
 
     home = _isolated_dsh_home
     path = _session_path(home)
@@ -738,7 +738,7 @@ def test_damaged_header_frame_fails_closed(_isolated_dsh_home):
 def test_unreadable_file_keeps_its_stored_rows(_isolated_dsh_home, caplog):
     """Under file_replace an empty parse means "this file now has zero entries",
     so a file that merely became unreadable must raise rather than return []."""
-    from tokdash.compute import _collect_parser_file
+    from token_dashboard.compute import _collect_parser_file
 
     home = _isolated_dsh_home
     path = _session_path(home)
@@ -771,7 +771,7 @@ def test_unreadable_file_keeps_its_stored_rows(_isolated_dsh_home, caplog):
 def test_unreadable_file_rows_return_when_it_reads_again(_isolated_dsh_home):
     """Keeping the rows is a hold, not a freeze: the file is reparsed once it is
     readable, so a newer turn lands instead of being shadowed forever."""
-    from tokdash.compute import _collect_parser_file
+    from token_dashboard.compute import _collect_parser_file
 
     home = _isolated_dsh_home
     path = _session_path(home)
@@ -985,7 +985,7 @@ def test_duplicate_files_winner_does_not_depend_on_parse_order(_isolated_dsh_hom
 def test_duplicate_copies_bill_once_in_the_persistent_store(_isolated_dsh_home):
     """cross_file_stable_keys makes the store keep the earliest (timestamp,
     path) copy instead of whichever file was committed last."""
-    from tokdash.compute import _collect_parser_file
+    from token_dashboard.compute import _collect_parser_file
 
     home = _isolated_dsh_home
     first = _write_jsonl(
@@ -1393,10 +1393,10 @@ def test_diagnostics_warn_again_after_the_file_recovers(_isolated_dsh_home, capl
     broke again stayed silent for the rest of the process (#171). A clean decode
     forgets the path, so the recurrence is reported again -- while a file that
     stays broken still warns only once."""
-    from tokdash.sources import dsh_log
+    from token_dashboard.sources import dsh_log
 
     reset_dsh_diagnostics()
-    caplog.set_level(logging.WARNING, logger="tokdash.sources.dsh_log")
+    caplog.set_level(logging.WARNING, logger="token_dashboard.sources.dsh_log")
     home = _isolated_dsh_home
     path = _session_path(home, suffix=".jsonl.zstd")
     rows = [_header(), _assistant_message(1, 0, 0, {"inputTokens": 100, "outputTokens": 10})]
@@ -1432,7 +1432,7 @@ def test_healthy_zstd_never_takes_the_recovery_path(_isolated_dsh_home, monkeypa
     Patching the recovery to explode is the cheapest non-flaky assertion of that;
     a timing assertion would not be.
     """
-    from tokdash.sources import dsh_log
+    from token_dashboard.sources import dsh_log
 
     def boom(raw):  # pragma: no cover - reaching this is the failure
         raise AssertionError("healthy file must not use the quadratic recovery path")

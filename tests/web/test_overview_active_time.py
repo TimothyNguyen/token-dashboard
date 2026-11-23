@@ -13,8 +13,8 @@ from datetime import datetime
 
 import pytest
 
-from tokdash import sessions
-from tokdash.sessions import get_active_time_data
+from token_dashboard import sessions
+from token_dashboard.sessions import get_active_time_data
 
 from support.frontend import extract_js_function, index_source, needs_node, run_node
 
@@ -279,7 +279,7 @@ def test_a_failing_comparison_does_not_take_the_runtime_with_it(fake_tools, monk
 
 
 def test_the_comparison_window_is_the_one_the_other_kpis_use():
-    from tokdash import compute
+    from token_dashboard import compute
 
     prev_since, prev_until = compute.previous_period_range("today")
     assert sessions._previous_window_bounds("today") == (
@@ -305,12 +305,12 @@ def test_the_payload_states_that_the_figures_are_estimates(fake_tools):
 # --- API route --------------------------------------------------------------
 
 pytest.importorskip("fastapi")
-import tokdash.api as api  # noqa: E402
+import token_dashboard.api as api  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
 def _reset_api_cache(monkeypatch):
-    monkeypatch.setenv("TOKDASH_WARM_ON_START", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_WARM_ON_START", "0")
     api._clear_cache()
     yield
     api._clear_cache()
@@ -474,7 +474,7 @@ const out = {};
 const snapshot = () => ({
   text: node('overviewActiveTime').textContent,
   html: node('overviewActiveTime').innerHTML,
-  shimmer: node('overviewActiveTime').classes.has('tokdash-loading-placeholder'),
+  shimmer: node('overviewActiveTime').classes.has('token-dashboard-loading-placeholder'),
   meta: node('overviewActiveMeta').textContent,
   delta: deltas.at(-1) || null,
 });
@@ -500,7 +500,7 @@ process.stdout.write(JSON.stringify(out));
     out = json.loads(run_node(harness))
 
     assert out["loading"]["shimmer"] is True, "a pending request must not read as a dash"
-    assert "tokdash-loading-label" in out["loading"]["html"]
+    assert "token-dashboard-loading-label" in out["loading"]["html"]
     assert 'data-i18n="loading"' in out["loading"]["html"], "and must survive a language switch"
 
     # The states that really are an answer keep the dash.

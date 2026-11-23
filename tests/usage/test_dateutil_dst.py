@@ -25,9 +25,9 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from tokdash import compute, sessions
-from tokdash.dateutil import local_midnight, parse_date_range
-from tokdash.sources import openclaw
+from token_dashboard import compute, sessions
+from token_dashboard.dateutil import local_midnight, parse_date_range
+from token_dashboard.sources import openclaw
 
 # Windows reads its zone from the OS and has no time.tzset(), so a TZ override
 # there is ignored and a test written against it would assert nothing.
@@ -300,11 +300,11 @@ def test_openclaw_year_bounds_straddle_the_year_in_its_own_offsets(os_zone, monk
 
 @needs_tzset
 def test_no_environment_variable_moves_the_window(os_zone, monkeypatch):
-    # The OS zone is the only source of truth. A second one -- a TOKDASH_TZ
+    # The OS zone is the only source of truth. A second one -- a TOKEN_DASHBOARD_TZ
     # override, a stale /etc/timezone -- is how the windows and the day buckets
     # drift apart, so an inherited one has to be ignored rather than honoured.
     os_zone(LONDON)
-    monkeypatch.setenv("TOKDASH_TZ", "Pacific/Kiritimati")
+    monkeypatch.setenv("TOKEN_DASHBOARD_TZ", "Pacific/Kiritimati")
 
     since, until = parse_date_range("2026-01-05", "2026-01-05")
 

@@ -1,5 +1,5 @@
 name: Feature Request
-description: Suggest a new feature or enhancement for tokdash
+description: Suggest a new feature or enhancement for token-dashboard
 labels: ["enhancement"]
 body:
   - type: textarea
@@ -31,5 +31,5 @@ body:
       options:
         - label: I have searched existing issues and this is not a duplicate.
           required: true
-        - label: This feature aligns with tokdash's scope as a local token/cost dashboard.
+        - label: This feature aligns with token-dashboard's scope as a local token/cost dashboard.
           required: false

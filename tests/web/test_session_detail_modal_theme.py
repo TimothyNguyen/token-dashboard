@@ -27,12 +27,12 @@ from pathlib import Path
 
 import pytest
 
-import tokdash  # type: ignore[import-untyped]
+import token_dashboard  # type: ignore[import-untyped]
 
 from support.frontend import extract_js_function, needs_node
 from support.i18n_profile import APPLY_I18N_FUNCTIONS, APPLY_I18N_STATE, page_script, run_page
 
-INDEX_HTML = Path(tokdash.__file__).parent / "static" / "index.html"
+INDEX_HTML = Path(token_dashboard.__file__).parent / "static" / "index.html"
 
 MODAL_START = '<div id="sessionModal" class='
 MODAL_END = "<!-- Slide-Over Session Inspector Drawer -->"
@@ -539,7 +539,7 @@ const untouched = line();
 paintLastSession();
 __calls.length = 0;
 answer = () => Promise.resolve({
-  session: { project: 'tokdash', model: 'gpt-5', token_events: 7, active_ms: 5000, span_ms: 9000, tokens: 10, tokens_in: 4 },
+  session: { project: 'token_dashboard', model: 'gpt-5', token_events: 7, active_ms: 5000, span_ms: 9000, tokens: 10, tokens_in: 4 },
   turns: [], messages: [], tool_calls: [],
 });
 await openSessionModal('codex', 'def456');
@@ -563,11 +563,11 @@ print({ reads, failed, failedJa, untouched, loaded, loadedKo, en: words('en'), j
     assert report["failedJa"] == {"text": ja["failed"], "hook": "sessionDetailLoadFailed"}
     assert report["untouched"] == report["failedJa"]
     assert report["loaded"] == {
-        "text": f"Codex · tokdash · gpt-5 · 7 {ja['events']} · {ja['activeTime']} 5s",
+        "text": f"Codex · token_dashboard · gpt-5 · 7 {ja['events']} · {ja['activeTime']} 5s",
         "hook": None,
     }
     assert report["loadedKo"] == {
-        "text": f"Codex · tokdash · gpt-5 · 7 {ko['events']} · {ko['activeTime']} 5s",
+        "text": f"Codex · token_dashboard · gpt-5 · 7 {ko['events']} · {ko['activeTime']} 5s",
         "hook": None,
     }
 
@@ -770,7 +770,7 @@ def chromium():
         try:
             browser = pw.chromium.launch(
                 headless=True,
-                executable_path=os.environ.get("TOKDASH_TEST_CHROMIUM"),
+                executable_path=os.environ.get("TOKEN_DASHBOARD_TEST_CHROMIUM"),
                 args=["--disable-gpu", "--disable-features=Vulkan,VizDisplayCompositor"],
             )
         except playwright.Error as error:

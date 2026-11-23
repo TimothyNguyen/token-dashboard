@@ -1,4 +1,4 @@
-"""tokdash.tui.data: cache-key parity with the API routes, window mapping,
+"""token_dashboard.tui.data: cache-key parity with the API routes, window mapping,
 backpressure retry, and the disabled-DB no-ops.
 
 The core of the module's contract is that the TUI/report keys are BYTE-IDENTICAL
@@ -12,14 +12,14 @@ import datetime
 
 import pytest
 
-import tokdash.api as api
-from tokdash.tui import data, remote
-from tokdash.usage_store import UsageDatabaseSchemaTooNewError
+import token_dashboard.api as api
+from token_dashboard.tui import data, remote
+from token_dashboard.usage_store import UsageDatabaseSchemaTooNewError
 
 # 2026-09-22 is a Tuesday: the Monday-week window is 2026-09-21 → 2026-09-22.
 TUESDAY = datetime.date(2026, 9, 22)
 
-from tokdash.tui import remote  # noqa: E402  (round-2 remote-delegation tests)
+from token_dashboard.tui import remote  # noqa: E402  (round-2 remote-delegation tests)
 
 
 @pytest.fixture(autouse=True)
@@ -376,18 +376,18 @@ def test_retry_never_touches_terminal_or_programming_errors(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# Disabled-DB no-ops (TOKDASH_USAGE_DB=0 must not touch the filesystem)
+# Disabled-DB no-ops (TOKEN_DASHBOARD_USAGE_DB=0 must not touch the filesystem)
 # ---------------------------------------------------------------------------
 
 def _forbid_store(monkeypatch):
     def boom(*args, **kwargs):
-        raise AssertionError("UsageEntryStore constructed under TOKDASH_USAGE_DB=0")
+        raise AssertionError("UsageEntryStore constructed under TOKEN_DASHBOARD_USAGE_DB=0")
 
     monkeypatch.setattr(data, "UsageEntryStore", boom)
 
 
 def test_ensure_db_compatible_noop_when_disabled(monkeypatch):
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     _forbid_store(monkeypatch)
     called = []
     monkeypatch.setattr(
@@ -398,7 +398,7 @@ def test_ensure_db_compatible_noop_when_disabled(monkeypatch):
 
 
 def test_ensure_db_compatible_calls_check_when_enabled(monkeypatch):
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     _forbid_store(monkeypatch)  # the preflight must check, never construct
     called = []
     monkeypatch.setattr(
@@ -409,7 +409,7 @@ def test_ensure_db_compatible_calls_check_when_enabled(monkeypatch):
 
 
 def test_ensure_db_compatible_reraises_schema_too_new(monkeypatch):
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
 
     def boom(*a):
         raise UsageDatabaseSchemaTooNewError(path="/tmp/x.sqlite3", found=99, supported=9)
@@ -420,20 +420,20 @@ def test_ensure_db_compatible_reraises_schema_too_new(monkeypatch):
 
 
 def test_db_summary_disabled(monkeypatch):
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     _forbid_store(monkeypatch)
-    assert data.db_summary() == "usage db disabled (TOKDASH_USAGE_DB=0) — live parsing"
+    assert data.db_summary() == "usage db disabled (TOKEN_DASHBOARD_USAGE_DB=0) — live parsing"
 
 
 def test_db_summary_enabled(monkeypatch):
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
 
     class FakeStore:
         def status(self):
-            return {"path": "/tmp/.tokdash/usage.sqlite3", "usage_entries": 17}
+            return {"path": "/tmp/.token_dashboard/usage.sqlite3", "usage_entries": 17}
 
     monkeypatch.setattr(data, "UsageEntryStore", FakeStore)
-    assert data.db_summary() == "/tmp/.tokdash/usage.sqlite3 · 17 usage rows"
+    assert data.db_summary() == "/tmp/.token_dashboard/usage.sqlite3 · 17 usage rows"
 
 
 # ---------------------------------------------------------------------------
@@ -548,7 +548,7 @@ def test_fetch_quota_state_closure_imports_real_collector(monkeypatch):
         seen.append("called")
         return {"providers": {}}
 
-    import tokdash.sources.quota as quota_pkg
+    import token_dashboard.sources.quota as quota_pkg
 
     monkeypatch.setattr(quota_pkg, "quota_state", fake_state, raising=True)
     data.fetch_quota_state()
@@ -586,13 +586,13 @@ class _HistoryStore:
 
 def _forbid_history_store(monkeypatch):
     def boom(*args, **kwargs):
-        raise AssertionError("UsageEntryStore constructed under TOKDASH_USAGE_DB=0")
+        raise AssertionError("UsageEntryStore constructed under TOKEN_DASHBOARD_USAGE_DB=0")
 
     monkeypatch.setattr(data, "UsageEntryStore", boom)
 
 
 def test_fetch_quota_history_params_mirror_route(monkeypatch):
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     store = _HistoryStore()
     monkeypatch.setattr(data, "UsageEntryStore", lambda *a, **k: store)
     outcome = data.fetch_quota_history(hours=24, now_ts=1_000_000)
@@ -611,11 +611,11 @@ def test_fetch_quota_history_params_mirror_route(monkeypatch):
 
 
 def test_fetch_quota_history_network_gate_applied(monkeypatch):
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     store = _HistoryStore()
     monkeypatch.setattr(data, "UsageEntryStore", lambda *a, **k: store)
 
-    import tokdash.sources.quota.config as quota_config
+    import token_dashboard.sources.quota.config as quota_config
 
     monkeypatch.setattr(quota_config, "network_enabled", lambda key: key == "codex_api")
     data.fetch_quota_history(hours=6, now_ts=7200)
@@ -625,7 +625,7 @@ def test_fetch_quota_history_network_gate_applied(monkeypatch):
 
 
 def test_fetch_quota_history_disabled_db_builds_no_store(monkeypatch):
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     _forbid_history_store(monkeypatch)
     rec = _Recorder()
     monkeypatch.setattr(data, "get_cached_or_fetch", rec)
@@ -748,15 +748,15 @@ def test_remote_false_forces_local_even_with_service(monkeypatch):
 
 
 def test_kill_switch_leaves_local_path_byte_identical(monkeypatch):
-    # TOKDASH_TUI_NO_REMOTE=1 (the suite-wide session default in conftest) must
+    # TOKEN_DASHBOARD_TUI_NO_REMOTE=1 (the suite-wide session default in conftest) must
     # make every fetch answer exactly as it did pre-delegation: key, closure,
     # and kwargs byte-for-byte what round 1 sent.
-    monkeypatch.setenv("TOKDASH_TUI_NO_REMOTE", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_TUI_NO_REMOTE", "1")
     rec = _Recorder()
     monkeypatch.setattr(data, "get_cached_or_fetch", rec)
 
     def boom(svc, path, params, **kw):
-        raise AssertionError("remote_get ran despite TOKDASH_TUI_NO_REMOTE=1")
+        raise AssertionError("remote_get ran despite TOKEN_DASHBOARD_TUI_NO_REMOTE=1")
 
     monkeypatch.setattr(remote, "remote_get", boom)
     outcome = data.fetch_usage("today", "2026-09-01", "2026-09-20")

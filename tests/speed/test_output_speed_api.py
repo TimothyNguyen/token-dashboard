@@ -29,10 +29,10 @@ pytest.importorskip("fastapi")
 
 from fastapi import HTTPException
 
-import tokdash.api as api
-from tokdash import speed_report, speed_cache
-from tokdash.dateutil import parse_date_range
-from tokdash.output_speed import (
+import token_dashboard.api as api
+from token_dashboard import speed_report, speed_cache
+from token_dashboard.dateutil import parse_date_range
+from token_dashboard.output_speed import (
     BASIS_EXCLUDING,
     BASIS_INCLUDING,
     BASIS_UNSPECIFIED,
@@ -41,7 +41,7 @@ from tokdash.output_speed import (
     STATUS_AMBIGUOUS_PAIR,
     STATUS_INVALID_TIMING,
 )
-from tokdash.usage_store import UsageEntryStore
+from token_dashboard.usage_store import UsageEntryStore
 
 
 DAY_FROM = "2026-03-02"
@@ -49,7 +49,7 @@ DAY_TO = "2026-03-08"
 
 
 def test_cache_only_flag_reaches_both_speed_readers(monkeypatch):
-    from tokdash import session_speed
+    from token_dashboard import session_speed
     calls=[]
     def reader(*args,**kwargs):
         calls.append(kwargs);return {'cache':{'state':'stale','job_id':None}}
@@ -62,7 +62,7 @@ def test_cache_only_flag_reaches_both_speed_readers(monkeypatch):
 
 @pytest.mark.parametrize('endpoint', ['model', 'timeline', 'batch', 'ensure'])
 def test_speed_publication_lock_is_retryable_and_recovers_after_release(tmp_path, monkeypatch, endpoint):
-    from tokdash import session_speed
+    from token_dashboard import session_speed
     db=tmp_path/'publication.sqlite3'
     with closing(sqlite3.connect(db)) as writer:
         writer.execute('PRAGMA journal_mode=WAL')
@@ -220,7 +220,7 @@ def _seed(entries):
 
 
 def _publish_fixture(entries,store):
-    from tokdash.usage_store import _entry_key, _speed_for_storage
+    from token_dashboard.usage_store import _entry_key, _speed_for_storage
     with closing(speed_cache.connect()) as c:
         c.execute('DELETE FROM speed_responses')
         for e in entries:
@@ -785,7 +785,7 @@ def test_a_cold_key_computes_once_and_a_second_reader_is_not_served_stale_number
     UsageEntryStore()._connect().close()
     launches=[]
     monkeypatch.setattr(speed_cache,'launch_worker',lambda c:launches.append(True))
-    from tokdash import speed_worker
+    from token_dashboard import speed_worker
     monkeypatch.setattr(speed_worker,'build',lambda *a,**kw:pytest.fail('synchronous extraction'))
     if bootstrap_busy:
         real_connect = speed_cache.connect

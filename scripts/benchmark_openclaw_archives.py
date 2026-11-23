@@ -49,10 +49,10 @@ def paired_file_worker(args):
     import importlib.util
 
     sys.path.insert(0, str(Path(args.repo) / "src"))
-    from tokdash.sources import openclaw
+    from token_dashboard.sources import openclaw
 
-    name = "tokdash.sources._openclaw_benchmark_baseline"
-    spec = importlib.util.spec_from_file_location(name, args.baseline / "src/tokdash/sources/openclaw.py")
+    name = "token_dashboard.sources._openclaw_benchmark_baseline"
+    spec = importlib.util.spec_from_file_location(name, args.baseline / "src/token_dashboard/sources/openclaw.py")
     baseline = importlib.util.module_from_spec(spec)
     sys.modules[name] = baseline
     spec.loader.exec_module(baseline)
@@ -82,24 +82,24 @@ def paired_warm_worker(args):
     import importlib.util
 
     sys.path.insert(0, str(Path(args.repo) / "src"))
-    from tokdash.pricing import PricingDatabase
-    from tokdash.sources import openclaw
+    from token_dashboard.pricing import PricingDatabase
+    from token_dashboard.sources import openclaw
 
-    name = "tokdash.sources._openclaw_benchmark_baseline"
-    spec = importlib.util.spec_from_file_location(name, args.baseline / "src/tokdash/sources/openclaw.py")
+    name = "token_dashboard.sources._openclaw_benchmark_baseline"
+    spec = importlib.util.spec_from_file_location(name, args.baseline / "src/token_dashboard/sources/openclaw.py")
     baseline = importlib.util.module_from_spec(spec)
     sys.modules[name] = baseline
     spec.loader.exec_module(baseline)
     pricing = PricingDatabase()
     dirs = [str(args.fixture / "plain")]
     cases = [("baseline_plain", baseline), ("candidate_plain", openclaw)]
-    data_dir = Path(os.environ["TOKDASH_DATA_DIR"])
+    data_dir = Path(os.environ["TOKEN_DASHBOARD_DATA_DIR"])
 
     def unexpected_parse(*unused, **kwargs):
         raise AssertionError("Paired warm request parsed a transcript")
 
     for label, reader in cases:
-        os.environ["TOKDASH_USAGE_DB_PATH"] = str(data_dir / (label + ".sqlite3"))
+        os.environ["TOKEN_DASHBOARD_USAGE_DB_PATH"] = str(data_dir / (label + ".sqlite3"))
         usage = reader.get_session_usage(dirs, pricing_db=pricing)
         assert usage["total_messages"] == args.files * args.rows_per_file
         reader.parse_session_file = unexpected_parse
@@ -108,7 +108,7 @@ def paired_warm_worker(args):
         samples = {label: [] for label, _ in cases}
         for block in range(args.rounds):
             for label, reader in (cases if block % 2 == 0 else list(reversed(cases))):
-                os.environ["TOKDASH_USAGE_DB_PATH"] = str(data_dir / (label + ".sqlite3"))
+                os.environ["TOKEN_DASHBOARD_USAGE_DB_PATH"] = str(data_dir / (label + ".sqlite3"))
                 if metric == "warm_corpus":
                     operation = lambda: reader.collect_session_corpus(dirs)
                 elif metric == "warm_store":
@@ -131,10 +131,10 @@ def paired_corpus_worker(args):
     import importlib.util
 
     sys.path.insert(0, str(Path(args.repo) / "src"))
-    from tokdash.sources import openclaw
+    from token_dashboard.sources import openclaw
 
-    name = "tokdash.sources._openclaw_benchmark_baseline"
-    spec = importlib.util.spec_from_file_location(name, args.baseline / "src/tokdash/sources/openclaw.py")
+    name = "token_dashboard.sources._openclaw_benchmark_baseline"
+    spec = importlib.util.spec_from_file_location(name, args.baseline / "src/token_dashboard/sources/openclaw.py")
     baseline = importlib.util.module_from_spec(spec)
     sys.modules[name] = baseline
     spec.loader.exec_module(baseline)
@@ -202,8 +202,8 @@ def build_fixtures(root, args):
 
 def worker(args):
     sys.path.insert(0, str(Path(args.repo) / "src"))
-    from tokdash.pricing import PricingDatabase
-    from tokdash.sources import openclaw
+    from token_dashboard.pricing import PricingDatabase
+    from token_dashboard.sources import openclaw
 
     directory = Path(args.fixture) / args.layout
     dirs = [str(directory)]
@@ -254,7 +254,7 @@ def worker(args):
 
 def memory_worker(args):
     sys.path.insert(0, str(Path(args.repo) / "src"))
-    from tokdash.sources import openclaw
+    from token_dashboard.sources import openclaw
 
     gc.collect()
     tracemalloc.start()
@@ -268,8 +268,8 @@ def memory_worker(args):
 def run_child(args, root, repo, layout, memory=False):
     env = dict(os.environ)
     with tempfile.TemporaryDirectory(prefix="openclaw-store-", dir=args.temp_dir) as data_dir:
-        env.update(TOKDASH_DATA_DIR=data_dir, TOKDASH_USAGE_DB_PATH=str(Path(data_dir) / "usage.sqlite3"),
-                   TOKDASH_USAGE_DB="1", OPENCLAW_HOME=str(root / "unused-home"))
+        env.update(TOKEN_DASHBOARD_DATA_DIR=data_dir, TOKEN_DASHBOARD_USAGE_DB_PATH=str(Path(data_dir) / "usage.sqlite3"),
+                   TOKEN_DASHBOARD_USAGE_DB="1", OPENCLAW_HOME=str(root / "unused-home"))
         command = [sys.executable, str(Path(__file__).resolve()), "--worker", "--repo", str(repo),
                    "--layout", layout, "--fixture", str(root), "--files", str(args.files),
                    "--rows-per-file", str(args.rows_per_file), "--rounds", str(args.rounds),

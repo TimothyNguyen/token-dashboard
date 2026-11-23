@@ -1,4 +1,4 @@
-"""``tokdash report``: one-shot render, --json contract, parser guards, non-mutation.
+"""``token_dashboard report``: one-shot render, --json contract, parser guards, non-mutation.
 
 Fixtures are canned deepcopies built from the ACTUAL response shapes (verified
 against compute.py compute_usage/compute_usage_with_comparison, insights.py
@@ -22,10 +22,10 @@ import types
 
 import pytest
 
-import tokdash.tui.report as report
-from tokdash.cli import cli
-from tokdash.tui.data import FetchOutcome
-from tokdash.usage_store import UsageDatabaseSchemaTooNewError
+import token_dashboard.tui.report as report
+from token_dashboard.cli import cli
+from token_dashboard.tui.data import FetchOutcome
+from token_dashboard.usage_store import UsageDatabaseSchemaTooNewError
 
 # ---------------------------------------------------------------------------
 # Canned payloads — field names verified against the compute/insights/sessions
@@ -132,7 +132,7 @@ INSIGHTS_PAYLOAD = {
     },
     "projects": {
         "projects": [
-            {"project": "tokdash", "tokens": 9_000_000, "cost": 100.5, "messages": 3_400,
+            {"project": "token_dashboard", "tokens": 9_000_000, "cost": 100.5, "messages": 3_400,
              "entries": 6_800}
         ],
         "unattributed": {"tokens": 3_000_000, "cost": 10.0, "messages": 900, "entries": 1_800},
@@ -199,9 +199,9 @@ def _args(**overrides):
 
 @pytest.fixture
 def no_db(monkeypatch):
-    """TOKDASH_USAGE_DB=0: ensure_usage_db_compatible no-ops and db_summary
+    """TOKEN_DASHBOARD_USAGE_DB=0: ensure_usage_db_compatible no-ops and db_summary
     prints the disabled line without touching the filesystem."""
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
 
 
 @pytest.fixture
@@ -219,7 +219,7 @@ def test_human_path_full_render(monkeypatch, no_db, piped, capsys):
     assert report.run_report(_args()) == 0
     out = capsys.readouterr().out
 
-    assert out.startswith("Tokdash report · week · 2026-09-14 → 2026-09-20 · 7 days · UTC")
+    assert out.startswith("TokenDashboard report · week · 2026-09-14 → 2026-09-20 · 7 days · UTC")
     # hero: values + comparison deltas in PERCENTAGE POINTS, never re-scaled.
     assert "Tokens 12.4M  ↑ 8.2%" in out
     assert "Cost   $142.31  ↓ 3.1%" in out
@@ -233,7 +233,7 @@ def test_human_path_full_render(monkeypatch, no_db, piped, capsys):
     # podium
     assert "Top agent    Codex · 8.0M · $90.00 · 42 sessions · 50m" in out
     assert "Top model    gpt-5-codex · 8.0M · $90.00" in out
-    assert "Top project  tokdash · 9.0M · $100.50" in out
+    assert "Top project  token_dashboard · 9.0M · $100.50" in out
     # agents table: the re-goldened header (22-char name column, numeric
     # columns right-aligned to fixed widths)
     assert "       Agent                   Sessions   Tokens      Cost Active" in out
@@ -327,14 +327,14 @@ def test_source_errors_footer_strings_and_dicts(monkeypatch, no_db, piped, capsy
 
 def test_db_footer_both_modes(monkeypatch, piped, capsys):
     _patch_fetchers(monkeypatch)
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     report.run_report(_args())
-    assert "usage db disabled (TOKDASH_USAGE_DB=0) — live parsing" in capsys.readouterr().out
+    assert "usage db disabled (TOKEN_DASHBOARD_USAGE_DB=0) — live parsing" in capsys.readouterr().out
 
-    monkeypatch.delenv("TOKDASH_USAGE_DB")
-    monkeypatch.setattr(report, "db_summary", lambda: "/home/me/.tokdash/usage.sqlite3 · 9 rows")
+    monkeypatch.delenv("TOKEN_DASHBOARD_USAGE_DB")
+    monkeypatch.setattr(report, "db_summary", lambda: "/home/me/.token_dashboard/usage.sqlite3 · 9 rows")
     report.run_report(_args())
-    assert "db     /home/me/.tokdash/usage.sqlite3 · 9 rows" in capsys.readouterr().out
+    assert "db     /home/me/.token_dashboard/usage.sqlite3 · 9 rows" in capsys.readouterr().out
 
 
 # ---------------------------------------------------------------------------
@@ -359,12 +359,12 @@ def test_usage_hard_fails(monkeypatch, no_db):
         report.run_report(_args())
     assert exc.value.code == "boom"
 
-    from tokdash.api import CacheBackpressureError
+    from token_dashboard.api import CacheBackpressureError
 
     _patch_fetchers(monkeypatch, usage=CacheBackpressureError("busy"))
     with pytest.raises(SystemExit) as exc:
         report.run_report(_args())
-    assert exc.value.code == "Tokdash is busy computing — try again shortly"
+    assert exc.value.code == "TokenDashboard is busy computing — try again shortly"
 
 
 def test_schema_too_new_is_terminal_everywhere(monkeypatch, no_db):
@@ -372,12 +372,12 @@ def test_schema_too_new_is_terminal_everywhere(monkeypatch, no_db):
     _patch_fetchers(monkeypatch, insights=err)
     with pytest.raises(SystemExit) as exc:
         report.run_report(_args())
-    assert "run 'tokdash update'" in str(exc.value.code)
+    assert "run 'token_dashboard update'" in str(exc.value.code)
 
     monkeypatch.setattr(report, "ensure_usage_db_compatible", lambda: (_ for _ in ()).throw(err))
     with pytest.raises(SystemExit) as exc:
         report.run_report(_args())
-    assert "run 'tokdash update'" in str(exc.value.code)
+    assert "run 'token_dashboard update'" in str(exc.value.code)
 
 
 def test_unknown_period_exits_one_from_run_report(monkeypatch, no_db):
@@ -426,7 +426,7 @@ def test_output_file_utf8_trailing_newline_no_ansi(monkeypatch, no_db, tmp_path)
     assert b"\x1b" not in raw
     text = raw.decode("utf-8")
     assert text.endswith("\n")
-    assert "Tokdash report" in text and "█" in text  # files always get blocks
+    assert "TokenDashboard report" in text and "█" in text  # files always get blocks
 
 
 def test_piped_stdout_plain_even_with_color_patched(monkeypatch, no_db, piped, capsys):
@@ -497,19 +497,19 @@ def test_parser_guards_exit_two(monkeypatch, no_db, argv):
 
 
 def test_tui_status_parses_and_is_ignored(monkeypatch, no_db):
-    """`tokdash tui status`: "status" is a legal db_action choice and must be
+    """`token_dashboard tui status`: "status" is a legal db_action choice and must be
     silently ignored — stub the app module so this test does not need the TUI."""
     captured = {}
-    stub = types.ModuleType("tokdash.tui.app")
+    stub = types.ModuleType("token_dashboard.tui.app")
     stub.run_tui = lambda args: captured.update(vars(args)) or 0
-    monkeypatch.setitem(sys.modules, "tokdash.tui.app", stub)
-    # `tokdash tui` also settles the colour ceiling before Textual is imported,
+    monkeypatch.setitem(sys.modules, "token_dashboard.tui.app", stub)
+    # `token_dashboard tui` also settles the colour ceiling before Textual is imported,
     # and that decision is recorded process-wide for the brand row to read. A
     # test that only means to check the parser must not leave the NEXT test
     # module believing this terminal refused its palette. Imported here rather
     # than named as a dotted path: the cli imports it inside the function, so a
     # string target would be resolved before the module is in sys.modules.
-    import tokdash.tui.terminal as tui_terminal
+    import token_dashboard.tui.terminal as tui_terminal
 
     monkeypatch.setattr(tui_terminal, "configure_color_system", lambda *a, **k: None)
     assert cli(["tui", "status"]) == 0
@@ -556,7 +556,7 @@ def _segments(monkeypatch):
 
 def test_emitters(monkeypatch, no_db):
     # no_db: the builder's db footer would otherwise open the REAL
-    # ~/.tokdash store (and on a fresh machine create it).
+    # ~/.token_dashboard store (and on a fresh machine create it).
     seg = _segments(monkeypatch)
     plain = report.emit_plain(seg)
     assert "\x1b" not in plain

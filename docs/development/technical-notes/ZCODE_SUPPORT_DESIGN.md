@@ -1,7 +1,7 @@
 # ZCode support design
 
 ZCode (Z.ai's GLM coding app) persists every model request in a local SQLite
-database. Tokdash reads it read-only, one entry per `model_usage` row, and a
+database. TokenDashboard reads it read-only, one entry per `model_usage` row, and a
 phase 2 extension reads `turn_usage` for the Session Explorer. This note
 records the storage layout, the token-accounting rules the parser must
 follow, the session-support decisions, and what is deliberately out of
@@ -26,7 +26,7 @@ Key tables:
 | `session` | id, title, directory, parent_id (subagents); read by the
   session loader (phase 2) |
 | `tool_usage` | Per tool call; not read (turn-level `tool_call_count` covers the display need) |
-| `message` / `part` | Conversation text; not read by Tokdash |
+| `message` / `part` | Conversation text; not read by TokenDashboard |
 
 `model_usage` columns the parser uses:
 
@@ -45,7 +45,7 @@ cache_creation_input_tokens
 ```
 
 Retries are distinct rows sharing a `logical_request_id` with different
-`attempt_index` values, and the provider bills each attempt, so Tokdash keeps
+`attempt_index` values, and the provider bills each attempt, so TokenDashboard keeps
 every row and keys entries on the row's own `id`.
 
 ## Token accounting
@@ -95,7 +95,7 @@ Unverified assumptions, each pinned to a first-row check in
 
 ## Parser design
 
-`ZCodeParser` in `src/tokdash/sources/coding_tools.py`, structured on
+`ZCodeParser` in `src/token_dashboard/sources/coding_tools.py`, structured on
 `MimoParser` (SQLite, class-level query cache, `SourceSyncCapability`):
 
 - Path resolution: `clientpaths.zcode_db_path()`, honoring `ZCODE_HOME`.

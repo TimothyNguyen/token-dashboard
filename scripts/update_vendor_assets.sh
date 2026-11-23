@@ -5,7 +5,7 @@
 # library version needs a new filename; never change a file under an old name.
 set -euo pipefail
 
-vendor_dir=src/tokdash/static/vendor
+vendor_dir=src/token_dashboard/static/vendor
 mkdir -p "$vendor_dir"
 
 download() {

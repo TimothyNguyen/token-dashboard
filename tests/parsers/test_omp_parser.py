@@ -6,9 +6,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 
-from tokdash import clientpaths, osinfo
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import (
+from token_dashboard import clientpaths, osinfo
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import (
     BaseParser,
     CodingToolsUsageTracker,
     OmpParser,

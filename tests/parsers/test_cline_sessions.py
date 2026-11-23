@@ -19,15 +19,15 @@ import pytest
 
 from test_cline_parser import _assistant, _user, _write_session
 
-from tokdash import sessions
-from tokdash.pricing import PricingDatabase
-from tokdash.sessions import (
+from token_dashboard import sessions
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sessions import (
     SESSION_TOOLS,
     get_session_detail,
     get_sessions_data,
     reload_pricing_db,
 )
-from tokdash.sources.coding_tools import BaseParser, ClineParser, _sig_cache
+from token_dashboard.sources.coding_tools import BaseParser, ClineParser, _sig_cache
 
 
 def _local_ms(year, month, day, hour=12):
@@ -195,7 +195,7 @@ def _setup(monkeypatch, tmp_path) -> Path:
     data_dir = tmp_path / "cline"
     data_dir.mkdir(parents=True)
     monkeypatch.setenv("CLINE_DATA_DIR", str(data_dir))
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(tmp_path / "data-home"))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path / "data-home"))
     override = PricingDatabase().override_path()
     override.parent.mkdir(parents=True, exist_ok=True)
     override.write_text(

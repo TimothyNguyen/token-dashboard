@@ -11,15 +11,15 @@ from contextlib import closing
 from pathlib import Path
 
 from test_lazy_speed_cache import corpus, build_requested
-from tokdash import speed_cache as cache, speed_worker, compute
-from tokdash.sources.coding_tools import CodingToolsUsageTracker
+from token_dashboard import speed_cache as cache, speed_worker, compute
+from token_dashboard.sources.coding_tools import CodingToolsUsageTracker
 
 
 def test_session_build_reuses_history_without_rewriting_it(corpus, monkeypatch):
     import sqlite3
     from output_speed_expansion_fixtures import codex_call
     root, _, inventory = corpus
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION', '1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION', '1')
     with sqlite3.connect(root / 'opencode.db') as conn:
         template = conn.execute("SELECT data FROM message WHERE id='m1'").fetchone()[0]
         conn.executemany('INSERT INTO message VALUES(?,?,?,?,?)', ((f'history-{i}', 's', 1788264000000, 1788264002000, template) for i in range(1000)))
@@ -29,7 +29,7 @@ def test_session_build_reuses_history_without_rewriting_it(corpus, monkeypatch):
     new_file = Path(inventory['codex_file']).with_name('rollout-new-session.jsonl')
     records = [dict(type='session_meta', payload=dict(id='one-new-session', cwd='/fixture')), *codex_call(999)]
     new_file.write_text(''.join((json.dumps(row) + '\n' for row in records)))
-    import tokdash.sources.coding_tools as readers
+    import token_dashboard.sources.coding_tools as readers
     readers._sig_cache.clear()
     store, _ = compute._sync_usage_store(CodingToolsUsageTracker())
     with closing(store.read_connection()) as primary:
@@ -57,14 +57,14 @@ def test_session_publication_keeps_unrelated_rowids_and_scales_in_sql_work(corpu
     import sqlite3
     import output_speed_expansion_fixtures as fixtures
     _,_,inventory=corpus
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION','1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION','1')
     store,_=compute._sync_usage_store(CodingToolsUsageTracker())
     request={'from':'2026-09-01','to':'2026-09-28','source':''}
     build_requested(request)
     original=Path(inventory['codex_file']); new_file=original.with_name('one-short-session.jsonl')
     records=[dict(type='session_meta',payload=dict(id='one-short-session',cwd='/fixture')),*fixtures.codex_call(999)]
     new_file.write_text(''.join(json.dumps(row)+'\n' for row in records))
-    from tokdash.sources.coding_tools import _sig_cache
+    from token_dashboard.sources.coding_tools import _sig_cache
     _sig_cache.clear();compute._sync_usage_store(CodingToolsUsageTracker())
     with closing(cache.connect()) as conn:
         base=list(conn.execute("SELECT rowid,* FROM speed_responses WHERE source='opencode'"))
@@ -93,7 +93,7 @@ def test_session_publication_keeps_unrelated_rowids_and_scales_in_sql_work(corpu
 
 
 def test_changed_stream_mapping_publishes_even_when_response_scalars_match(corpus,monkeypatch):
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION','1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION','1')
     compute._sync_usage_store(CodingToolsUsageTracker())
     request={'from':'2026-09-01','to':'2026-09-28','source':'codex','session_id':'bench-codex'}
     build_requested(request)
@@ -108,7 +108,7 @@ def test_changed_stream_mapping_publishes_even_when_response_scalars_match(corpu
 
 
 def test_atomic_failure_before_commit_keeps_unrelated_and_selected_last_good(corpus,monkeypatch):
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION','1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION','1')
     compute._sync_usage_store(CodingToolsUsageTracker())
     request={'from':'2026-09-01','to':'2026-09-28','source':''}
     build_requested(request)

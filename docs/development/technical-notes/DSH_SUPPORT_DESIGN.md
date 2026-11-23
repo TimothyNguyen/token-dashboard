@@ -10,7 +10,7 @@ Python zstandard wheel was tested, but dsh itself was not installed on the Windo
 
 ## Goal and non-goals
 
-Add DeepSeek Harness as a local Tokdash source with:
+Add DeepSeek Harness as a local TokenDashboard source with:
 
 - provider-reported token usage in Overview and Stats;
 - per-session rows and drill-down in Session Explorer;
@@ -42,18 +42,18 @@ Uncompressed deployments can instead write:
 $DSH_HOME/sessions/<project-key>/<session-id>/session.jsonl
 ```
 
-`DSH_HOME` is dsh's native environment override. Tokdash should resolve it first and otherwise
+`DSH_HOME` is dsh's native environment override. TokenDashboard should resolve it first and otherwise
 use `Path.home() / ".dsh"`, matching Node's `os.homedir()` behavior on supported platforms. Expand
 a leading `~`, resolve the result to an absolute path, and treat an empty or whitespace-only
 `DSH_HOME` as unset. The resolver belongs in `clientpaths.py`; parser modules must not inline
 another copy.
 
 V1 follows the ambient `$DSH_HOME` and default home only. If a dsh deployment overrides its home
-through launcher-specific configuration without exporting `DSH_HOME`, Tokdash will not discover
-that root; set `DSH_HOME` for the Tokdash process or run a native Tokdash server beside dsh.
+through launcher-specific configuration without exporting `DSH_HOME`, TokenDashboard will not discover
+that root; set `DSH_HOME` for the TokenDashboard process or run a native TokenDashboard server beside dsh.
 
 The project directory name is lossy by design. dsh maps `/`, `\`, and `:` to `-` and wraps the
-result in `--...--`. Tokdash must discover files recursively and must not decode the project from
+result in `--...--`. TokenDashboard must discover files recursively and must not decode the project from
 the directory name. The first JSONL row carries the authoritative session header, including the
 native `cwd`.
 
@@ -63,9 +63,9 @@ native `cwd`.
 | macOS | `/Users/<user>/.dsh` | `--private-tmp--` |
 | Windows | `C:\Users\<user>\.dsh` | `--C-Users-H1937-project--` |
 
-A Tokdash process discovers logs only in its own native filesystem by default. A WSL Tokdash
+A TokenDashboard process discovers logs only in its own native filesystem by default. A WSL TokenDashboard
 service does not automatically monitor a native Windows dsh installation under
-`C:\Users\<user>\.dsh`; that topology needs an explicit mounted path or a native Windows Tokdash
+`C:\Users\<user>\.dsh`; that topology needs an explicit mounted path or a native Windows TokenDashboard
 server registered through multi-server mode. The same boundary applies to a remote macOS machine.
 
 ## Event format
@@ -98,7 +98,7 @@ The first line is a session header:
 
 `seq` is monotonic inside the logical session and `time` is Unix epoch milliseconds.
 
-Version 0 is a developer-preview format with no upstream compatibility promise. Tokdash accepts a
+Version 0 is a developer-preview format with no upstream compatibility promise. TokenDashboard accepts a
 generation **set**, currently `{0, 3, 4}`: generation 4 is what dsh >= 0.2.0 writes
 (`SESSION_FORMAT_VERSION` in `@deepseek-ai/dsh-session`) and keeps the v0 usage-event shape, so
 reading it needed nothing beyond widening the gate. Generation 3 is what earlier dsh builds left on
@@ -156,12 +156,12 @@ compressed inside it -- so a row lost to frame damage is still lost.
 This fails **closed** on the header frame. Without the first row there is no `version` to gate and
 no session id, and guessing either for an ungated generation is worse than skipping the file.
 
-dsh can append while Tokdash reads. Decode inside the per-file exception boundary, accept only
+dsh can append while TokenDashboard reads. Decode inside the per-file exception boundary, accept only
 complete newline-terminated JSON rows, and discard a torn final line. If a file yields nothing,
 raise rather than return an empty list -- see [Error and edge-case policy](#error-and-edge-case-policy).
 File replacement is driven by the normal `(path, mtime_ns, size)` signature.
 
-Ignore unknown event types. Tokdash does not reconstruct the DSH session and therefore does not
+Ignore unknown event types. TokenDashboard does not reconstruct the DSH session and therefore does not
 need dsh's strict required-event refusal semantics. This may change if a future event version
 changes usage accounting.
 
@@ -184,7 +184,7 @@ Provider usage appears in four event shapes:
 
 Shapes 1-3 carry `(turn, step)`, but a started retry is a separate provider call with the same
 coordinates. As in dsh's token-meter, `llm/retry-started` closes the previous attempt's replacement
-slot. Tokdash folds against a map keyed on `(turn, step, attempt)`:
+slot. TokenDashboard folds against a map keyed on `(turn, step, attempt)`:
 
 1. Start each step's attempt ordinal at zero.
 2. Each local `llm/retry-started` advances that step's ordinal, even when the preceding attempt
@@ -228,7 +228,7 @@ dsh's canonical `TokenUsage` buckets are disjoint:
 | `cacheWriteTokens` | `cacheWrite` | `cache_write` | Optional; missing means zero. |
 | `reasoningTokens` | `0` | `tokens_reasoning = 0` | Already included in output. |
 
-Tokdash's aggregate adds a separate `reasoning` field to input, cache, and output. Copying dsh's
+TokenDashboard's aggregate adds a separate `reasoning` field to input, cache, and output. Copying dsh's
 `reasoningTokens` there would count those tokens twice. Preserve dsh reasoning only if a future
 API shape adds a non-overlapping display field.
 
@@ -306,7 +306,7 @@ from counting inherited parent history again.
 
 ## Session Explorer mapping
 
-Each accepted usage sample becomes one internal Tokdash turn:
+Each accepted usage sample becomes one internal TokenDashboard turn:
 
 - `timestamp_ms`: event `time`;
 - `model`: model attribution above;
@@ -398,7 +398,7 @@ registry.
 
 Update:
 
-- `SESSION_TOOL_KEYS` and `lastSessionsResponses` initialization in `src/tokdash/static/index.html`;
+- `SESSION_TOOL_KEYS` and `lastSessionsResponses` initialization in `src/token_dashboard/static/index.html`;
 - the hardcoded per-tool `updateSessionPanel(...)` calls in the session panel bootstrap (add `dsh`);
 - `formatToolName`: `dsh -> DeepSeek Harness`;
 - `TOOL_BRAND_META`: initial fallback `D` and the DeepSeek brand color until a suitable asset is
@@ -447,7 +447,7 @@ Avoid maintaining a frontend-only source list that can drift from the backend re
 Compaction usage is counted. A `compaction/summary` carries its own `data.usage` -- the
 provider-reported cost of the summarization call -- alongside `provider`/`model`, with `turn` and
 `step` null. It is not a loop step, so it cannot use the `(turn, step)` fold or the
-`dsh:<session-id>:<turn>:<step>` id; Tokdash folds it as its own sample on both surfaces, keyed on
+`dsh:<session-id>:<turn>:<step>` id; TokenDashboard folds it as its own sample on both surfaces, keyed on
 the event time (`dsh:<session-id>:c:<time_ms>`). The usage object is optional, so an absent one
 stays absent rather than becoming zero.
 
@@ -460,7 +460,7 @@ usage within its own attempt. A `llm/retry-started` boundary preserves the previ
 
 The session-title request remains the known undercount. Upstream records
 `session/title-llm-request` as a log-only pre-dispatch record of the request, and the accepted
-`session/title` snapshot carries the provider/model identity but no finalized usage, so Tokdash
+`session/title` snapshot carries the provider/model identity but no finalized usage, so TokenDashboard
 cannot recover the title call's cost from the current format. Revisit if upstream persists it.
 
 ## Test plan

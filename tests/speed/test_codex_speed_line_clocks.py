@@ -3,15 +3,15 @@ import json
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from tokdash.output_speed_readers import CodexResponseAssociation
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import CodexParser
-from tokdash import sessions
+from token_dashboard.output_speed_readers import CodexResponseAssociation
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import CodexParser
+from token_dashboard import sessions
 
 
 @pytest.fixture(autouse=True)
 def _timing_reader_mode():
-    from tokdash.speed_mode import collect_timings
+    from token_dashboard.speed_mode import collect_timings
     with collect_timings():
         yield
 

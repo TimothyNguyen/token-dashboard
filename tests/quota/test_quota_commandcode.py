@@ -11,7 +11,7 @@ import pytest
 from datetime import datetime
 from urllib.error import HTTPError
 
-from tokdash.sources.quota import commandcode
+from token_dashboard.sources.quota import commandcode
 
 API = "https://api.commandcode.ai"
 WHOAMI = f"{API}/alpha/whoami"
@@ -573,7 +573,7 @@ def test_collector_never_rewrites_the_auth_files(monkeypatch, tmp_path):
 
 
 def test_detection_reads_key_content_only_with_credential_scan(monkeypatch, tmp_path):
-    from tokdash.sources import quota
+    from token_dashboard.sources import quota
 
     _auth_files(tmp_path, monkeypatch, opencode={"type": "api", "key": "user_oc"})
 
@@ -595,10 +595,10 @@ def test_detection_reads_key_content_only_with_credential_scan(monkeypatch, tmp_
 
 
 def test_monthly_suppression_withdraws_a_stored_bar_through_api(monkeypatch, tmp_path):
-    from tokdash import api
-    from tokdash.sources import quota
-    from tokdash.sources.quota import config
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard import api
+    from token_dashboard.sources import quota
+    from token_dashboard.sources.quota import config
+    from token_dashboard.usage_store import UsageEntryStore
 
     _auth_files(tmp_path, monkeypatch, native={"apiKey": "user_live"})
     config.set_quota_consent({"credential_scan": True, "commandcode_api": True})
@@ -634,10 +634,10 @@ def test_monthly_suppression_withdraws_a_stored_bar_through_api(monkeypatch, tmp
 
 
 def test_status_recovery_retires_the_cycle_error(monkeypatch, tmp_path):
-    from tokdash import api
-    from tokdash.sources import quota
-    from tokdash.sources.quota import config
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard import api
+    from token_dashboard.sources import quota
+    from token_dashboard.sources.quota import config
+    from token_dashboard.usage_store import UsageEntryStore
 
     _auth_files(tmp_path, monkeypatch, native={"apiKey": "user_live"})
     config.set_quota_consent({"credential_scan": True, "commandcode_api": True})
@@ -677,8 +677,8 @@ def test_status_recovery_retires_the_cycle_error(monkeypatch, tmp_path):
 def test_same_cycle_success_cannot_retire_a_same_cycle_error(monkeypatch, tmp_path):
     # A failure and window rows written under ONE captured_at: ok_at can never be
     # strictly greater than status_at, so the error stays live.
-    from tokdash import api
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard import api
+    from token_dashboard.usage_store import UsageEntryStore
 
     _auth_files(tmp_path, monkeypatch, native={"apiKey": "user_live"})
     api._clear_cache()
@@ -700,8 +700,8 @@ def test_history_running_high_needs_no_code_change_for_fixed_epoch_windows(monke
     one epoch (dips and all) and only falls at a rollover, which advances `resets_at`.
     The running-high path already measures that correctly, so
     `_quota_history_uses_adjacent_deltas` is pinned to stay as-is."""
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore, _quota_history_uses_adjacent_deltas
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore, _quota_history_uses_adjacent_deltas
 
     assert _quota_history_uses_adjacent_deltas("commandcode", "5h", 1_789_601_836) is False
     assert _quota_history_uses_adjacent_deltas("commandcode", "7d", 1_790_188_636) is False
@@ -738,8 +738,8 @@ def test_history_running_high_needs_no_code_change_for_fixed_epoch_windows(monke
 @pytest.mark.parametrize("same_second", [False, True])
 @pytest.mark.parametrize("removed", ["all", "weekly"])
 def test_removed_limits_withdraw_stored_bars_and_plan(monkeypatch, tmp_path, same_second, removed):
-    from tokdash import api
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard import api
+    from token_dashboard.usage_store import UsageEntryStore
 
     _auth_files(tmp_path, monkeypatch, native={"apiKey": "user_test"})
     store = UsageEntryStore()
@@ -771,8 +771,8 @@ def test_removed_limits_withdraw_stored_bars_and_plan(monkeypatch, tmp_path, sam
 
 @pytest.mark.parametrize("balance", ["missing", None, "invalid", True, -1, float("nan"), float("inf")])
 def test_invalid_monthly_balance_preserves_last_valid_reading(monkeypatch, tmp_path, balance):
-    from tokdash import api
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard import api
+    from token_dashboard.usage_store import UsageEntryStore
 
     _auth_files(tmp_path, monkeypatch, native={"apiKey": "user_test"})
     store = UsageEntryStore()

@@ -1,4 +1,4 @@
-"""Spec §10 tests for tokdash/tui/formatting.py.
+"""Spec §10 tests for token_dashboard/tui/formatting.py.
 
 Pure string rules, the null-vs-zero law, the percentage-points lock, the
 two-surface delta-color split, the glyph probe, and (once report.py lands) the
@@ -13,7 +13,7 @@ import types
 
 import pytest
 
-from tokdash.tui.formatting import (
+from token_dashboard.tui.formatting import (
     EM_DASH,
     NA,
     Run,
@@ -173,7 +173,7 @@ class TestPercentPointsLock:
     def test_pct_change_cross_check(self):
         # compute.pct_change already multiplies by 100 (compute.py:1075-1079);
         # fmt_delta must never scale again or 110-vs-100 would read "1000.0%".
-        from tokdash.compute import pct_change
+        from token_dashboard.compute import pct_change
 
         assert pct_change(110, 100) == 10.0
         with fake_stdout_encoding("utf-8"):
@@ -306,7 +306,7 @@ class TestEmitters:
 
     @pytest.fixture
     def report(self):
-        return pytest.importorskip("tokdash.tui.report", reason="report lane has not landed yet")
+        return pytest.importorskip("token_dashboard.tui.report", reason="report lane has not landed yet")
 
     def test_emit_plain_no_ansi_no_brackets(self, report):
         segs = [

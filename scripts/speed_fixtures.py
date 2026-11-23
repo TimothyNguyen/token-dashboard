@@ -183,27 +183,27 @@ def _omp_file(root: Path, *, seed: int, turns: int, base: datetime) -> Path:
 
 
 def isolated_env(corpus_root: Path, data_dir: Path, xdg_root: Path) -> dict:
-    """Environment for a throwaway tokdash server, without touching HOME.
+    """Environment for a throwaway token_dashboard server, without touching HOME.
 
     Shared by the benchmark harness and the browser check so the two cannot drift
     into measuring different corpora. HOME and CODEX_HOME are deliberately absent:
     repurposing them is off limits, and the parser allowlist in
-    scripts/bench_tokdash_server.py is what keeps the readers inside these roots.
+    scripts/bench_token_dashboard_server.py is what keeps the readers inside these roots.
     """
     corpus_root = Path(corpus_root)
     return {
-        "TOKDASH_BENCH_CORPUS": str(corpus_root.resolve()),
-        "TOKDASH_USAGE_DB_PATH": str(Path(data_dir).resolve() / "usage.sqlite3"),
-        "TOKDASH_USAGE_DB_WATCH": "0",
-        "TOKDASH_QUOTA_POLL": "0",
-        "TOKDASH_DATA_DIR": str(Path(data_dir)),
+        "TOKEN_DASHBOARD_BENCH_CORPUS": str(corpus_root.resolve()),
+        "TOKEN_DASHBOARD_USAGE_DB_PATH": str(Path(data_dir).resolve() / "usage.sqlite3"),
+        "TOKEN_DASHBOARD_USAGE_DB_WATCH": "0",
+        "TOKEN_DASHBOARD_QUOTA_POLL": "0",
+        "TOKEN_DASHBOARD_DATA_DIR": str(Path(data_dir)),
         "XDG_DATA_HOME": str(Path(xdg_root) / "share"),
         "XDG_CONFIG_HOME": str(Path(xdg_root) / "config"),
         "XDG_CACHE_HOME": str(Path(xdg_root) / "cache"),
-        "TOKDASH_WARM_ON_START": "0",
-        "TOKDASH_DAILY_WARM": "0",
+        "TOKEN_DASHBOARD_WARM_ON_START": "0",
+        "TOKEN_DASHBOARD_DAILY_WARM": "0",
         # A just-written corpus would otherwise wait out the live-input settle window.
-        "TOKDASH_SPEED_SETTLE_SECONDS": "0",
+        "TOKEN_DASHBOARD_SPEED_SETTLE_SECONDS": "0",
         "KIMI_CODE_HOME": str(corpus_root / "kimi-code"),
         "KIMI_SHARE_DIR": str(corpus_root / "kimi-legacy-absent"),
         "PI_CONFIG_DIR": str(corpus_root / "omp"),

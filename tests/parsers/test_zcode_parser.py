@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import CodingToolsUsageTracker, ZCodeParser
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import CodingToolsUsageTracker, ZCodeParser
 
 # Faithful subset of the real model_usage schema (observed on macOS, ZCode 3.7.7):
 # all columns the parser selects, with the real constraints.
@@ -299,7 +299,7 @@ def test_zcode_snapshot_open_failure_skips(monkeypatch, tmp_path):
     """A snapshot open failure skips the source with a single attempt and
     no fallback: the only connection attempt targets the private temp-dir
     copy, never the source path, and _open_snapshot returns None."""
-    import tokdash.sources.coding_tools as ct
+    import token_dashboard.sources.coding_tools as ct
 
     home = tmp_path / ".zcode"
     db_path = home / "cli" / "db" / "db.sqlite"
@@ -346,7 +346,7 @@ def test_zcode_failed_read_not_cached(monkeypatch, tmp_path):
     """A failed read is not cached: the next collect retries and returns the
     rows once the read recovers, even though the file signatures are
     unchanged."""
-    import tokdash.sources.coding_tools as ct
+    import token_dashboard.sources.coding_tools as ct
 
     home = tmp_path / ".zcode"
     db_path = home / "cli" / "db" / "db.sqlite"
@@ -435,7 +435,7 @@ def test_zcode_table_probe_failure_not_cached(monkeypatch, tmp_path):
     "absent table": the empty result is not cached, and the next collect
     retries and returns the rows even though the file signatures are
     unchanged."""
-    import tokdash.sources.coding_tools as ct
+    import token_dashboard.sources.coding_tools as ct
 
     home = tmp_path / ".zcode"
     db_path = home / "cli" / "db" / "db.sqlite"
@@ -495,7 +495,7 @@ def test_zcode_no_sidecar_writes_in_source_dir(monkeypatch, tmp_path):
     before = sorted(p.name for p in live_dir.iterdir())
     assert before == ["db.sqlite", "db.sqlite-wal"]
 
-    import tokdash.sources.coding_tools as ct
+    import token_dashboard.sources.coding_tools as ct
 
     created = []
 
@@ -521,7 +521,7 @@ def test_zcode_stale_read_not_stored_after_signature_change(monkeypatch, tmp_pat
     while a concurrent collect advanced the signature) is returned for that
     request but NOT stored under the new signature - no indefinite stale
     cache."""
-    import tokdash.sources.coding_tools as ct
+    import token_dashboard.sources.coding_tools as ct
 
     home = tmp_path / ".zcode"
     db_path = home / "cli" / "db" / "db.sqlite"
@@ -565,7 +565,7 @@ def test_zcode_snapshot_retries_when_source_changes_mid_copy(monkeypatch, tmp_pa
     generations, so the db/-wal signatures are re-checked after copying
     and the attempt is dropped and re-copied: the result is the complete
     new generation, never a torn mix."""
-    import tokdash.sources.coding_tools as ct
+    import token_dashboard.sources.coding_tools as ct
 
     home = tmp_path / ".zcode"
     db_path = home / "cli" / "db" / "db.sqlite"
@@ -603,7 +603,7 @@ def test_zcode_copy_fingerprints_see_a_replaced_file_with_same_size_and_mtime(tm
     """A same-size rewrite inside one clock tick leaves (mtime, size)
     untouched, so the mid-copy coherence check also keys on the file
     identity: a replacement file is a different generation."""
-    import tokdash.sources.coding_tools as ct
+    import token_dashboard.sources.coding_tools as ct
 
     db_path = tmp_path / "db.sqlite"
     db_path.write_bytes(b"a" * 4096)
@@ -629,7 +629,7 @@ def test_zcode_snapshot_retries_checkpoint_race_on_wal_copy(monkeypatch, tmp_pat
     a terminal FileNotFoundError; it is a normal generation change, so
     the attempt is retried and the next attempt reads the checkpointed
     db with its rows."""
-    import tokdash.sources.coding_tools as ct
+    import token_dashboard.sources.coding_tools as ct
 
     home = tmp_path / ".zcode"
     db_path = home / "cli" / "db" / "db.sqlite"
@@ -694,7 +694,7 @@ class _CloseRaisingConnection:
 
 
 def test_zcode_close_failure_cleans_snapshot_and_does_not_cache(monkeypatch, tmp_path):
-    import tokdash.sources.coding_tools as ct
+    import token_dashboard.sources.coding_tools as ct
 
     home = tmp_path / ".zcode"
     db_path = home / "cli" / "db" / "db.sqlite"

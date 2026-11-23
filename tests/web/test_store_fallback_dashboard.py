@@ -1,6 +1,6 @@
 """A store failure must not make the dashboard keep showing old data.
 
-`reconcileUsageRows` (`src/tokdash/static/index.html`) treats a non-empty
+`reconcileUsageRows` (`src/token_dashboard/static/index.html`) treats a non-empty
 `source_errors` as "this response is incomplete": it drops the fresh payload and
 puts that server's last complete snapshot back in its place, or marks the row
 partial when there is no snapshot yet.
@@ -21,7 +21,7 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import compute
+from token_dashboard import compute
 
 from support.frontend import extract_js_function, index_source, needs_node, run_node
 
@@ -80,13 +80,13 @@ def _reconcile(tmp_path: Path, fresh: dict, stale: dict = None, *, snapshot: boo
 
 @pytest.fixture
 def corrupt_db(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    data_dir = tmp_path / "tokdash_data"
+    data_dir = tmp_path / "token_dashboard_data"
     data_dir.mkdir(parents=True, exist_ok=True)
     db_file = data_dir / "usage.sqlite3"
     db_file.write_bytes(b"not a valid sqlite database header\n" * 20)
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(data_dir))
-    monkeypatch.setenv("TOKDASH_USAGE_DB_PATH", str(db_file))
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_PATH", str(db_file))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     return db_file
 
 

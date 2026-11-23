@@ -1,17 +1,17 @@
 # Claude Code statusline templates
 
-Drop-in [Claude Code statusline](https://docs.claude.com/en/docs/claude-code/statusline) scripts that pull live token & cost totals from a locally running Tokdash. They only ever issue **GET** requests to `http://127.0.0.1:55423`, so Tokdash's write-protection gate never blocks them, and they **fail silently** (just hide the 📊 segment) when Tokdash isn't running.
+Drop-in [Claude Code statusline](https://docs.claude.com/en/docs/claude-code/statusline) scripts that pull live token & cost totals from a locally running TokenDashboard. They only ever issue **GET** requests to `http://127.0.0.1:55423`, so TokenDashboard's write-protection gate never blocks them, and they **fail silently** (just hide the 📊 segment) when TokenDashboard isn't running.
 
 | Template | Output | Use it when |
 |---|---|---|
 | [`statusline-minimal.sh`](statusline-minimal.sh) | `[Claude Sonnet 4.6] 📁 myproject \| 📊 12.3M ($4.56) today` | You just want today's total on one line. Best starting point. |
-| [`statusline-full.sh`](statusline-full.sh) | Four rows: model/branch/effort · context bar/session cost · dir/env/**tokdash today+week**/git · clock/rate-limits/**top-3 tools** | You want a full dashboard in the status bar. The tokdash parts are fenced in a clearly marked block you can keep or delete. |
+| [`statusline-full.sh`](statusline-full.sh) | Four rows: model/branch/effort · context bar/session cost · dir/env/**token-dashboard today+week**/git · clock/rate-limits/**top-3 tools** | You want a full dashboard in the status bar. The token-dashboard parts are fenced in a clearly marked block you can keep or delete. |
 | [`statusline.ps1`](statusline.ps1) | Same one-liner as `statusline-minimal.sh`: `[Claude Sonnet 4.6] 📁 myproject \| 📊 12.3M ($4.56) today` | You're running Claude Code natively on Windows and want the minimal template without installing `curl`/`jq`. See [Windows](#windows) below. |
 
 ## Requirements
 
 - [`jq`](https://jqlang.github.io/jq/) and `curl` on your `PATH` (bash templates). On native Windows, `statusline.ps1` only needs PowerShell 5.1+ — `Invoke-RestMethod`/`ConvertFrom-Json` ship in the box, no extra install. See [Windows](#windows).
-- Tokdash running locally (`tokdash serve`, or a `tokdash setup` background service).
+- TokenDashboard running locally (`token-dashboard serve`, or a `token-dashboard setup` background service).
 - Claude Code **2.1.97+** for `refreshInterval` (older versions only repaint the statusline on each turn).
 
 ## Install
@@ -34,7 +34,7 @@ chmod +x ~/.claude/scripts/statusline.sh
 }
 ```
 
-`refreshInterval` re-runs the script every N seconds so the totals stay live even while you're idle. Keep it ≥ Tokdash's cache TTL behavior in mind — every 30s is comfortable.
+`refreshInterval` re-runs the script every N seconds so the totals stay live even while you're idle. Keep it ≥ TokenDashboard's cache TTL behavior in mind — every 30s is comfortable.
 
 ## Windows
 
@@ -71,20 +71,20 @@ The same environment variables as the bash templates apply — set them with `$e
 of `export`, e.g. in your PowerShell profile (`$PROFILE`):
 
 ```powershell
-$env:TOKDASH_URL = "http://127.0.0.1:55423"
-$env:TOKDASH_STATUSLINE_PERIOD = "today"
+$env:TOKEN_DASHBOARD_URL = "http://127.0.0.1:55423"
+$env:TOKEN_DASHBOARD_STATUSLINE_PERIOD = "today"
 ```
 
 `statusline.ps1` is read-only, localhost-only, and fails silently (drops the 📊 segment)
-if Tokdash isn't running or unreachable — the same fail-silent behavior as the bash
+if TokenDashboard isn't running or unreachable — the same fail-silent behavior as the bash
 templates.
 
-> Native Windows support for Tokdash itself (foreground `tokdash serve` and the
+> Native Windows support for TokenDashboard itself (foreground `token-dashboard serve` and the
 > Task Scheduler background service) is implemented in this branch but still awaiting
 > real-Windows validation — see
 > [Platform support](../../../README.md#platform-support) in the main README. This
 > statusline template targets Claude Code running on Windows independently of that
-> rollout; it only needs a reachable Tokdash `/api/usage` endpoint, wherever Tokdash is
+> rollout; it only needs a reachable TokenDashboard `/api/usage` endpoint, wherever TokenDashboard is
 > actually running.
 
 ## Configuration
@@ -94,12 +94,12 @@ All templates honor the same environment variables (set them in your shell profi
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `TOKDASH_URL` | `http://127.0.0.1:55423` | Tokdash base URL. Set this if you changed `TOKDASH_HOST` / `TOKDASH_PORT`. |
-| `TOKDASH_STATUSLINE_PERIOD` | `today` | (minimal only) Which window to show: `today`, `3days`, `week`, `14days`, `month`, `year`, `all`. |
+| `TOKEN_DASHBOARD_URL` | `http://127.0.0.1:55423` | TokenDashboard base URL. Set this if you changed `TOKEN_DASHBOARD_HOST` / `TOKEN_DASHBOARD_PORT`. |
+| `TOKEN_DASHBOARD_STATUSLINE_PERIOD` | `today` | (minimal only) Which window to show: `today`, `3days`, `week`, `14days`, `month`, `year`, `all`. |
 
 ## What it queries
 
-Both templates read from Tokdash's `/api/usage` endpoint — see [`docs/reference/API.md`](../../reference/API.md) for the full reference. The minimal template makes one request for the configured period; the full template makes two read-only requests (`today` and `week`):
+Both templates read from TokenDashboard's `/api/usage` endpoint — see [`docs/reference/API.md`](../../reference/API.md) for the full reference. The minimal template makes one request for the configured period; the full template makes two read-only requests (`today` and `week`):
 
 ```
 GET /api/usage?period=today
@@ -127,19 +127,19 @@ curl -s 'http://127.0.0.1:55423/api/usage?period=today' | jq '{total_tokens, tot
 
 ## Customizing
 
-- **Different window:** change the `period=` value (minimal: set `TOKDASH_STATUSLINE_PERIOD`).
+- **Different window:** change the `period=` value (minimal: set `TOKEN_DASHBOARD_STATUSLINE_PERIOD`).
 - **A single tool instead of the total:** read `.by_tool.claude.tokens` (or `codex`, `gemini`, `copilot`, `opencode`, `openclaw`, `kimi`, `pi`, `hermes`).
-- **Trim the full template:** delete any of its four `echo -e` rows; the tokdash-specific logic lives between the `TOKDASH BLOCK` / `END TOKDASH BLOCK` markers.
+- **Trim the full template:** delete any of its four `echo -e` rows; the token-dashboard-specific logic lives between the `TOKEN_DASHBOARD BLOCK` / `END TOKEN_DASHBOARD BLOCK` markers.
 - **Add cache hit rate:** each `by_tool` entry (and the header) carries `cache_hit_rate` (0–1).
 
 ## Troubleshooting
 
 | Symptom | Likely cause |
 |---|---|
-| No 📊 segment ever appears | Tokdash isn't running, or `TOKDASH_URL` points at the wrong host/port. Test with the `curl` command above. |
+| No 📊 segment ever appears | TokenDashboard isn't running, or `TOKEN_DASHBOARD_URL` points at the wrong host/port. Test with the `curl` command above. |
 | Statusline is blank / errors | `jq` not installed, or the script isn't executable. Run `bash ~/.claude/scripts/statusline.sh < /dev/null` to see errors. |
 | Totals look frozen | Bump or add `refreshInterval`; without it the bar only repaints when Claude Code produces output. |
-| Brief stalls when restarting Tokdash | Expected and bounded — each `curl -m 1` call waits at most 1s. The minimal template makes one Tokdash request; the full template makes two. |
+| Brief stalls when restarting TokenDashboard | Expected and bounded — each `curl -m 1` call waits at most 1s. The minimal template makes one TokenDashboard request; the full template makes two. |
 | (Windows) Statusline blank / "cannot be loaded" error | Script execution policy blocked it — make sure the `command` in `settings.json` includes `-ExecutionPolicy Bypass` exactly as shown in [Windows](#windows). Run `powershell -NoProfile -ExecutionPolicy Bypass -File "%USERPROFILE%\.claude\scripts\statusline.ps1"` directly (with no piped stdin) to see the raw error. |
 
-> These scripts are read-only and localhost-only. They never send your usage data anywhere — they just render what your local Tokdash already computed.
+> These scripts are read-only and localhost-only. They never send your usage data anywhere — they just render what your local TokenDashboard already computed.

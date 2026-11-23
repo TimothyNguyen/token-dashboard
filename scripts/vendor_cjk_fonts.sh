@@ -8,7 +8,7 @@
 # index.html already name the ones every operating system ships, which covers most
 # machines; this is for the ones that ship none (a slim Linux box, a container) or
 # that cannot reach fonts.googleapis.com at all. The dashboard picks the vendored
-# face up on its own -- see tokdash/assets.py local_cjk_font_css() -- and needs a
+# face up on its own -- see token-dashboard/assets.py local_cjk_font_css() -- and needs a
 # restart afterwards, because the answer is cached for the process lifetime.
 #
 # Noto Sans SC is under the SIL Open Font License 1.1, which permits embedding and
@@ -17,7 +17,7 @@
 # carries the same notice. The files land unmodified.
 set -euo pipefail
 
-weights=${TOKDASH_CJK_WEIGHTS:-400;500;700}
+weights=${TOKEN_DASHBOARD_CJK_WEIGHTS:-400;500;700}
 # Google serves woff2 only to user agents that ask for it, so the CSS has to be
 # fetched as a browser would or the URLs come back as ttf.
 ua='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
@@ -46,7 +46,7 @@ if [ ! -s "$work/urls" ]; then
   exit 1
 fi
 
-font_root=src/tokdash/static/vendor/fonts
+font_root=src/token_dashboard/static/vendor/fonts
 font_dir=$font_root/noto-sans-sc-$version
 mkdir -p "$font_root"
 # Stage on the destination filesystem so the first install is one rename. The
@@ -70,7 +70,7 @@ if [ -d "$font_dir" ]; then
   # Published vendor URLs are immutable. Refuse a different weight set under
   # the same URL, and repair matching installs with atomic file replacements.
   if [ -f "$font_dir/noto-sans-sc.css" ] && ! cmp -s "$font_dir/noto-sans-sc.css" "$stage/noto-sans-sc.css"; then
-    echo "Noto Sans SC $version is already installed with different CSS; keep its original TOKDASH_CJK_WEIGHTS until the upstream version changes" >&2
+    echo "Noto Sans SC $version is already installed with different CSS; keep its original TOKEN_DASHBOARD_CJK_WEIGHTS until the upstream version changes" >&2
     exit 1
   fi
   mv "$stage/"*.woff2 "$font_dir/"
@@ -83,4 +83,4 @@ fi
 printf 'vendored Noto Sans SC %s (%s weights, %s slices, %s) into %s\n' \
   "$version" "$weights" "$(wc -l < "$work/urls" | tr -d ' ')" \
   "$(du -sh "$font_dir" | cut -f1)" "$font_dir"
-echo 'restart Tokdash to serve it; the directory it lands in is gitignored on purpose.'
+echo 'restart TokenDashboard to serve it; the directory it lands in is gitignored on purpose.'

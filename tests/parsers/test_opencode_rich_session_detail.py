@@ -7,7 +7,7 @@ import sqlite3
 
 import pytest
 
-from tokdash import sessions
+from token_dashboard import sessions
 
 BASE = 1_787_000_000_000
 V2 = """CREATE TABLE session_message(id TEXT PRIMARY KEY, session_id TEXT NOT NULL,

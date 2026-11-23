@@ -18,9 +18,9 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import sessions
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import KiloCodeParser, OpenCodeParser
+from token_dashboard import sessions
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import KiloCodeParser, OpenCodeParser
 
 # Whole-second base so datetime windows convert back to the same millisecond.
 BASE = 1_787_000_000_000
@@ -325,7 +325,7 @@ def _make_v2_session_db(path: Path, frozen_legacy=(), extra_rows=()) -> Path:
     conn = sqlite3.connect(str(path))
     try:
         conn.executescript(PROJECT_DDL + SESSION_V2_DDL + V2_MESSAGE_DDL + V1_MESSAGE_DDL)
-        conn.execute("INSERT INTO project(id, worktree) VALUES('p1', '/workspace/tokdash')")
+        conn.execute("INSERT INTO project(id, worktree) VALUES('p1', '/workspace/token-dashboard')")
         conn.execute(
             "INSERT INTO session_v2(id, project_id, slug, directory, title, version, time_created, time_updated)"
             " VALUES('s1', 'p1', 'v2-slug', '/tmp/v2-fallback', 'Synthetic v2 title', '1.0.0', 0, 0)"
@@ -372,7 +372,7 @@ def _make_pre_switch_session_db(path: Path) -> Path:
         conn.executescript(
             PROJECT_DDL + SESSION_V1_DDL + SESSION_V2_DDL + V1_MESSAGE_DDL + V2_MESSAGE_DDL
         )
-        conn.execute("INSERT INTO project(id, worktree) VALUES('p1', '/workspace/tokdash')")
+        conn.execute("INSERT INTO project(id, worktree) VALUES('p1', '/workspace/token-dashboard')")
         conn.execute("INSERT INTO project(id, worktree) VALUES('p2', '/workspace/other')")
         conn.execute(
             "INSERT INTO session(id, project_id, slug, directory, title)"
@@ -412,7 +412,7 @@ def test_v2_scalar_and_raw_loaders_agree_and_read_session_v2(tmp_path):
     assert scalar == raw
     assert set(scalar) == {"s1"}
     loaded = scalar["s1"]
-    assert loaded["project"] == "tokdash"
+    assert loaded["project"] == "token-dashboard"
     assert loaded["display_name"] == "Synthetic v2 title"
     # Tokenless and user rows are dropped; the frozen legacy row must not
     # appear (it would otherwise be a fifth turn under "frozen-model").
@@ -464,7 +464,7 @@ def test_loaders_read_legacy_rows_and_join_the_legacy_session_before_the_switch(
     assert scalar == raw
     assert set(scalar) == {"s1"}
     loaded = scalar["s1"]
-    assert loaded["project"] == "tokdash"
+    assert loaded["project"] == "token-dashboard"
     assert loaded["display_name"] == "Legacy title"
     assert [turn["timestamp_ms"] for turn in loaded["turns"]] == [TS_COLD, TS_WARM]
     assert loaded["turns"][0]["model"] == "legacy-model"
@@ -525,7 +525,7 @@ def test_v2_loaders_skip_unusable_data_rows(tmp_path):
     conn = sqlite3.connect(str(db_path))
     try:
         conn.executescript(PROJECT_DDL + SESSION_V2_DDL + V2_MESSAGE_DDL)
-        conn.execute("INSERT INTO project(id, worktree) VALUES('p1', '/workspace/tokdash')")
+        conn.execute("INSERT INTO project(id, worktree) VALUES('p1', '/workspace/token-dashboard')")
         conn.execute(
             "INSERT INTO session_v2(id, project_id, slug, directory, title, version, time_created, time_updated)"
             " VALUES('s1', 'p1', 'v2-slug', '/tmp/v2-fallback', 'Malformed fixture', '1.0.0', 0, 0)"

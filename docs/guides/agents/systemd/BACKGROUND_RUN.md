@@ -1,60 +1,60 @@
-# Running Tokdash in the background
+# Running TokenDashboard in the background
 
-Tokdash is designed to be run locally (binds to `127.0.0.1` by default). If you want it to run automatically in the background, use a **user** service (recommended) rather than a system-wide service.
+TokenDashboard is designed to be run locally (binds to `127.0.0.1` by default). If you want it to run automatically in the background, use a **user** service (recommended) rather than a system-wide service.
 
 ## Linux (systemd user service)
 
-### 1) Install Tokdash
+### 1) Install TokenDashboard
 
 In a venv (recommended):
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install tokdash
+pip install token-dashboard
 ```
 
-Confirm the full path to the installed `tokdash`:
+Confirm the full path to the installed `token-dashboard`:
 
 ```bash
-which tokdash
+which token-dashboard
 ```
 
 ### 2) Create the service file
 
-Copy `docs/guides/agents/systemd/templates/tokdash.service` to:
+Copy `docs/guides/agents/systemd/templates/token-dashboard.service` to:
 
 ```bash
 mkdir -p ~/.config/systemd/user
-cp docs/guides/agents/systemd/templates/tokdash.service ~/.config/systemd/user/tokdash.service
+cp docs/guides/agents/systemd/templates/token-dashboard.service ~/.config/systemd/user/token-dashboard.service
 ```
 
-Edit `ExecStart=` to point at your `tokdash` binary (or set it to an absolute path to your venv binary). The template passes `--no-open` because the service runs headless and should not try to launch a browser.
+Edit `ExecStart=` to point at your `token-dashboard` binary (or set it to an absolute path to your venv binary). The template passes `--no-open` because the service runs headless and should not try to launch a browser.
 
 ### 3) Enable + start
 
 ```bash
 systemctl --user daemon-reload
-systemctl --user enable --now tokdash
+systemctl --user enable --now token-dashboard
 ```
 
 View logs:
 
 ```bash
-journalctl --user -u tokdash -f
+journalctl --user -u token-dashboard -f
 ```
 
 ### (Optional) Add a health-probe backstop
 
-For Linux user services, Tokdash includes an optional `/health` probe timer that
-restarts `tokdash.service` if the process is alive but no longer answering. This
+For Linux user services, TokenDashboard includes an optional `/health` probe timer that
+restarts `token_dashboard.service` if the process is alive but no longer answering. This
 is a safety net for overload or wedge scenarios; normal installs can skip it.
 
 ```bash
-install -Dm644 docs/guides/agents/systemd/health-probe/tokdash-health.service ~/.config/systemd/user/tokdash-health.service
-install -Dm644 docs/guides/agents/systemd/health-probe/tokdash-health.timer ~/.config/systemd/user/tokdash-health.timer
+install -Dm644 docs/guides/agents/systemd/health-probe/token-dashboard-health.service ~/.config/systemd/user/token-dashboard-health.service
+install -Dm644 docs/guides/agents/systemd/health-probe/token-dashboard-health.timer ~/.config/systemd/user/token-dashboard-health.timer
 systemctl --user daemon-reload
-systemctl --user enable --now tokdash-health.timer
+systemctl --user enable --now token-dashboard-health.timer
 ```
 
 See [`health-probe/README.md`](health-probe/README.md) for port overrides,
@@ -63,7 +63,7 @@ restart-loop limits, and testing.
 Stop:
 
 ```bash
-systemctl --user disable --now tokdash
+systemctl --user disable --now token-dashboard
 ```
 
 ### (Optional) Start at boot (no login)
@@ -78,41 +78,41 @@ This command may require admin privileges depending on your distro.
 
 ## macOS (launchd LaunchAgent)
 
-### 1) Install Tokdash
+### 1) Install TokenDashboard
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install tokdash
-which tokdash
+pip install token-dashboard
+which token-dashboard
 ```
 
 ### 2) Install the LaunchAgent plist
 
-Copy `docs/guides/agents/systemd/templates/com.tokdash.tokdash.plist` to:
+Copy `docs/guides/agents/systemd/templates/com.token_dashboard.token_dashboard.plist` to:
 
 ```bash
 mkdir -p ~/Library/LaunchAgents
-cp docs/guides/agents/systemd/templates/com.tokdash.tokdash.plist ~/Library/LaunchAgents/com.tokdash.tokdash.plist
+cp docs/guides/agents/systemd/templates/com.token_dashboard.token_dashboard.plist ~/Library/LaunchAgents/com.token_dashboard.token_dashboard.plist
 ```
 
-Edit the plist to set the correct `ProgramArguments` path for your `tokdash` binary and adjust `--bind/--port` as desired. The template passes `--no-open` so the headless agent does not try to launch a browser.
+Edit the plist to set the correct `ProgramArguments` path for your `token-dashboard` binary and adjust `--bind/--port` as desired. The template passes `--no-open` so the headless agent does not try to launch a browser.
 
 ### 3) Load + start
 
 ```bash
-launchctl load -w ~/Library/LaunchAgents/com.tokdash.tokdash.plist
+launchctl load -w ~/Library/LaunchAgents/com.token_dashboard.token_dashboard.plist
 ```
 
 To unload/stop:
 
 ```bash
-launchctl unload -w ~/Library/LaunchAgents/com.tokdash.tokdash.plist
+launchctl unload -w ~/Library/LaunchAgents/com.token_dashboard.token_dashboard.plist
 ```
 
 Logs (default locations in the plist):
 
-- `/tmp/tokdash.out.log`
-- `/tmp/tokdash.err.log`
+- `/tmp/token-dashboard.out.log`
+- `/tmp/token-dashboard.err.log`
 
 Note: `launchd` expects **absolute** paths; `~` is not expanded in plist path fields. If you want logs under your home directory, set `StandardOutPath` / `StandardErrorPath` to an absolute path (for example, `/Users/<you>/Library/Logs/...`).

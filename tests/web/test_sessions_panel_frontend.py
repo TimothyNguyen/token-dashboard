@@ -13,13 +13,13 @@ from pathlib import Path
 
 import pytest
 
-import tokdash
-from tokdash.sessions import SESSION_TOOLS
+import token_dashboard
+from token_dashboard.sessions import SESSION_TOOLS
 
 from support.frontend import STATIC_DIR, extract_js_function, index_source, needs_node, run_node
 
 
-INDEX_HTML = Path(tokdash.__file__).parent / "static" / "index.html"
+INDEX_HTML = Path(token_dashboard.__file__).parent / "static" / "index.html"
 # The combined panel is built in the page from the per-tool responses, so it has
 # a panel but no entry in the server's tool list.
 SESSION_PANELS = (*SESSION_TOOLS, "combined")
@@ -467,7 +467,7 @@ def pill_browser_page():
         try:
             browser = pw.chromium.launch(
                 headless=True,
-                executable_path=os.environ.get("TOKDASH_TEST_CHROMIUM"),
+                executable_path=os.environ.get("TOKEN_DASHBOARD_TEST_CHROMIUM"),
                 args=["--disable-gpu", "--disable-features=Vulkan,VizDisplayCompositor"],
             )
         except playwright.Error as error:

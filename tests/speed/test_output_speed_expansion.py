@@ -5,26 +5,26 @@ from pathlib import Path
 from datetime import datetime, timezone
 
 import pytest
-from tokdash.output_speed_readers import (
+from token_dashboard.output_speed_readers import (
     CodexResponseAssociation, QwenTimingAssociation, clipped_union_ms,
     request_window_timing,
     native_message_timing,
 )
-from tokdash.sources.dsh_log import fold_dsh_usage_samples
-from tokdash.sources.coding_tools import (
+from token_dashboard.sources.dsh_log import fold_dsh_usage_samples
+from token_dashboard.sources.coding_tools import (
     CodexParser, DSHParser, QwenCodeParser, OpenCodeParser, KiloCodeParser, MimoParser,
     qwen_session_file,
 )
-from tokdash.pricing import PricingDatabase
-from tokdash import sessions, speed_native, api
-from tokdash import speed_report, speed_cache, speed_worker
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard import sessions, speed_native, api
+from token_dashboard import speed_report, speed_cache, speed_worker
 from contextlib import closing
-from tokdash import clientpaths
-from tokdash.usage_store import UsageTailSliceIncomplete, UsageEntryStore
+from token_dashboard import clientpaths
+from token_dashboard.usage_store import UsageTailSliceIncomplete, UsageEntryStore
 
 @pytest.fixture(autouse=True)
 def _timing_reader_mode():
-    from tokdash.speed_mode import collect_timings
+    from token_dashboard.speed_mode import collect_timings
     with collect_timings():
         yield
 

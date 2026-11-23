@@ -5,8 +5,8 @@ Covers parsing of Grok unified.jsonl log files.
 import json
 from pathlib import Path
 
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import BaseParser, GrokParser
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import BaseParser, GrokParser
 
 
 def _write_log(tmp_path, rows):

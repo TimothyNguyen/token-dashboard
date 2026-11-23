@@ -11,7 +11,7 @@ from datetime import datetime
 import pytest
 from fastapi import HTTPException
 
-import tokdash.api as api
+import token_dashboard.api as api
 
 
 @pytest.fixture(autouse=True)
@@ -705,18 +705,18 @@ def test_heavy_compute_semaphore_bounds_concurrency(monkeypatch):
 
 
 def test_positive_int_env_defaults_and_validation(monkeypatch):
-    monkeypatch.delenv("TOKDASH_TEST_KNOB", raising=False)
-    assert api._positive_int_env("TOKDASH_TEST_KNOB", 2) == 2
-    monkeypatch.setenv("TOKDASH_TEST_KNOB", "")
-    assert api._positive_int_env("TOKDASH_TEST_KNOB", 2) == 2
-    monkeypatch.setenv("TOKDASH_TEST_KNOB", "bad")
-    assert api._positive_int_env("TOKDASH_TEST_KNOB", 2) == 2
-    monkeypatch.setenv("TOKDASH_TEST_KNOB", "0")
-    assert api._positive_int_env("TOKDASH_TEST_KNOB", 2) == 2
-    monkeypatch.setenv("TOKDASH_TEST_KNOB", "-1")
-    assert api._positive_int_env("TOKDASH_TEST_KNOB", 2) == 2
-    monkeypatch.setenv("TOKDASH_TEST_KNOB", "3")
-    assert api._positive_int_env("TOKDASH_TEST_KNOB", 2) == 3
+    monkeypatch.delenv("TOKEN_DASHBOARD_TEST_KNOB", raising=False)
+    assert api._positive_int_env("TOKEN_DASHBOARD_TEST_KNOB", 2) == 2
+    monkeypatch.setenv("TOKEN_DASHBOARD_TEST_KNOB", "")
+    assert api._positive_int_env("TOKEN_DASHBOARD_TEST_KNOB", 2) == 2
+    monkeypatch.setenv("TOKEN_DASHBOARD_TEST_KNOB", "bad")
+    assert api._positive_int_env("TOKEN_DASHBOARD_TEST_KNOB", 2) == 2
+    monkeypatch.setenv("TOKEN_DASHBOARD_TEST_KNOB", "0")
+    assert api._positive_int_env("TOKEN_DASHBOARD_TEST_KNOB", 2) == 2
+    monkeypatch.setenv("TOKEN_DASHBOARD_TEST_KNOB", "-1")
+    assert api._positive_int_env("TOKEN_DASHBOARD_TEST_KNOB", 2) == 2
+    monkeypatch.setenv("TOKEN_DASHBOARD_TEST_KNOB", "3")
+    assert api._positive_int_env("TOKEN_DASHBOARD_TEST_KNOB", 2) == 3
 
 
 def test_default_cache_ttl_covers_dashboard_auto_refresh_interval():

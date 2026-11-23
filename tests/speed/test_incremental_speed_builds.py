@@ -6,15 +6,15 @@ from pathlib import Path
 
 import pytest
 from test_lazy_speed_cache import corpus, build_requested
-from tokdash import speed_cache as cache, speed_worker, compute
-from tokdash.sources.coding_tools import CodingToolsUsageTracker, _sig_cache
+from token_dashboard import speed_cache as cache, speed_worker, compute
+from token_dashboard.sources.coding_tools import CodingToolsUsageTracker, _sig_cache
 
 WINDOW = ('2026-09-01', '2026-09-28')
 
 
 @pytest.fixture
 def built(corpus, monkeypatch):
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION', '1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION', '1')
     compute._sync_usage_store(CodingToolsUsageTracker())
     build_requested({'from': WINDOW[0], 'to': WINDOW[1], 'source': ''})
     return corpus
@@ -85,7 +85,7 @@ def test_every_range_shares_one_model_build(built):
 
 def test_an_input_still_being_written_keeps_its_last_timing_until_it_settles(built, monkeypatch):
     _, _, inventory = built
-    monkeypatch.setenv('TOKDASH_SPEED_SETTLE_SECONDS', '3600')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_SETTLE_SECONDS', '3600')
     append_codex_call(inventory)
     status = cache.ensure(*WINDOW)
     assert status['state'] == 'ready' and status['job_id'] is None
@@ -99,7 +99,7 @@ def test_an_input_still_being_written_keeps_its_last_timing_until_it_settles(bui
     assert job['total_inputs'] == 0 and counts['deferred_inputs'] == 1
     with closing(cache.connect()) as c:
         assert c.execute("SELECT state FROM speed_inputs WHERE input_owner=?", (inventory['codex_file'],)).fetchone()[0] == 'ready'
-    monkeypatch.setenv('TOKDASH_SPEED_SETTLE_SECONDS', '0')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_SETTLE_SECONDS', '0')
     monkeypatch.setattr(speed_worker, '_collect_parser_file', compute._collect_parser_file)
     status = cache.ensure(*WINDOW)
     assert status['state'] == 'stale' and status['job_id']
@@ -109,7 +109,7 @@ def test_an_input_still_being_written_keeps_its_last_timing_until_it_settles(bui
 
 def test_an_explicit_refresh_reads_a_live_input_now(built, monkeypatch):
     _, _, inventory = built
-    monkeypatch.setenv('TOKDASH_SPEED_SETTLE_SECONDS', '3600')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_SETTLE_SECONDS', '3600')
     append_codex_call(inventory)
     status = cache.ensure(*WINDOW, refresh=True)
     assert status['job_id']
@@ -120,7 +120,7 @@ def test_an_explicit_refresh_reads_a_live_input_now(built, monkeypatch):
 
 def test_a_live_native_database_waits_without_being_marked_pending(built, monkeypatch):
     root, _, _ = built
-    monkeypatch.setenv('TOKDASH_SPEED_SETTLE_SECONDS', '3600')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_SETTLE_SECONDS', '3600')
     with sqlite3.connect(root / 'opencode.db') as c:
         c.execute("UPDATE message SET data=json_set(data,'$.tokens.output',77) WHERE id='m1'")
     status = cache.ensure(*WINDOW)
@@ -138,7 +138,7 @@ def test_a_live_native_database_waits_without_being_marked_pending(built, monkey
 @pytest.mark.parametrize('gone', ['deleted-file', 'dropped-accounting'])
 def test_a_vanished_input_follows_accounting(built, gone):
     _, _, inventory = built
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.usage_store import UsageEntryStore
     owner = inventory['codex_file']
     Path(owner).unlink()
     _sig_cache.clear()
@@ -176,7 +176,7 @@ def test_a_build_with_nothing_to_read_keeps_the_published_revision(built, monkey
 def test_a_moved_key_reaches_the_input_that_now_owns_it(built, monkeypatch):
     """Rows can change owner without their files changing; entry_count catches it."""
     _, _, inventory = built
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.usage_store import UsageEntryStore
     original = inventory['codex_file']
     with closing(UsageEntryStore()._connect()) as c:
         key = c.execute("SELECT entry_key FROM usage_entries WHERE source='codex' AND file_path=? LIMIT 1", (original,)).fetchone()[0]

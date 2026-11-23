@@ -1,8 +1,8 @@
-"""Textual pilot tests for ``tokdash tui`` (spec §10).
+"""Textual pilot tests for ``token_dashboard tui`` (spec §10).
 
 The whole module rides on importorskip("textual") so a stripped install (where
 ``report`` must still work) stays green. Every fetch is a canned FetchOutcome
-monkeypatched at the tokdash.tui.app names — the tests never touch real disk
+monkeypatched at the token_dashboard.tui.app names — the tests never touch real disk
 data. Async runs go through plain asyncio.run(app.run_test(...)) so no
 pytest-asyncio plugin is required.
 
@@ -32,16 +32,16 @@ from textual import events  # noqa: E402  (wheel events for the scroll test)
 from textual.color import Color  # noqa: E402
 from textual.widgets import Button, DataTable, Input, Static, Tab  # noqa: E402
 
-import tokdash.tui.app as app_mod  # noqa: E402  (import lives after the skip)
-from tokdash.tui.app import (  # noqa: E402
+import token_dashboard.tui.app as app_mod  # noqa: E402  (import lives after the skip)
+from token_dashboard.tui.app import (  # noqa: E402
     STALE_REREAD_SECONDS,
-    TokdashApp,
+    TokenDashboardApp,
     _clamp_report_width,
     run_tui,
 )
-from tokdash.tui.data import FetchOutcome  # noqa: E402
-from tokdash.tui.formatting import EM_DASH  # noqa: E402
-from tokdash.usage_store import UsageDatabaseSchemaTooNewError  # noqa: E402
+from token_dashboard.tui.data import FetchOutcome  # noqa: E402
+from token_dashboard.tui.formatting import EM_DASH  # noqa: E402
+from token_dashboard.usage_store import UsageDatabaseSchemaTooNewError  # noqa: E402
 from support.tui import wait_for  # noqa: E402  (polls a predicate; shared)
 
 TODAY = datetime.date(2026, 9, 20)
@@ -126,7 +126,7 @@ INSIGHTS_PAYLOAD = {
     "models": {"ranked": [{"model": "gpt-5-codex", "tokens": 8_000_000, "cost": 90.0,
                            "messages": 3_000, "entries": 6_000}],
                "most_used": "gpt-5-codex", "highest_cost": "gpt-5-codex"},
-    "projects": {"projects": [{"project": "tokdash", "tokens": 9_000_000,
+    "projects": {"projects": [{"project": "token_dashboard", "tokens": 9_000_000,
                                "cost": 100.5, "messages": 3_400, "entries": 6_800}],
                  "unattributed": {"tokens": 3_000_000, "cost": 10.0, "messages": 900,
                                   "entries": 1_800},
@@ -176,7 +176,7 @@ STATS_PAYLOAD = {
               "longest_streak": 12, "active_days": 40, "total_days": 365},
 }
 
-DB_LINE = "usage db disabled (TOKDASH_USAGE_DB=0) — live parsing"
+DB_LINE = "usage db disabled (TOKEN_DASHBOARD_USAGE_DB=0) — live parsing"
 
 
 def _outcome(payload, status="hit", age=0.0):
@@ -245,7 +245,7 @@ def patch_fetchers(monkeypatch, calls=None, *, usage=USAGE_PAYLOAD,
                    insights=INSIGHTS_PAYLOAD, active=ACTIVE_TIME_PAYLOAD,
                    stats=STATS_PAYLOAD, status="hit", age=0.0, usage_gate=None,
                    quota_state=None, quota_history=None):
-    """Install canned fetchers at the tokdash.tui.app names. An Exception
+    """Install canned fetchers at the token_dashboard.tui.app names. An Exception
     instance as a payload means the source raises (worker-failure tests).
     usage_gate: a threading.Event every fetch blocks on (skeleton test).
     Quota payloads default to the charts-fixture shapes around time.time();
@@ -369,7 +369,7 @@ def render_table_text(table, color=False):
 
 def test_overview_paints_window_cards_and_status(monkeypatch):
     calls = patch_fetchers(monkeypatch)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -438,7 +438,7 @@ def test_overview_paints_window_cards_and_status(monkeypatch):
 def test_skeleton_copy_until_first_answer(monkeypatch):
     gate = threading.Event()
     patch_fetchers(monkeypatch, usage_gate=gate)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         # A pane that has never painted says what a first scan costs; a pane
@@ -478,7 +478,7 @@ def test_reload_clears_painted_data_and_shows_computing(monkeypatch):
     gate = threading.Event()
     gate.set()  # the first load passes through untouched
     patch_fetchers(monkeypatch, usage_gate=gate)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -513,7 +513,7 @@ def test_report_and_quota_panes_clear_on_reload(monkeypatch):
     gate = threading.Event()
     gate.set()
     patch_fetchers(monkeypatch, usage_gate=gate)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -522,18 +522,18 @@ def test_report_and_quota_panes_clear_on_reload(monkeypatch):
         # clear are the same update.
         await pilot.press("2")
         assert await wait_for(app, pilot, lambda: app._state["report"] == "ok")
-        assert "Tokdash report" in static_text(app, "rp-body")
+        assert "TokenDashboard report" in static_text(app, "rp-body")
         gate.clear()
         await pilot.press("r")  # r reloads the ACTIVE pane
         assert await wait_for(
             app, pilot,
-            lambda: "Tokdash report" not in static_text(app, "rp-body"),
+            lambda: "TokenDashboard report" not in static_text(app, "rp-body"),
         )
         assert "computing…" in static_text(app, "rp-body")
         assert "first run scans" not in static_text(app, "rp-body")
         gate.set()
         assert await wait_for(
-            app, pilot, lambda: "Tokdash report" in static_text(app, "rp-body")
+            app, pilot, lambda: "TokenDashboard report" in static_text(app, "rp-body")
         )
 
         # --- quota pane: table cleared AND the credits section hidden
@@ -557,7 +557,7 @@ def test_report_and_quota_panes_clear_on_reload(monkeypatch):
 
 def test_the_status_line_names_the_keys_the_active_pane_answers_to(monkeypatch):
     patch_fetchers(monkeypatch)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -599,7 +599,7 @@ def test_quota_credits_are_provider_labeled(monkeypatch):
                      "expires_at": int(time.time()) + 600}],
     }
     patch_fetchers(monkeypatch, quota_state=state)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         await pilot.press("3")
@@ -624,9 +624,9 @@ def test_the_surface_keeps_its_layout_laws_in_css(monkeypatch):
     # A dropped rule collapses the sections or brings the outlines back, so the
     # laws are pinned here rather than trusted to a screenshot -- and read off
     # the widgets as the stylesheet resolved them, because a rule's text can sit
-    # in TokdashApp.CSS long after its selector stopped matching anything.
+    # in TokenDashboardApp.CSS long after its selector stopped matching anything.
     patch_fetchers(monkeypatch)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
     lavender = Color.parse("#b9a7ff")
 
     def no_border(widget):
@@ -698,7 +698,7 @@ def test_tables_mark_the_keyboard_position_with_a_quiet_row_tone(monkeypatch):
     # lines, and a reader tracking one figure across ten columns loses the row
     # they started on. It is one step, one tone, and never a rule between rows.
     patch_fetchers(monkeypatch)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -738,7 +738,7 @@ def test_a_wide_pane_gains_the_breakdown_a_narrow_one_drops(monkeypatch):
     # breakdown columns appear only when the pane can hold them. Numbers are
     # fitted, never clipped: a narrow terminal loses Input..Msgs, not digits.
     patch_fetchers(monkeypatch)
-    narrow = TokdashApp("today")
+    narrow = TokenDashboardApp("today")
 
     async def steps_narrow(pilot):
         assert await wait_for(app := narrow, pilot,
@@ -751,7 +751,7 @@ def test_a_wide_pane_gains_the_breakdown_a_narrow_one_drops(monkeypatch):
 
     drive(narrow, steps_narrow)
 
-    wide = TokdashApp("today")
+    wide = TokenDashboardApp("today")
 
     async def steps_wide(pilot):
         assert await wait_for(app := wide, pilot,
@@ -774,7 +774,7 @@ def test_report_pane_recovers_after_other_pane_supersedes_it(monkeypatch):
     # to the Report has to re-issue it rather than sit on the skeleton forever.
     gate = threading.Event()  # every fetch blocks until the test opens it
     calls = patch_fetchers(monkeypatch, usage_gate=gate)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         await pilot.pause()
@@ -793,7 +793,7 @@ def test_report_pane_recovers_after_other_pane_supersedes_it(monkeypatch):
         insights_before = len(calls.insights)
         await pilot.press("2")  # re-activation must re-issue the fetch
         assert await wait_for(app, pilot, lambda: app._state["report"] == "ok")
-        assert "Tokdash report" in static_text(app, "rp-body")
+        assert "TokenDashboard report" in static_text(app, "rp-body")
         assert len(calls.insights) > insights_before  # a fetch really ran
 
     drive(app, steps)
@@ -806,7 +806,7 @@ def test_overview_pane_recovers_after_other_pane_supersedes_it(monkeypatch):
     # the recovery belongs to the tab hook rather than to a silent repaint.
     gate = threading.Event()
     calls = patch_fetchers(monkeypatch, usage_gate=gate)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         await pilot.pause()  # initial Overview load in flight (blocked)
@@ -835,7 +835,7 @@ def test_overview_pane_recovers_after_other_pane_supersedes_it(monkeypatch):
 
 def test_report_tab_lazy_loads_with_shared_seam(monkeypatch):
     calls = patch_fetchers(monkeypatch)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -844,7 +844,7 @@ def test_report_tab_lazy_loads_with_shared_seam(monkeypatch):
         assert app.query_one("#tabs").active == "pane-report"
         assert await wait_for(app, pilot, lambda: app._state["report"] == "ok")
         body = static_text(app, "rp-body")
-        assert "Tokdash report" in body
+        assert "TokenDashboard report" in body
         # The body prints the window the shared strip names, not its own guess.
         assert "2026-09-20" in body
         # Final paint: every source filled → no soft-fail warn lines left.
@@ -877,14 +877,14 @@ def test_report_mid_load_says_running_not_failed(monkeypatch):
         return real_insights(*a, **k)
 
     monkeypatch.setattr(app_mod, "fetch_insights", gated_insights)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
         await pilot.press("2")
         # Usage answered → first progressive paint; insights still blocked.
         assert await wait_for(
-            app, pilot, lambda: "Tokdash report" in static_text(app, "rp-body"))
+            app, pilot, lambda: "TokenDashboard report" in static_text(app, "rp-body"))
         mid = static_text(app, "rp-body")
         assert "scan failed" not in mid
         assert "analytics scan running" in mid
@@ -892,14 +892,14 @@ def test_report_mid_load_says_running_not_failed(monkeypatch):
         assert await wait_for(app, pilot, lambda: app._state["report"] == "ok")
         final = static_text(app, "rp-body")
         assert "scan failed" not in final and "running" not in final
-        assert "Tokdash report" in final
+        assert "TokenDashboard report" in final
 
     drive(app, steps)
 
 
 def test_report_pane_footer_uses_cached_db_line_and_never_opens_store(monkeypatch):
     # The builder must read window["db_line"] (app-cached) instead of calling
-    # db_summary itself: on a fresh machine that call mkdirs ~/.tokdash and
+    # db_summary itself: on a fresh machine that call mkdirs ~/.token_dashboard and
     # builds the schema — and the Report pane repaints several times per load
     # on the UI event loop.
     calls = patch_fetchers(monkeypatch)
@@ -907,8 +907,8 @@ def test_report_pane_footer_uses_cached_db_line_and_never_opens_store(monkeypatc
     def forbidden():
         raise AssertionError("report builder must not open the usage store")
 
-    monkeypatch.setattr("tokdash.tui.report.db_summary", forbidden)
-    app = TokdashApp("today")
+    monkeypatch.setattr("token_dashboard.tui.report.db_summary", forbidden)
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -940,7 +940,7 @@ def test_db_line_never_runs_on_the_event_loop(monkeypatch):
         return DB_LINE
 
     monkeypatch.setattr(app_mod, "db_summary", watched_summary)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._db_line is not None)
@@ -962,7 +962,7 @@ def test_status_shows_pending_until_the_db_line_lands(monkeypatch):
         return DB_LINE
 
     monkeypatch.setattr(app_mod, "db_summary", slow_summary)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         await pilot.pause(0.1)  # db read blocked; the overview load is running
@@ -995,13 +995,13 @@ def test_db_line_landing_mid_report_reload_never_repaints_stale_body(
         return DB_LINE
 
     monkeypatch.setattr(app_mod, "db_summary", slow_summary)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
         await pilot.press("2")
         assert await wait_for(app, pilot, lambda: app._state["report"] == "ok")
-        assert "Tokdash report" in static_text(app, "rp-body")
+        assert "TokenDashboard report" in static_text(app, "rp-body")
         gate.clear()  # the reload's fetches will block
         await pilot.press("r")  # refresh: reload starts + db re-read fires
         assert await wait_for(app, pilot, lambda: (
@@ -1010,10 +1010,10 @@ def test_db_line_landing_mid_report_reload_never_repaints_stale_body(
         for _ in range(20):
             await pilot.pause(0.02)
             body = static_text(app, "rp-body")
-            assert "Tokdash report" not in body  # the stale body stays dead
+            assert "TokenDashboard report" not in body  # the stale body stays dead
         gate.set()  # let the reload finish; ITS paints refill the body
         assert await wait_for(app, pilot, lambda: (
-            "Tokdash report" in static_text(app, "rp-body")))
+            "TokenDashboard report" in static_text(app, "rp-body")))
 
     drive(app, steps)
 
@@ -1030,7 +1030,7 @@ def test_markup_hostile_names_render_literally(monkeypatch):
     usage["combined_models"] = [dict(usage["combined_models"][0],
                                      name="claude [bold]1m[/]")]
     patch_fetchers(monkeypatch, usage=usage)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -1054,7 +1054,7 @@ def test_p_is_the_stats_year_key_and_never_moves_the_shared_window(monkeypatch):
     # itself: the chooser opens and waits, because a letter that quietly
     # re-anchored whatever was on screen is the surprise this strip removes.
     calls = patch_fetchers(monkeypatch)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -1098,7 +1098,7 @@ def test_p_is_the_stats_year_key_and_never_moves_the_shared_window(monkeypatch):
 
 def test_help_panel_on_question_mark(monkeypatch):
     patch_fetchers(monkeypatch)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         await pilot.press("?")
@@ -1114,7 +1114,7 @@ def test_help_panel_on_question_mark(monkeypatch):
 
 def test_worker_error_is_pane_local_and_app_survives(monkeypatch):
     patch_fetchers(monkeypatch, usage=RuntimeError("boom"))
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "error")
@@ -1128,10 +1128,10 @@ def test_worker_error_is_pane_local_and_app_survives(monkeypatch):
 
 
 def test_backpressure_is_busy_line_press_r(monkeypatch):
-    from tokdash.api import CacheBackpressureError
+    from token_dashboard.api import CacheBackpressureError
 
     patch_fetchers(monkeypatch, usage=CacheBackpressureError("busy"))
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "error")
@@ -1147,7 +1147,7 @@ def test_schema_too_new_exits_one(monkeypatch):
     err = UsageDatabaseSchemaTooNewError(path="/tmp/usage.sqlite3", found=99,
                                          supported=9)
     patch_fetchers(monkeypatch, usage=err)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         # The terminal error's remediation text goes to sys.stderr (which the
@@ -1169,7 +1169,7 @@ def test_run_tui_propagates_app_return_code(monkeypatch):
     def fake_run(self):  # no real driver: the contract under test is run_tui
         self._return_code = 1
 
-    monkeypatch.setattr(TokdashApp, "run", fake_run)
+    monkeypatch.setattr(TokenDashboardApp, "run", fake_run)
     assert run_tui(argparse.Namespace(period="today")) == 1
 
 
@@ -1181,7 +1181,7 @@ def test_run_tui_clean_exit_returns_zero(monkeypatch):
     def fake_run(self):  # normal quit never set return_code -> property is None
         pass
 
-    monkeypatch.setattr(TokdashApp, "run", fake_run)
+    monkeypatch.setattr(TokenDashboardApp, "run", fake_run)
     assert run_tui(argparse.Namespace(period="today")) == 0
 
 
@@ -1192,7 +1192,7 @@ def test_run_tui_clean_exit_returns_zero(monkeypatch):
 def test_stale_reread_once_per_load(monkeypatch):
     assert STALE_REREAD_SECONDS == 12.0
     calls = patch_fetchers(monkeypatch, status="stale", age=42.0)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
     # Spy BEFORE the app runs: the canned fetchers are instant, so the first
     # load can finish during run_test startup — after that the scheduling
     # call is already gone.
@@ -1235,7 +1235,7 @@ def test_day_rollover_on_keypress_restarts_active_pane(monkeypatch):
     holder = {"today": TODAY}
     calls = patch_fetchers(monkeypatch)
     monkeypatch.setattr(app_mod, "_local_today", lambda: holder["today"])
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -1275,7 +1275,7 @@ def test_run_tui_refuses_dumb_term(monkeypatch):
 
 def test_smoke_rendered_screen_both_panes(monkeypatch):
     patch_fetchers(monkeypatch)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
     captured = {}
 
     async def steps(pilot):
@@ -1296,7 +1296,7 @@ def test_smoke_rendered_screen_both_panes(monkeypatch):
     screen = "\n".join(captured["lines"])
     print("\n=== rendered report pane (headless 80x24) ===")
     print(screen)
-    assert "Tokdash report" in screen
+    assert "TokenDashboard report" in screen
 
 
 # ---------------------------------------------------------------------------
@@ -1310,7 +1310,7 @@ def test_period_keys_set_token_and_normalize_fetch_args(monkeypatch):
     # know would quietly widen to all time -- so every dated window travels as
     # an explicit (date_from, date_to) pair under the route's default period.
     calls = patch_fetchers(monkeypatch)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -1360,7 +1360,7 @@ def test_range_keys_move_the_shared_window_and_are_inert_elsewhere(monkeypatch):
     # Overview too (they read the same window), and the panes with no date axis
     # -- Stats, Quota, Pricing -- refuse the keys rather than pretending.
     calls = patch_fetchers(monkeypatch)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -1406,7 +1406,7 @@ def test_the_overview_never_borrows_the_annual_read(monkeypatch):
     # Overview may not ask for it: its figures all carry the LOCAL window's
     # label. Stats owns that route, and its own test drives the year ladder.
     calls = patch_fetchers(monkeypatch)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -1427,7 +1427,7 @@ def test_an_empty_annual_window_keeps_the_calendar(monkeypatch):
     # an empty pane, and it does not invent a day the route never reported.
     empty_stats = {"summary": {}, "contributions": [], "stats": {}}
     patch_fetchers(monkeypatch, stats=empty_stats)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -1469,7 +1469,7 @@ def test_wheel_scrolls_the_pane_not_the_screen(monkeypatch):
     # the events go in through post_message, exactly as the driver would
     # deliver them.
     patch_fetchers(monkeypatch)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def main():
         async with app.run_test(headless=True, size=(80, 14)) as pilot:
@@ -1514,7 +1514,7 @@ def test_date_shift_brackets_and_zero(monkeypatch):
     # returns it to the present. The window text names the shifted window in
     # exact dates, so a step is never a mystery move.
     calls = patch_fetchers(monkeypatch)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -1565,7 +1565,7 @@ def test_period_shift_steps_whole_calendar_periods(monkeypatch):
     # month, Aug 1 → Aug 31 — never clamped to the anchor day — and ``]`` walks
     # forward into the partial current month again.
     calls = patch_fetchers(monkeypatch)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -1612,7 +1612,7 @@ def test_rolling_seven_days_steps_a_whole_seven_days(monkeypatch):
     # last seven days is the seven days before them, never six and never the
     # calendar week (which is its own named preset).
     calls = patch_fetchers(monkeypatch)
-    app = TokdashApp("week")
+    app = TokenDashboardApp("week")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -1640,7 +1640,7 @@ def test_the_shared_window_steps_the_visible_pane_and_marks_the_rest(monkeypatch
     # of date: refetching them in the background used to include Speed's read,
     # which can queue a timing build for a view nobody is looking at.
     calls = patch_fetchers(monkeypatch)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -1683,7 +1683,7 @@ def test_date_shift_inert_on_rolling_all(monkeypatch):
     # presses that visibly did nothing), no gen bump (a bump with no
     # successor would strand the in-flight load), no body churn.
     calls = patch_fetchers(monkeypatch)
-    app = TokdashApp("all")
+    app = TokenDashboardApp("all")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -1709,7 +1709,7 @@ def test_shift_during_inflight_all_load_does_not_strand_the_pane(monkeypatch):
     # BEFORE the gen bump, so the in-flight load lands normally.
     gate = threading.Event()
     calls = patch_fetchers(monkeypatch, usage_gate=gate)
-    app = TokdashApp("all")
+    app = TokenDashboardApp("all")
 
     async def steps(pilot):
         await pilot.pause(0.05)  # first load started, blocked on the gate
@@ -1733,7 +1733,7 @@ def test_a_superseded_load_on_the_visible_pane_is_re_issued_at_once(monkeypatch)
     # is what the race between two panes actually looks like.
     gate = threading.Event()
     calls = patch_fetchers(monkeypatch, usage_gate=gate)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         await pilot.pause(0.05)
@@ -1776,7 +1776,7 @@ def test_reload_resets_late_payload_slots(monkeypatch):
             return _outcome(payload)
         return fetch
 
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -1828,7 +1828,7 @@ def test_period_shift_year_steps_one_whole_year(monkeypatch):
     calls = patch_fetchers(monkeypatch)
     monkeypatch.setattr(app_mod, "_local_today",
                         lambda: datetime.date(2026, 1, 5))
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -1853,7 +1853,7 @@ def test_day_rollover_preserves_the_shift(monkeypatch):
     holder = {"today": TODAY}
     calls = patch_fetchers(monkeypatch)
     monkeypatch.setattr(app_mod, "_local_today", lambda: holder["today"])
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -1892,7 +1892,7 @@ def test_harness_table_keeps_a_measured_zero_apart_from_no_measurement(monkeypat
     active["by_tool"]["claude"]["active_ms_sum"] = 0  # measured zero
     del active["by_tool"]["codex"]  # no active row at all
     patch_fetchers(monkeypatch, usage=usage, active=active)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -1938,7 +1938,7 @@ def test_quota_tab_lazy_once_and_renders_companion_cells(monkeypatch):
     # normalized window label, "LEFT" phrasing with the meter, and the ok/not-ok
     # status colours. Credits live in their own section, never as a row.
     calls = patch_fetchers(monkeypatch)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -2003,7 +2003,7 @@ def test_quota_status_stale_token_is_red(monkeypatch):
     payload = _quota_state_payload()
     payload["providers"]["codex"]["status"] = "stale_token"
     patch_fetchers(monkeypatch, quota_state=payload)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -2025,7 +2025,7 @@ def test_quota_credits_section_hidden_without_credits(monkeypatch):
     payload = _quota_state_payload()
     del payload["providers"]["codex"]["reset_credits"]
     patch_fetchers(monkeypatch, quota_state=payload)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -2040,7 +2040,7 @@ def test_quota_stranded_recovery(monkeypatch):
     gate = threading.Event()
     gate.set()
     calls = patch_fetchers(monkeypatch, usage_gate=gate)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -2067,7 +2067,7 @@ def test_schema_too_new_from_quota_exits_one(monkeypatch):
     err = UsageDatabaseSchemaTooNewError(path="/tmp/usage.sqlite3", found=99,
                                          supported=9)
     patch_fetchers(monkeypatch, quota_state=err)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -2097,10 +2097,10 @@ def _poll_ok_result():
 
 def test_quota_poll_notes_before_polling_then_reloads_refreshed(monkeypatch):
     # Mutation proof #4 (note-before-poll ordering) + the reload arg.
-    import tokdash.cli as cli_mod
+    import token_dashboard.cli as cli_mod
 
     calls = patch_fetchers(monkeypatch)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
     seen = {}
 
     def fake_poll(*, include_network=True, network_sources=None):
@@ -2142,7 +2142,7 @@ def test_quota_poll_notes_before_polling_then_reloads_refreshed(monkeypatch):
             lambda: len(calls.quota_state) == before + 1
             and not app._open_loads.get("quota"),
         )
-        assert seen["include_network"] is True   # mirrors `tokdash quota poll`
+        assert seen["include_network"] is True   # mirrors `token_dashboard quota poll`
         assert seen["network_sources"] is None
         assert seen["note_at_call"] == "polling…"  # the note LED the result
         # The order is the poll's own, read from the first write the poll made.
@@ -2159,7 +2159,7 @@ def test_quota_poll_notes_before_polling_then_reloads_refreshed(monkeypatch):
 
 
 def test_quota_poll_disabled_is_said_never_faked_ok(monkeypatch):
-    import tokdash.cli as cli_mod
+    import token_dashboard.cli as cli_mod
 
     calls = patch_fetchers(monkeypatch)
     monkeypatch.setattr(
@@ -2167,7 +2167,7 @@ def test_quota_poll_disabled_is_said_never_faked_ok(monkeypatch):
         lambda **k: {"snapshots": 0, "inserted": 0, "network_sources": [],
                      "disabled": True},
     )
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -2179,7 +2179,7 @@ def test_quota_poll_disabled_is_said_never_faked_ok(monkeypatch):
             app, pilot,
             lambda: "quota tracking disabled" in static_text(app, "quota-note"),
         )
-        assert "tokdash quota consent" in static_text(app, "quota-note")
+        assert "token_dashboard quota consent" in static_text(app, "quota-note")
         assert "poll ok" not in static_text(app, "quota-note")
         # The note rides emit_markup like every other pane text: "warn" is a
         # SEMANTIC run name, and raw markup showed the literal "[warn]" tag
@@ -2196,7 +2196,7 @@ def test_quota_poll_disabled_is_said_never_faked_ok(monkeypatch):
 
 
 def test_quota_poll_error_keeps_app_alive(monkeypatch):
-    import tokdash.cli as cli_mod
+    import token_dashboard.cli as cli_mod
 
     calls = patch_fetchers(monkeypatch)
 
@@ -2204,7 +2204,7 @@ def test_quota_poll_error_keeps_app_alive(monkeypatch):
         raise RuntimeError("net down")
 
     monkeypatch.setattr(cli_mod, "_quota_poll_once", boom)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -2227,7 +2227,7 @@ def test_quota_poll_error_keeps_app_alive(monkeypatch):
 def test_quota_poll_reentrancy_guard(monkeypatch):
     # Mutation proof #5: without the _polling flag the second u would start a
     # second poll while the first still runs.
-    import tokdash.cli as cli_mod
+    import token_dashboard.cli as cli_mod
 
     patch_fetchers(monkeypatch)
     release = threading.Event()
@@ -2239,7 +2239,7 @@ def test_quota_poll_reentrancy_guard(monkeypatch):
         return _poll_ok_result()
 
     monkeypatch.setattr(cli_mod, "_quota_poll_once", slow_poll)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -2263,7 +2263,7 @@ def test_no_timer_ever_polls_quota(monkeypatch):
     # The locked decision: polling is EXPLICIT ONLY. Spy set_timer — the
     # stale-reread (12 s) is the ONLY timer the app may schedule, and the
     # poll count stays at the one explicit u forever.
-    import tokdash.cli as cli_mod
+    import token_dashboard.cli as cli_mod
 
     patch_fetchers(monkeypatch)
     hits = []
@@ -2271,7 +2271,7 @@ def test_no_timer_ever_polls_quota(monkeypatch):
         cli_mod, "_quota_poll_once",
         lambda **k: (hits.append(1), _poll_ok_result())[1],
     )
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
     scheduled = []
     real_set_timer = app.set_timer
 
@@ -2296,13 +2296,13 @@ def test_no_timer_ever_polls_quota(monkeypatch):
 
 
 def test_quota_poll_inert_on_other_panes(monkeypatch):
-    import tokdash.cli as cli_mod
+    import token_dashboard.cli as cli_mod
 
     calls = patch_fetchers(monkeypatch)
     monkeypatch.setattr(
         cli_mod, "_quota_poll_once", lambda **k: _poll_ok_result(),
     )
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -2331,7 +2331,7 @@ def test_refresh_resets_remote_probe_then_reloads(monkeypatch):
         real_reset()
 
     monkeypatch.setattr(app_mod, "reset_remote", spy_reset)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -2348,7 +2348,7 @@ def test_day_rollover_reloads_started_quota(monkeypatch):
     holder = {"today": TODAY}
     calls = patch_fetchers(monkeypatch)
     monkeypatch.setattr(app_mod, "_local_today", lambda: holder["today"])
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     async def steps(pilot):
         assert await wait_for(app, pilot, lambda: app._state["overview"] == "ok")
@@ -2389,7 +2389,7 @@ def test_report_width_follows_pane_size(monkeypatch):
         return real_build(*a, **k)
 
     monkeypatch.setattr(app_mod, "build_report_segments", spy)
-    app = TokdashApp("today")
+    app = TokenDashboardApp("today")
 
     def pane_content_width():
         return app.query_one("#pane-report").content_region.width

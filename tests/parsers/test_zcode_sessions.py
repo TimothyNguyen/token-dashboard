@@ -13,10 +13,10 @@ from pathlib import Path
 import pytest
 from fastapi import HTTPException
 
-from tokdash import api, sessions
-from tokdash.dateutil import parse_date_range
-from tokdash.pricing import PricingDatabase
-from tokdash.sessions import (
+from token_dashboard import api, sessions
+from token_dashboard.dateutil import parse_date_range
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sessions import (
     SESSION_TOOLS,
     ZCodeReadError,
     _build_turn,
@@ -28,7 +28,7 @@ from tokdash.sessions import (
     get_sessions_data,
     reload_pricing_db,
 )
-from tokdash.sources.coding_tools import ZCodeParser, ZCodeSnapshotError
+from token_dashboard.sources.coding_tools import ZCodeParser, ZCodeSnapshotError
 
 BASE = 1_787_000_000_000
 

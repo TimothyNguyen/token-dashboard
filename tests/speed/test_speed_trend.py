@@ -22,8 +22,8 @@ import pytest
 
 pytest.importorskip("fastapi")
 
-from tokdash import speed_report, speed_trend
-from tokdash.output_speed import (
+from token_dashboard import speed_report, speed_trend
+from token_dashboard.output_speed import (
     BASIS_INCLUDING,
     KIND_REQUEST_WINDOW,
     KIND_RESPONSE_WINDOW,
@@ -85,7 +85,7 @@ def test_end_anchored_interval_runs_back(source):
 
 def test_opencode_rows_store_the_start_of_their_window(tmp_path, monkeypatch):
     """The stored timestamp is ``time_created``, and the window starts there."""
-    from tokdash import speed_native, speed_worker
+    from token_dashboard import speed_native, speed_worker
     db = tmp_path / "opencode.db"
     created, completed = 1_770_000_000_000, 1_770_000_004_500
     with closing(sqlite3.connect(db)) as conn:

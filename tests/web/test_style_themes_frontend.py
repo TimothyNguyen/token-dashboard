@@ -17,9 +17,9 @@ from pathlib import Path
 
 import pytest
 
-import tokdash  # type: ignore[import-untyped]
+import token_dashboard  # type: ignore[import-untyped]
 
-STATIC = Path(tokdash.__file__).parent / "static"
+STATIC = Path(token_dashboard.__file__).parent / "static"
 THEME_CONFIG_JS = STATIC / "theme-config.js"
 THEMES_CSS = STATIC / "themes.css"
 INDEX_HTML = STATIC / "index.html"

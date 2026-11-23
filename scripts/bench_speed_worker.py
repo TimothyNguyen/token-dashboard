@@ -10,9 +10,9 @@ def main():
     p.add_argument('--parsers',required=True)
     args=p.parse_args()
     sys.path.insert(0,str(Path(args.src).resolve()))
-    from bench_tokdash_server import _prune_parsers
+    from bench_token_dashboard_server import _prune_parsers
     _prune_parsers(set(args.parsers.split(',')))
-    from tokdash.speed_worker import main as run
+    from token_dashboard.speed_worker import main as run
     run()
 
 if __name__=='__main__':main()

@@ -391,7 +391,7 @@ const localStorage = __storage();
 const navigator = { language: 'en-US', languages: ['en-US'] };
 
 const window = globalThis;
-window.tokdashPath = (path) => path;
+window.tokenDashboardPath = (path) => path;
 window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
 window.addEventListener = (type, listener) => { (__windowListeners[type] = __windowListeners[type] || []).push(listener); };
 window.removeEventListener = (type, listener) => {
@@ -594,7 +594,7 @@ function entries() {
 # A fetch that waits for the test: every request stays pending until the body
 # answers it (``answer(url, body)``, ``answer(url, null, 404)``) or fails it
 # (``fail(url)``), so a test decides which of two reads lands first. Answering a
-# URL nothing asked for throws, which fails the harness. ``tokdashPath`` and
+# URL nothing asked for throws, which fails the harness. ``tokenDashboardPath`` and
 # ``appPath`` prefix their paths, so a URL shows which helper built it.
 RELEASE_NOTES_FETCH = """
 const requests = [];
@@ -613,7 +613,7 @@ function answer(url, body, status = 200) {
 function fail(url) { __pending(url).reject(new TypeError('Failed to fetch')); }
 function requested(url) { return requests.filter((entry) => entry.url === url).map((entry) => entry.options); }
 function appPath(path) { return `/app${path}`; }
-window.tokdashPath = (path) => `/base${path}`;
+window.tokenDashboardPath = (path) => `/base${path}`;
 """
 
 

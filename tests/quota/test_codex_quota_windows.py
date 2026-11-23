@@ -8,8 +8,8 @@ import json
 
 import pytest
 
-from tokdash.codex_quota_windows import classify_codex_api_windows
-from tokdash.usage_store import _codex_window_used_percent_from_raw
+from token_dashboard.codex_quota_windows import classify_codex_api_windows
+from token_dashboard.usage_store import _codex_window_used_percent_from_raw
 
 
 @pytest.mark.parametrize(

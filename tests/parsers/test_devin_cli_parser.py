@@ -16,10 +16,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from tokdash import clientpaths
-from tokdash.pricing import PricingDatabase
-from tokdash.sources import coding_tools as ct
-from tokdash.sources.coding_tools import DevinParser
+from token_dashboard import clientpaths
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources import coding_tools as ct
+from token_dashboard.sources.coding_tools import DevinParser
 
 T0_MS = 1_760_000_000_000  # 2025-10-09, above the ms/s threshold
 T0_S = T0_MS // 1000
@@ -442,7 +442,7 @@ def test_a_node_whose_only_usage_shape_is_tool_output_is_not_billed(
     now walked for a nested container, so the guard that keeps tool output out
     of the totals is that message.tool_result is not a listed path -- not the
     depth limit. Such a node is containerless, so the drift tripwire fires; that
-    is correct, it IS a node with no usage Tokdash can bill.
+    is correct, it IS a node with no usage TokenDashboard can bill.
     """
     node = {
         "id": "m1",
@@ -846,7 +846,7 @@ def test_a_live_wal_sidecar_sends_the_store_through_the_snapshot(tmp_path, monke
 
     That is exactly when a mode=ro open cannot run recovery, and
     connect_sqlite_readonly answers the failure with a read-WRITE connect:
-    Tokdash would replay the WAL into the user's store. The copy path is the
+    TokenDashboard would replay the WAL into the user's store. The copy path is the
     only one that cannot write there.
     """
     store = make_store(

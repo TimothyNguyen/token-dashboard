@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import sessions
-from tokdash.sessions import get_sessions_data, reload_pricing_db
+from token_dashboard import sessions
+from token_dashboard.sessions import get_sessions_data, reload_pricing_db
 
 TS = "2026-05-19T12:00:00Z"
 
@@ -74,11 +74,11 @@ def test_explicit_title_in_a_later_file_survives_a_cached_read(monkeypatch, _iso
         ],
     )
 
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     reload_pricing_db()
     live = get_sessions_data("claude", "all")
 
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     reload_pricing_db()
     cached = get_sessions_data("claude", "all")
     warm = get_sessions_data("claude", "all")
@@ -108,11 +108,11 @@ def test_windowed_cached_read_keeps_a_title_from_an_out_of_window_file(monkeypat
     )
     window = {"period": "custom", "date_from": "2026-05-23", "date_to": "2026-05-23"}
 
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     reload_pricing_db()
     live = get_sessions_data("claude", **window)
 
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     reload_pricing_db()
     cached = get_sessions_data("claude", **window)
 
@@ -126,10 +126,10 @@ def test_stored_and_live_agree_for_a_single_file_session(monkeypatch, _isolated_
     home = _isolated_claude_home
     _write_session_file(home, "solo", [_assistant_row("solo", "msg-1", 11)])
 
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     reload_pricing_db()
     live = get_sessions_data("claude", "all")
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     reload_pricing_db()
     cached = get_sessions_data("claude", "all")
 
@@ -209,11 +209,11 @@ def test_subagent_streams_survive_a_cached_read(monkeypatch, _isolated_claude_ho
         ],
     )
 
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     reload_pricing_db()
     live = get_sessions_data("claude", "all")
 
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     reload_pricing_db()
     cached = get_sessions_data("claude", "all")
 
@@ -246,10 +246,10 @@ def test_identical_usage_in_two_streams_is_not_deduplicated(monkeypatch, _isolat
         ],
     )
 
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     reload_pricing_db()
     live = get_sessions_data("claude", "all")
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     reload_pricing_db()
     cached = get_sessions_data("claude", "all")
 

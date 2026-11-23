@@ -18,7 +18,7 @@ textual = pytest.importorskip("textual", reason="the TUI tests need textual")
 
 from textual.widgets import DataTable  # noqa: E402
 
-import tokdash.tui.app as app_mod  # noqa: E402
+import token_dashboard.tui.app as app_mod  # noqa: E402
 import support.tui as fx  # noqa: E402  (the layout-law tests call it fx)
 from support.tui import (  # noqa: E402
     STATS_TRAILING,

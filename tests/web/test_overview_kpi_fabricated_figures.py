@@ -20,9 +20,9 @@ from pathlib import Path
 
 import pytest
 
-import tokdash  # type: ignore[import-untyped]
+import token_dashboard  # type: ignore[import-untyped]
 
-INDEX_HTML = Path(tokdash.__file__).parent / "static" / "index.html"
+INDEX_HTML = Path(token_dashboard.__file__).parent / "static" / "index.html"
 
 # Values the renderers own. If one of these disappears the invariant below is
 # being satisfied by deleting a card rather than by wiring it up.

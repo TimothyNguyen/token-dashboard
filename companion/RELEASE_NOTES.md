@@ -1,4 +1,4 @@
-# Tokdash Companion 1.1.0
+# TokenDashboard Companion 1.1.0
 
 A feature release for both tray apps. The flyout now reads the calendar instead
 of three fixed buckets, the multi-server settings speak the dashboard's
@@ -26,14 +26,14 @@ around the controls it actually needs.
   flyout prints. macOS gets a slider in Settings, Windows a slim slider in the
   same place.
 - **Reset credits, both providers.** Codex credit expiry as before, and Claude
-  Code limit resets, which arrive from the server as of Tokdash 2.6.3. The
+  Code limit resets, which arrive from the server as of TokenDashboard 2.6.3. The
   notice stays on one line and scrolls in its own viewport when it overflows;
   reduced-motion settings stop the scroll and keep the full text as a tooltip.
 - **Provider and tool marks.** Ranked rows wear the agent's own mark.
 - **Servers group by host.** Settings keeps one entry per machine and gives it a
   row per address, each with its own reachability and latency, automatic or
   preferred routing, and failover that moves only once the next address proves
-  the same daemon identity. Two addresses of one live Tokdash contribute their
+  the same daemon identity. Two addresses of one live TokenDashboard contribute their
   usage once, and **Open Dashboard** follows the address that is actually
   serving. Existing single-address settings migrate unchanged, and servers that
   do not identify themselves stay supported as single-address hosts.
@@ -52,11 +52,11 @@ around the controls it actually needs.
 
 ## Server compatibility
 
-The companion still works against Tokdash `1.5.2` or newer. Four surfaces light
+The companion still works against TokenDashboard `1.5.2` or newer. Four surfaces light
 up only against newer servers, and each hides itself when the connected server
 is older rather than showing a zero:
 
-| Feature | Needs Tokdash |
+| Feature | Needs TokenDashboard |
 |---|---|
 | Activity glance (today, week) | `2.5.0` |
 | Contribution grid (month, year) | `2.5.0` |
@@ -64,7 +64,7 @@ is older rather than showing a zero:
 | Claude Code limit resets | `2.6.3` |
 
 Update checks remain optional. They never download or install software;
-**View update** opens the validated Tokdash GitHub release page in the default
+**View update** opens the validated TokenDashboard GitHub release page in the default
 browser.
 
 ## Important: unsigned binaries
@@ -85,18 +85,18 @@ covered by this policy.
 
 ## Assets
 
-- `Tokdash-Companion-1.1.0-macos-universal-unsigned.dmg` supports Apple Silicon
+- `TokenDashboard-Companion-1.1.0-macos-universal-unsigned.dmg` supports Apple Silicon
   and Intel Macs on macOS 14 or newer.
-- `Tokdash-Companion-1.1.0-windows-x64-unsigned.zip` is a self-contained Windows
+- `TokenDashboard-Companion-1.1.0-windows-x64-unsigned.zip` is a self-contained Windows
   11 x64 portable build. Windows 11 on Arm may run it through x64 emulation.
 - `SHA256SUMS` covers both downloadable binaries.
 
-To update on macOS, quit Tokdash Companion, open the DMG, drag the app to
+To update on macOS, quit TokenDashboard Companion, open the DMG, drag the app to
 Applications, and choose **Replace**. To update the portable Windows build,
 disable launch at login, quit, replace the extracted directory, and re-enable
 it. Existing settings migrate automatically, including the new per-host server
 grouping.
 
 The companion has no telemetry, credential discovery, or port scanning. It
-connects only to Tokdash endpoints configured by the user and, for manual or
+connects only to TokenDashboard endpoints configured by the user and, for manual or
 opted-in update checks, GitHub's public releases API.

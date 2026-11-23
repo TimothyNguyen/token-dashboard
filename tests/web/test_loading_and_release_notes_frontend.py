@@ -11,13 +11,13 @@ import json
 import re
 from pathlib import Path
 
-import tokdash  # type: ignore[import-untyped]
+import token_dashboard  # type: ignore[import-untyped]
 
 from support.frontend import needs_node
 from support.i18n_profile import release_notes_script, run_page
 
 
-STATIC_DIR = Path(tokdash.__file__).parent / "static"
+STATIC_DIR = Path(token_dashboard.__file__).parent / "static"
 INDEX_HTML = STATIC_DIR / "index.html"
 RELEASE_NOTES = STATIC_DIR / "release-notes.json"
 THEMES_CSS = STATIC_DIR / "themes.css"
@@ -43,8 +43,8 @@ def test_document_background_covers_the_full_page() -> None:
 
 def test_release_notes_ship_with_the_current_package_version() -> None:
     payload = json.loads(RELEASE_NOTES.read_text(encoding="utf-8"))
-    assert payload["current"] == tokdash.__version__
-    assert payload["releases"][0]["version"] == tokdash.__version__
+    assert payload["current"] == token_dashboard.__version__
+    assert payload["releases"][0]["version"] == token_dashboard.__version__
     assert len(payload["releases"]) >= 3
     for release in payload["releases"]:
         assert release["version"]
@@ -88,7 +88,7 @@ def _text_item(value: str) -> dict:
 @needs_node
 def test_the_release_notes_drawer_loads_on_open_and_closes_three_ways(tmp_path: Path) -> None:
     """The notes are read on the first open, not at start-up, through
-    tokdashPath and past the browser cache; a failed read says so and the next
+    tokenDashboardPath and past the browser cache; a failed read says so and the next
     open tries again; a loaded payload is reused. Each entry is written as text.
     Escape, a click on the backdrop and the close button all close the drawer,
     which hands focus back to its trigger and marks it collapsed. The version

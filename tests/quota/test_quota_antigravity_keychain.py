@@ -9,7 +9,7 @@ import json
 import subprocess
 from urllib.error import HTTPError
 
-from tokdash.sources.quota import antigravity
+from token_dashboard.sources.quota import antigravity
 
 
 def _oauth_blob(access_token: str = "ya29.token", email: str = "h@example.com") -> dict:

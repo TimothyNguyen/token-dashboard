@@ -11,10 +11,10 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import compute, osinfo
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import BaseParser, CodingToolsUsageTracker, HermesParser, _sig_cache
-from tokdash.usage_store import (
+from token_dashboard import compute, osinfo
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import BaseParser, CodingToolsUsageTracker, HermesParser, _sig_cache
+from token_dashboard.usage_store import (
     UsageEntryStore,
     _entry_for_storage,
     build_source_signature,
@@ -791,7 +791,7 @@ def test_hermes_parser_breakdown_without_billing_provider_column(monkeypatch, tm
 
 
 def test_hermes_parser_splits_recorded_charge_from_repriced_tokens(monkeypatch, tmp_path):
-    """A recorded charge and Tokdash-priced tokens in one model group stay
+    """A recorded charge and TokenDashboard-priced tokens in one model group stay
     separate, so a rate edit reaches the half that owns them."""
     hermes_dir = tmp_path / ".hermes"
     hermes_dir.mkdir()
@@ -919,9 +919,9 @@ def test_hermes_tokenless_charge_survives_overview_aggregation(
         usage_rows,
     )
     monkeypatch.setenv("HERMES_HOME", str(hermes_dir))
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0" if backend == "disabled" else "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0" if backend == "disabled" else "1")
     store_path = tmp_path / "usage.sqlite3"
-    monkeypatch.setenv("TOKDASH_USAGE_DB_PATH", str(store_path))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_PATH", str(store_path))
     if backend == "corrupt":
         store_path.write_bytes(b"not a sqlite database")
     _write_rates({"openai/gpt-4o": 2.0, "gpt-4o": 2.0})

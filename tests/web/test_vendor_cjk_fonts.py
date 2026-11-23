@@ -11,7 +11,7 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = REPO_ROOT / "scripts" / "vendor_cjk_fonts.sh"
-FONT_PATH = Path("src/tokdash/static/vendor/fonts/noto-sans-sc-v41")
+FONT_PATH = Path("src/token_dashboard/static/vendor/fonts/noto-sans-sc-v41")
 UPSTREAM_CSS = """@font-face {font-family: 'Noto Sans SC'; font-weight: 400; src: url(https://fonts.gstatic.com/s/notosanssc/v41/a.woff2);}
 @font-face {font-family: 'Noto Sans SC'; font-weight: 700; src: url(https://fonts.gstatic.com/s/notosanssc/v41/b.woff2);}
 """
@@ -33,9 +33,9 @@ import sys
 args = sys.argv[1:]
 target = Path(args[args.index('--output') + 1])
 url = args[-1]
-failure = os.environ.get('TOKDASH_TEST_FONT_FAILURE')
+failure = os.environ.get('TOKEN_DASHBOARD_TEST_FONT_FAILURE')
 if 'fonts.googleapis.com' in url:
-    target.write_text(os.environ['TOKDASH_TEST_FONT_CSS'], encoding='utf-8')
+    target.write_text(os.environ['TOKEN_DASHBOARD_TEST_FONT_CSS'], encoding='utf-8')
 elif 'OFL.txt' in url:
     if failure == 'license':
         sys.exit(22)
@@ -47,9 +47,9 @@ else:
 """, encoding="utf-8")
     curl.chmod(0o755)
     monkeypatch.setenv("PATH", str(bin_dir) + os.pathsep + os.environ["PATH"])
-    monkeypatch.setenv("TOKDASH_TEST_FONT_CSS", UPSTREAM_CSS)
-    monkeypatch.delenv("TOKDASH_TEST_FONT_FAILURE", raising=False)
-    monkeypatch.delenv("TOKDASH_CJK_WEIGHTS", raising=False)
+    monkeypatch.setenv("TOKEN_DASHBOARD_TEST_FONT_CSS", UPSTREAM_CSS)
+    monkeypatch.delenv("TOKEN_DASHBOARD_TEST_FONT_FAILURE", raising=False)
+    monkeypatch.delenv("TOKEN_DASHBOARD_CJK_WEIGHTS", raising=False)
     return tmp_path
 
 
@@ -77,7 +77,7 @@ def test_failed_download_never_publishes_or_changes_an_install(fake_downloads, m
     root = fake_downloads
     directory = _installed_copy(root) if installed else root / FONT_PATH
     before = _files(directory) if installed else None
-    monkeypatch.setenv("TOKDASH_TEST_FONT_FAILURE", failure)
+    monkeypatch.setenv("TOKEN_DASHBOARD_TEST_FONT_FAILURE", failure)
     run = _run(root)
     assert run.returncode == 22, run.stderr
     if installed:
@@ -106,7 +106,7 @@ def test_reinstall_does_not_change_an_immutable_stylesheet_url(fake_downloads, m
     root = fake_downloads
     directory = _installed_copy(root)
     before = _files(directory)
-    monkeypatch.setenv("TOKDASH_TEST_FONT_CSS", UPSTREAM_CSS.replace("font-weight: 400", "font-weight: 500"))
+    monkeypatch.setenv("TOKEN_DASHBOARD_TEST_FONT_CSS", UPSTREAM_CSS.replace("font-weight: 400", "font-weight: 500"))
     run = _run(root)
     assert run.returncode == 1
     assert "different CSS" in run.stderr

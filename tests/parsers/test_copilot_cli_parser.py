@@ -3,8 +3,8 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import BaseParser, CopilotCLIParser, _sig_cache
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import BaseParser, CopilotCLIParser, _sig_cache
 
 
 def _write_jsonl(path: Path, records: list) -> None:

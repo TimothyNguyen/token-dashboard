@@ -1,6 +1,6 @@
 # Architecture and data flow
 
-Tokdash reads local coding-tool activity, stores normalized usage for efficient queries, and presents it through its web and terminal interfaces.
+TokenDashboard reads local coding-tool activity, stores normalized usage for efficient queries, and presents it through its web and terminal interfaces.
 
 ## End-to-end usage flow
 
@@ -30,13 +30,13 @@ flowchart LR
 
 **Local sources and parsers.** Client applications write session and usage records to local files or their own databases. Parser classes in `coding_tools.py` discover supported formats, normalize usage into entries, and cache file signatures so unchanged inputs do not need to be reparsed on every request. Some parsers are source-native (queried live by `compute.py` on every request), and OpenClaw goes through `sources/openclaw.py` directly. When the usage DB is off or fails, `compute.py` falls back to live parsers.
 
-**Persistent usage store.** `usage_store.py` maintains Tokdash's local SQLite database, including normalized usage entries and source metadata. It synchronizes changed source files and provides indexed queries and aggregation primitives to downstream consumers.
+**Persistent usage store.** `usage_store.py` maintains TokenDashboard's local SQLite database, including normalized usage entries and source metadata. It synchronizes changed source files and provides indexed queries and aggregation primitives to downstream consumers.
 
 **Pricing.** `pricing.py` and `PricingDatabase` resolve model IDs to per-token rates. Costs are a core output of every view. Most are priced from the pricing database; a few sources keep the cost their client recorded.
 
 **Aggregation.** `compute.py` coordinates parser synchronization, combines stored and source-native data where needed, and calculates date-range usage, costs, and summaries. Its results are the shared data layer used by the presentation surfaces.
 
-**Presentation.** `api.py` exposes usage and quota data through FastAPI routes and serves the WebUI. The Textual TUI first asks a running `tokdash serve` of the same version over HTTP, and only falls back to in-process functions when that fails (`tui/data.py`, `tui/remote.py`). Inside the TUI, `tui/app.py` owns the seven panes (Overview, Sessions, Stats, Report, Speed, Quota, Pricing) and the single range that Overview, Sessions, Report and Speed share; `tui/views.py` builds the pane bodies, `tui/ranges.py` resolves the calendar windows, `tui/charts.py` draws the inline charts, and `tui/terminal.py` settles the colour system before Textual reads it, once, at import. `tui/report.py` and `tui/formatting.py` keep no Textual import so `tokdash report` stays headless. Statusline integrations call `GET /api/usage` for compact usage data.
+**Presentation.** `api.py` exposes usage and quota data through FastAPI routes and serves the WebUI. The Textual TUI first asks a running `token-dashboard serve` of the same version over HTTP, and only falls back to in-process functions when that fails (`tui/data.py`, `tui/remote.py`). Inside the TUI, `tui/app.py` owns the seven panes (Overview, Sessions, Stats, Report, Speed, Quota, Pricing) and the single range that Overview, Sessions, Report and Speed share; `tui/views.py` builds the pane bodies, `tui/ranges.py` resolves the calendar windows, `tui/charts.py` draws the inline charts, and `tui/terminal.py` settles the colour system before Textual reads it, once, at import. `tui/report.py` and `tui/formatting.py` keep no Textual import so `token-dashboard report` stays headless. Statusline integrations call `GET /api/usage` for compact usage data.
 
 ## Output speed cache
 

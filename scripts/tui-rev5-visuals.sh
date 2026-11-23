@@ -20,7 +20,7 @@ CAPS=(
   85-speed-trend-month-populated-80x24
 )
 if [ "$#" -gt 0 ]; then CAPS=("$@"); fi
-TOKDASH_TUI_NO_REMOTE=1 PYTHONPATH=src:tests "$PY" scripts/capture_tui_renders.py "${CAPS[@]}" || exit 1
+TOKEN_DASHBOARD_TUI_NO_REMOTE=1 PYTHONPATH=src:tests "$PY" scripts/capture_tui_renders.py "${CAPS[@]}" || exit 1
 svgs=()
 for c in "${CAPS[@]}"; do svgs+=("output/tui-rev5-captures/$c.svg"); done
 "$PW" output/vischeck/svg2png.py "${svgs[@]}"

@@ -1,6 +1,6 @@
-# Tokdash Companion API Contract
+# TokenDashboard Companion API Contract
 
-The companion is a **read-only client** of the Tokdash HTTP API. It never writes,
+The companion is a **read-only client** of the TokenDashboard HTTP API. It never writes,
 never polls providers, and never reads logs or credentials. This document defines
 the endpoints, response shapes, client behavior rules, and expected UI outcomes
 that both native apps (macOS, Windows) must satisfy.
@@ -44,9 +44,9 @@ Not used by the companion:
 
 - Default: `http://127.0.0.1:55423`.
 - A manually configured Tailscale HTTPS URL is supported, e.g.
-  `https://wsl.tail76535.ts.net/tokdash`.
-- When the base URL contains a path prefix (e.g. `/tokdash`), join endpoint paths
-  correctly: `https://host/tokdash` + `/api/usage` -> `https://host/tokdash/api/usage`.
+  `https://wsl.tail76535.ts.net/token-dashboard`.
+- When the base URL contains a path prefix (e.g. `/token-dashboard`), join endpoint paths
+  correctly: `https://host/token-dashboard` + `/api/usage` -> `https://host/token-dashboard/api/usage`.
   Strip trailing slashes from the base before joining; ensure exactly one slash
   between base and endpoint.
 - Never send a browser `Origin` header from a native client.
@@ -56,14 +56,14 @@ Not used by the companion:
 ### `GET /health`
 
 ```json
-{ "status": "ok", "service": "tokdash", "version": "1.4.5" }
+{ "status": "ok", "service": "token-dashboard", "version": "1.4.5" }
 ```
 
 Fixture: `fixtures/health.json`
 
-The client must require `service == "tokdash"`. Any other value (fixture
+The client must require `service == "token-dashboard"`. Any other value (fixture
 `fixtures/health-wrong-service.json`) puts the companion in the **wrong service**
-state: show "This address is not a Tokdash service" and do not call usage or
+state: show "This address is not a TokenDashboard service" and do not call usage or
 quota endpoints.
 
 ### `GET /api/usage` (the selected period)
@@ -98,7 +98,7 @@ valid response with `total_tokens == 0` is the **empty state**, not an error.
 them — the costliest model need not be among the five biggest, so a maximum over
 `top_models` can name the wrong model. Use `top_models_by_cost[0]`, or a maximum
 over the full `combined_models` when talking to a server that predates the field.
-Earlier Tokdash versions ranked the arrays by cost, which is why a client that
+Earlier TokenDashboard versions ranked the arrays by cost, which is why a client that
 took a maximum over `top_models` used to get away with it.
 
 `fixtures/usage-today.json` is built to catch exactly that. Its seven models rank
@@ -301,7 +301,7 @@ Fixtures: `fixtures/version.json`, `fixtures/update-check-available.json`,
 
 | Field | Type | Use |
 |---|---|---|
-| `version.runtime_version` | string | "Tokdash v{...}" in Settings |
+| `version.runtime_version` | string | "TokenDashboard v{...}" in Settings |
 | `version.update_check_enabled` | bool | whether to call `/api/update-check` at all |
 | `update-check.enabled` | bool | `false` = the server has no update-check consent and performed no network I/O; render nothing |
 | `update-check.update_available` | bool | show the badge |
@@ -338,7 +338,7 @@ Identity-less older servers remain supported as single-address hosts; they are
 never merged by hostname or by matching usage. Settings remains schema v3, with
 absent route fields defaulting to an empty list and automatic selection.
 
-1. **Health gate.** Call `/health` first. Require `service == "tokdash"`. On
+1. **Health gate.** Call `/health` first. Require `service == "token-dashboard"`. On
    mismatch or non-2xx, enter wrong-service / offline state. Do not call usage
    or quota endpoints until health passes.
 
@@ -389,7 +389,7 @@ absent route fields defaulting to an empty list and automatic selection.
 
 - Open flyout with data older than 60s -> immediate fetch.
 - While open -> no more often than every 60s.
-- Closed but resident -> every 10 minutes (matches Tokdash's 600s response cache).
+- Closed but resident -> every 10 minutes (matches TokenDashboard's 600s response cache).
 - Sleep/wake -> pause periodic work; resume with one coalesced request.
 - Failure backoff -> 15s, 30s, 60s, 5min.
 
@@ -848,9 +848,9 @@ pinned under the English locale; both suites run cases in English.
 | `per-server` | today | two servers, Second without active-time | hero sums cost/tokens but **drops** the active segment (partial data); per-server rows + footnote |
 | `multi-server` | today | two healthy servers | hero $6.84 / 37.4M · active 6 h 24 m (summed); per-server rows; Low-view dedup; minimum-delay rule; footer partial-failure wording |
 | `quota-disabled` | today | usage-today + quota-disabled | quota section "Subscription tracking is off" with Open Dashboard; no credits row |
-| `wrong-service` | - | health-wrong-service | "This address is not a Tokdash service"; no other calls |
-| `offline` | - | (timeout/connection refused) | "Tokdash is not reachable"; Retry + Settings; last-good dimmed; footer "· stale" |
-| `busy` | today | usage/active/insights/quota all 503 | "Tokdash is busy - retrying"; last-good dimmed; back off |
+| `wrong-service` | - | health-wrong-service | "This address is not a TokenDashboard service"; no other calls |
+| `offline` | - | (timeout/connection refused) | "TokenDashboard is not reachable"; Retry + Settings; last-good dimmed; footer "· stale" |
+| `busy` | today | usage/active/insights/quota all 503 | "TokenDashboard is busy - retrying"; last-good dimmed; back off |
 | `partial` | today | usage-today ok; active/insights/quota 503 | hero normal; **quota** shows inline "will retry shortly"; active segment and glance vanish **silently** (rule 6) |
 | `loading` | today | all pending | "Connecting…"; skeletons (on a period switch: only after ~150 ms in flight, previous data held until then); segment stays visible; no spinner |
 | `provider-error` | today | usage-today + quota-provider-error | All view: "Couldn't refresh - showing last known" under the failed provider, rows still visible; Low prefixes ⚠ on its low row; no credits row (quota fixture has none) |

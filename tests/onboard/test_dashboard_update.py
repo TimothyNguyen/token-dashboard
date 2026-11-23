@@ -1,6 +1,6 @@
 """Dashboard click-to-update: eligibility, journal, auth, API, helper, mechanics.
 
-Every test is offline and filesystem-sandboxed: ``TOKDASH_DATA_DIR`` points at a tmp
+Every test is offline and filesystem-sandboxed: ``TOKEN_DASHBOARD_DATA_DIR`` points at a tmp
 dir, PyPI discovery is monkeypatched, and nothing here starts systemd, pip, or the
 real updater. The helper is exercised through its injectable ``Runner`` seam.
 """
@@ -15,8 +15,8 @@ import pytest
 
 pytest.importorskip("fastapi")
 
-import tokdash.api as api
-from tokdash.onboard import (
+import token_dashboard.api as api
+from token_dashboard.onboard import (
     manifest as manifest_mod,
     paths,
     update_auth,
@@ -48,9 +48,9 @@ systemd_only = pytest.mark.skipif(
 
 @pytest.fixture(autouse=True)
 def data_dir(tmp_path, monkeypatch):
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(tmp_path))
-    monkeypatch.delenv("TOKDASH_UPDATE_ORIGIN", raising=False)
-    monkeypatch.delenv("TOKDASH_USAGE_DB_PATH", raising=False)
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path))
+    monkeypatch.delenv("TOKEN_DASHBOARD_UPDATE_ORIGIN", raising=False)
+    monkeypatch.delenv("TOKEN_DASHBOARD_USAGE_DB_PATH", raising=False)
     yield tmp_path
 
 
@@ -64,7 +64,7 @@ def loopback_app():
 
 
 def managed_manifest(tmp_path, marker_id="abcd1234"):
-    unit = tmp_path / "tokdash.service"
+    unit = tmp_path / "token_dashboard.service"
     py = tmp_path / "venv" / "bin" / "python"
     py.parent.mkdir(parents=True, exist_ok=True)
     if not py.exists():
@@ -73,20 +73,20 @@ def managed_manifest(tmp_path, marker_id="abcd1234"):
     unit.write_text(
         "[Service]\n"
         f"# {marker}\n"
-        f"ExecStart={tmp_path}/venv/bin/python -m tokdash serve --bind 127.0.0.1 --port 55423 --no-open\n",
+        f"ExecStart={tmp_path}/venv/bin/python -m token_dashboard serve --bind 127.0.0.1 --port 55423 --no-open\n",
         encoding="utf-8",
     )
     data = manifest_mod.build_manifest(
         install_method="pipx",
         runtime_kind="pipx",
-        runtime_command=[f"{tmp_path}/venv/bin/python", "-m", "tokdash"],
+        runtime_command=[f"{tmp_path}/venv/bin/python", "-m", "token_dashboard"],
         runtime_owned_by_setup=False,
         python_path=f"{tmp_path}/venv/bin/python",
         python_version="3.12.0",
         service={
             "type": "systemd-user",
             "unit": str(unit),
-            "name": "tokdash",
+            "name": "token_dashboard",
             "created_by_setup": True,
             "marker": marker,
         },
@@ -107,7 +107,7 @@ def stub_who_runs_the_service(monkeypatch, py, *, bind="127.0.0.1", port=55423, 
     if loaded:
         monkeypatch.setattr(
             update_eligibility, "_loaded_execstart",
-            lambda unit: [str(py), "-m", "tokdash", "serve", "--bind", bind, "--port", str(port)],
+            lambda unit: [str(py), "-m", "token_dashboard", "serve", "--bind", bind, "--port", str(port)],
         )
     else:
         monkeypatch.setattr(update_eligibility, "_loaded_execstart", lambda unit: None)
@@ -148,21 +148,21 @@ def test_validate_target_rules():
 
 def test_install_argv_pinned_and_unpinned():
     unpinned = update_mechanics.install_argv("pipx", "/p/python", None)
-    assert unpinned == ["pipx", "upgrade", "tokdash"]
+    assert unpinned == ["pipx", "upgrade", "token_dashboard"]
     pinned = update_mechanics.install_argv("pipx", "/p/python", "2.7.0")
-    assert pinned == ["/p/python", "-m", "pip", "install", "--no-input", "tokdash==2.7.0"]
+    assert pinned == ["/p/python", "-m", "pip", "install", "--no-input", "token_dashboard==2.7.0"]
     venv = update_mechanics.install_argv("managed-venv", "/v/python", "2.7.0")
-    assert venv == ["/v/python", "-m", "pip", "install", "--no-input", "tokdash==2.7.0"]
+    assert venv == ["/v/python", "-m", "pip", "install", "--no-input", "token_dashboard==2.7.0"]
     assert update_mechanics.install_argv("conda", "/c/python", None) is None
     assert update_mechanics.install_argv("pipx", "", "2.7.0") is None
 
 
 def test_safe_install_argv():
-    assert update_mechanics.safe_install_argv(["/p/python", "-m", "pip", "install", "--no-input", "tokdash==2.7.0"])
-    assert not update_mechanics.safe_install_argv(["/p/python", "-m", "pip", "install", "tokdash>=2.0"])
+    assert update_mechanics.safe_install_argv(["/p/python", "-m", "pip", "install", "--no-input", "token_dashboard==2.7.0"])
+    assert not update_mechanics.safe_install_argv(["/p/python", "-m", "pip", "install", "token_dashboard>=2.0"])
     assert not update_mechanics.safe_install_argv(["/p/python", "-m", "pip", "install", "evil==1.0"])
     assert not update_mechanics.safe_install_argv(["rm", "-rf", "/"])
-    assert not update_mechanics.safe_install_argv(["/p/python", "-m", "pip", "install", "tokdash==2.7.0; rm -rf /"])
+    assert not update_mechanics.safe_install_argv(["/p/python", "-m", "pip", "install", "token_dashboard==2.7.0; rm -rf /"])
     assert not update_mechanics.safe_install_argv("not a list")
 
 
@@ -260,7 +260,7 @@ def test_managed_venv_requires_marker(tmp_path, monkeypatch):
     assert result["eligible"] is False
     assert "marker" in result["reason"]
     paths.runtime_marker_path().parent.mkdir(parents=True, exist_ok=True)
-    paths.runtime_marker_path().write_text("created-by=tokdash-setup\n", encoding="utf-8")
+    paths.runtime_marker_path().write_text("created-by=token-dashboard-setup\n", encoding="utf-8")
     assert update_eligibility.check_eligibility()["eligible"] is True
 
 
@@ -278,14 +278,14 @@ def test_eligibility_rejects_unrelated_app(eligible_env, monkeypatch):
     )
     r = update_eligibility.check_eligibility()
     assert not r["eligible"]
-    assert "Tokdash" in r["reason"]
+    assert "TokenDashboard" in r["reason"]
 
 
 @systemd_only
 def test_eligibility_rejects_foreign_interpreter(eligible_env, monkeypatch):
     monkeypatch.setattr(
         update_eligibility, "_loaded_execstart",
-        lambda unit: ["/usr/bin/python3", "-m", "tokdash", "serve",
+        lambda unit: ["/usr/bin/python3", "-m", "token_dashboard", "serve",
                       "--bind", "127.0.0.1", "--port", "55423"],
     )
     r = update_eligibility.check_eligibility()
@@ -309,7 +309,7 @@ def test_eligibility_rejects_base_interpreter_behind_venv_symlink(eligible_env, 
     # LOADED ExecStart must name the recorded venv path itself.
     monkeypatch.setattr(
         update_eligibility, "_loaded_execstart",
-        lambda unit: ["/usr/bin/python3", "-m", "tokdash", "serve",
+        lambda unit: ["/usr/bin/python3", "-m", "token_dashboard", "serve",
                       "--bind", "127.0.0.1", "--port", "55423"],
     )
     r = update_eligibility.check_eligibility()
@@ -318,30 +318,30 @@ def test_eligibility_rejects_base_interpreter_behind_venv_symlink(eligible_env, 
 
 
 def test_cgroup_membership_proves_identity(monkeypatch):
-    cg = "/user.slice/user-1000.slice/user@1000.service/app.slice/tokdash.service"
+    cg = "/user.slice/user-1000.slice/user@1000.service/app.slice/token-dashboard.service"
     monkeypatch.setattr(update_eligibility, "_service_control_group", lambda unit: cg.lstrip("/"))
 
     def self_cgroup(path):
         monkeypatch.setattr(update_eligibility, "_read_self_cgroup", lambda: f"0::/{path}\n")
 
     self_cgroup(cg.lstrip("/"))
-    assert update_eligibility._process_in_service_cgroup("tokdash.service") is True
+    assert update_eligibility._process_in_service_cgroup("token_dashboard.service") is True
     self_cgroup(cg.lstrip("/") + "/worker-7.scope")  # descendants belong too
-    assert update_eligibility._process_in_service_cgroup("tokdash.service") is True
-    self_cgroup("/user.slice/user-1000.slice/user@1000.service/app.slice/tokdash2.service")
-    assert update_eligibility._process_in_service_cgroup("tokdash.service") is False
+    assert update_eligibility._process_in_service_cgroup("token_dashboard.service") is True
+    self_cgroup("/user.slice/user-1000.slice/user@1000.service/app.slice/token_dashboard2.service")
+    assert update_eligibility._process_in_service_cgroup("token_dashboard.service") is False
     self_cgroup("/init.scope")  # a login shell
-    assert update_eligibility._process_in_service_cgroup("tokdash.service") is False
+    assert update_eligibility._process_in_service_cgroup("token_dashboard.service") is False
     monkeypatch.setattr(update_eligibility, "_service_control_group", lambda unit: None)
-    assert update_eligibility._process_in_service_cgroup("tokdash.service") is False
+    assert update_eligibility._process_in_service_cgroup("token_dashboard.service") is False
 
 
 # systemd's LOADED ExecStart on this machine's installer (captured live from
-# `systemctl --user show tokdash.service -p ExecStart --value`) — the structured form
+# `systemctl --user show token_dashboard.service -p ExecStart --value`) — the structured form
 # real systemd emits. Parsing it as a plain command line would make "{" the executable.
 CAPTURED_STRUCTURED_EXECSTART = (
-    "{ path=/home/howard/.local/share/pipx/venvs/tokdash/bin/python ; "
-    "argv[]=/home/howard/.local/share/pipx/venvs/tokdash/bin/python -m tokdash serve "
+    "{ path=/home/howard/.local/share/pipx/venvs/token-dashboard/bin/python ; "
+    "argv[]=/home/howard/.local/share/pipx/venvs/token-dashboard/bin/python -m token_dashboard serve "
     "--bind 127.0.0.1 --port 55423 --no-open ; ignore_errors=no ; start_time=[n/a] ; "
     "stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }"
 )
@@ -350,23 +350,23 @@ CAPTURED_STRUCTURED_EXECSTART = (
 def test_parses_captured_systemd_structured_response():
     argv = update_eligibility._parse_execstart_line(CAPTURED_STRUCTURED_EXECSTART)
     assert argv is not None
-    assert argv[0] == "/home/howard/.local/share/pipx/venvs/tokdash/bin/python"
-    assert argv[1:5] == ["-m", "tokdash", "serve", "--bind"]
+    assert argv[0] == "/home/howard/.local/share/pipx/venvs/token-dashboard/bin/python"
+    assert argv[1:5] == ["-m", "token_dashboard", "serve", "--bind"]
     assert argv[-2:] == ["--port", "55423"] or "--no-open" in argv  # full argv survives
     assert "{" not in "".join(argv)
 
 
 def test_legacy_plain_execstart_still_parses():
     argv = update_eligibility._parse_execstart_line(
-        "/home/u/.local/share/pipx/venvs/tokdash/bin/python -m tokdash serve --bind 127.0.0.1 --port 55423"
+        "/home/u/.local/share/pipx/venvs/token-dashboard/bin/python -m token_dashboard serve --bind 127.0.0.1 --port 55423"
     )
-    assert argv and argv[1:4] == ["-m", "tokdash", "serve"]
+    assert argv and argv[1:4] == ["-m", "token_dashboard", "serve"]
 
 
 def test_helper_parser_matches_eligibility_parser():
     # The staged helper cannot import the eligibility parser; the mirror must agree.
     for sample in (CAPTURED_STRUCTURED_EXECSTART,
-                   "/venv/bin/python -m tokdash serve --bind 127.0.0.1 --port 55423"):
+                   "/venv/bin/python -m token_dashboard serve --bind 127.0.0.1 --port 55423"):
         assert update_helper._parse_execstart_line(sample) == update_eligibility._parse_execstart_line(sample), sample
 
 
@@ -378,7 +378,7 @@ def test_eligibility_end_to_end_with_captured_systemd_output(tmp_path, monkeypat
     monkeypatch.setattr(update_eligibility.detect, "systemd_user_available", lambda: True)
     monkeypatch.setattr(update_eligibility, "_process_in_service_cgroup", lambda unit: True)
     captured = CAPTURED_STRUCTURED_EXECSTART.replace(
-        "/home/howard/.local/share/pipx/venvs/tokdash/bin/python", py)
+        "/home/howard/.local/share/pipx/venvs/token-dashboard/bin/python", py)
     monkeypatch.setattr(
         update_eligibility.subprocess, "run",
         lambda cmd, **k: subprocess.CompletedProcess(
@@ -403,7 +403,7 @@ def test_eligibility_rejects_port_drift(eligible_env, monkeypatch):
     py = Path(data["python_path"])
     monkeypatch.setattr(
         update_eligibility, "_loaded_execstart",
-        lambda unit: [str(py), "-m", "tokdash", "serve", "--bind", "127.0.0.1", "--port", "9999"],
+        lambda unit: [str(py), "-m", "token_dashboard", "serve", "--bind", "127.0.0.1", "--port", "9999"],
     )
     r = update_eligibility.check_eligibility()
     assert not r["eligible"]
@@ -416,15 +416,15 @@ def test_eligibility_rejects_port_drift(eligible_env, monkeypatch):
 def test_job_create_and_attach():
     job, created = update_jobs.create_job(
         to_version="2.7.0", from_version="2.6.6", trigger="dashboard",
-        install_argv=["/p", "-m", "pip", "install", "--no-input", "tokdash==2.7.0"],
-        service_type="systemd-user", service_name="tokdash", service_marker="X-Tokdash-Managed id=1",
+        install_argv=["/p", "-m", "pip", "install", "--no-input", "token_dashboard==2.7.0"],
+        service_type="systemd-user", service_name="token_dashboard", service_marker="X-TokenDashboard-Managed id=1",
         python_path="/p", usage_db=None,
     )
     assert created and job["phase"] == "accepted"
     again, created2 = update_jobs.create_job(
         to_version="2.7.0", from_version="2.6.6", trigger="dashboard",
-        install_argv=["/p", "-m", "pip", "install", "--no-input", "tokdash==2.7.0"],
-        service_type="systemd-user", service_name="tokdash", service_marker="m",
+        install_argv=["/p", "-m", "pip", "install", "--no-input", "token_dashboard==2.7.0"],
+        service_type="systemd-user", service_name="token_dashboard", service_marker="m",
         python_path="/p", usage_db=None,
     )
     assert not created2 and again["id"] == job["id"]  # attach, never double-apply
@@ -433,7 +433,7 @@ def test_job_create_and_attach():
 def test_stale_job_is_reconciled():
     job, _ = update_jobs.create_job(
         to_version="2.7.0", from_version="2.6.6", trigger="dashboard",
-        install_argv=["/p"], service_type="systemd-user", service_name="tokdash",
+        install_argv=["/p"], service_type="systemd-user", service_name="token_dashboard",
         service_marker="m", python_path="/p", usage_db=None,
     )
     # Age the job past the heartbeat window and reconcile.
@@ -447,7 +447,7 @@ def test_stale_job_is_reconciled():
     # The dead job must no longer block admission.
     fresh, created = update_jobs.create_job(
         to_version="2.7.1", from_version="2.6.6", trigger="dashboard",
-        install_argv=["/p"], service_type="systemd-user", service_name="tokdash",
+        install_argv=["/p"], service_type="systemd-user", service_name="token_dashboard",
         service_marker="m", python_path="/p", usage_db=None,
     )
     assert created and fresh["id"] != job["id"]
@@ -456,8 +456,8 @@ def test_stale_job_is_reconciled():
 def test_public_view_hides_local_paths():
     job, _ = update_jobs.create_job(
         to_version="2.7.0", from_version="2.6.6", trigger="dashboard",
-        install_argv=["/secret/venv/bin/python", "-m", "pip", "install", "--no-input", "tokdash==2.7.0"],
-        service_type="systemd-user", service_name="tokdash", service_marker="m",
+        install_argv=["/secret/venv/bin/python", "-m", "pip", "install", "--no-input", "token_dashboard==2.7.0"],
+        service_type="systemd-user", service_name="token_dashboard", service_marker="m",
         python_path="/secret/venv/bin/python", usage_db="/secret/usage.sqlite3",
     )
     view = update_jobs.public_view(job)
@@ -470,7 +470,7 @@ def test_public_view_hides_local_paths():
 def test_set_phase_terminal():
     job, _ = update_jobs.create_job(
         to_version="2.7.0", from_version="2.6.6", trigger="dashboard",
-        install_argv=["/p"], service_type="systemd-user", service_name="tokdash",
+        install_argv=["/p"], service_type="systemd-user", service_name="token_dashboard",
         service_marker="m", python_path="/p", usage_db=None,
     )
     update_jobs.set_phase(job["id"], "installing")
@@ -483,7 +483,7 @@ def test_set_phase_terminal():
 def _mk_job(trigger="dashboard"):
     job, _ = update_jobs.create_job(
         to_version="2.7.0", from_version="2.6.6", trigger=trigger,
-        install_argv=["/p"], service_type="systemd-user", service_name="tokdash",
+        install_argv=["/p"], service_type="systemd-user", service_name="token_dashboard",
         service_marker="m", python_path="/p", usage_db=None,
     )
     return job
@@ -496,7 +496,7 @@ def test_journal_calls_nest_under_the_outer_update_lock():
     with update_jobs.with_update_lock():
         job, created = update_jobs.create_job(
             to_version="2.7.0", from_version="2.6.6", trigger="cli",
-            install_argv=["/p"], service_type="systemd-user", service_name="tokdash",
+            install_argv=["/p"], service_type="systemd-user", service_name="token_dashboard",
             service_marker="m", python_path="/p", usage_db=None,
         )
         assert created
@@ -568,9 +568,9 @@ def test_stale_reconcile_never_blocks_behind_a_live_lock(data_dir):
 
 def test_origin_config_and_matching(monkeypatch, data_dir):
     assert update_auth.configured_origin() is None
-    monkeypatch.setenv("TOKDASH_UPDATE_ORIGIN", f"{TAILNET_ORIGIN}/tokdash")  # path → invalid
+    monkeypatch.setenv("TOKEN_DASHBOARD_UPDATE_ORIGIN", f"{TAILNET_ORIGIN}/token-dashboard")  # path → invalid
     assert update_auth.configured_origin() is None
-    monkeypatch.setenv("TOKDASH_UPDATE_ORIGIN", TAILNET_ORIGIN)
+    monkeypatch.setenv("TOKEN_DASHBOARD_UPDATE_ORIGIN", TAILNET_ORIGIN)
     assert update_auth.configured_origin() == TAILNET_ORIGIN
     assert update_auth.origin_matches(TAILNET_ORIGIN, host_header=TAILNET_HOST)
     assert update_auth.origin_matches(TAILNET_ORIGIN, host_header=TAILNET_HOST, origin_header=TAILNET_ORIGIN)
@@ -603,7 +603,7 @@ def test_pairing_rate_limit():
 def test_sessions_survive_and_expire():
     import os
 
-    os.environ["TOKDASH_UPDATE_ORIGIN"] = TAILNET_ORIGIN
+    os.environ["TOKEN_DASHBOARD_UPDATE_ORIGIN"] = TAILNET_ORIGIN
     try:
         session = update_auth.create_session()
         assert session
@@ -617,7 +617,7 @@ def test_sessions_survive_and_expire():
             mp.setattr(time, "time", lambda: real_time() + update_auth.SESSION_TTL_SECONDS * 2)
             assert not update_auth.validate_session(token)
     finally:
-        del os.environ["TOKDASH_UPDATE_ORIGIN"]
+        del os.environ["TOKEN_DASHBOARD_UPDATE_ORIGIN"]
 
 
 def test_no_session_without_origin():
@@ -627,7 +627,7 @@ def test_no_session_without_origin():
 def test_csrf_rotation_recovers_after_token_loss(monkeypatch):
     # A reload keeps the cookie but loses the in-memory CSRF token; the session must be
     # able to mint a fresh one — and the old token must die with the rotation.
-    monkeypatch.setenv("TOKDASH_UPDATE_ORIGIN", TAILNET_ORIGIN)
+    monkeypatch.setenv("TOKEN_DASHBOARD_UPDATE_ORIGIN", TAILNET_ORIGIN)
     session = update_auth.create_session()
     token = session["token"]
     fresh = update_auth.rotate_csrf(token)
@@ -650,7 +650,7 @@ def test_capability_shape(eligible_env, monkeypatch):
     payload = update_control.capability("2.6.6")
     assert payload["eligible"] is True
     assert payload["target"] == "9.9.9"
-    assert payload["manual_command"] == "tokdash update"
+    assert payload["manual_command"] == "token_dashboard update"
 
 
 def test_start_rejects_ineligible(monkeypatch):
@@ -725,8 +725,8 @@ def test_control_imports_on_platforms_without_fcntl():
     probe = (
         "import sys\n"
         "sys.modules['fcntl'] = None\n"
-        "import tokdash.onboard.update_control as c\n"
-        "import tokdash.onboard.update_helper as h\n"
+        "import token_dashboard.onboard.update_control as c\n"
+        "import token_dashboard.onboard.update_helper as h\n"
         "assert h.fcntl is None\n"
         "assert c._helper_source_path().is_file()\n"
         "print('ok')\n"
@@ -747,7 +747,7 @@ def _client():
 
 
 def _loopback_headers():
-    return {"host": HOST, "x-tokdash-token": api._CSRF_TOKEN}
+    return {"host": HOST, "x-token-dashboard-token": api._CSRF_TOKEN}
 
 
 @systemd_only
@@ -772,10 +772,10 @@ def test_api_capability_hides_job_from_unenrolled_remote(loopback_app, eligible_
     # target are fine (the badge shows them to the same page); latest_job is not:
     # it carries the host name and raw failure text. It belongs behind the same
     # session gate as /api/update/status, which serves that exact record.
-    monkeypatch.setenv("TOKDASH_UPDATE_ORIGIN", TAILNET_ORIGIN)
+    monkeypatch.setenv("TOKEN_DASHBOARD_UPDATE_ORIGIN", TAILNET_ORIGIN)
     job = _seed_job(tmp_path)
     update_jobs.set_phase(job["id"], "failed",
-                          message="pip crashed: /home/user/.tokdash/usage.sqlite3 (pid 4242)")
+                          message="pip crashed: /home/user/.token_dashboard/usage.sqlite3 (pid 4242)")
     headers = {"host": TAILNET_HOST, "origin": TAILNET_ORIGIN}
     client = _client()
 
@@ -816,7 +816,7 @@ def test_api_start_requires_auth(loopback_app, eligible_env):
 
 
 def test_api_start_remote_requires_session(loopback_app, eligible_env, monkeypatch):
-    monkeypatch.setenv("TOKDASH_UPDATE_ORIGIN", TAILNET_ORIGIN)
+    monkeypatch.setenv("TOKEN_DASHBOARD_UPDATE_ORIGIN", TAILNET_ORIGIN)
     r = _client().post(
         "/api/update/start",
         headers={"host": TAILNET_HOST, "origin": TAILNET_ORIGIN},
@@ -827,7 +827,7 @@ def test_api_start_remote_requires_session(loopback_app, eligible_env, monkeypat
 
 @systemd_only
 def test_api_enroll_and_start_remote(loopback_app, eligible_env, monkeypatch):
-    monkeypatch.setenv("TOKDASH_UPDATE_ORIGIN", TAILNET_ORIGIN)
+    monkeypatch.setenv("TOKEN_DASHBOARD_UPDATE_ORIGIN", TAILNET_ORIGIN)
     monkeypatch.setattr(updatecheck, "is_enabled", lambda: True)
     monkeypatch.setattr(updatecheck, "check", lambda v, **k: {
         "current": v, "latest": "9.9.9", "update_available": True, "error": None, "cached": False,
@@ -892,7 +892,7 @@ def test_api_enroll_and_start_remote(loopback_app, eligible_env, monkeypatch):
 
 
 def test_api_status_remote_requires_session(loopback_app):
-    monkeypatch_env = {"TOKDASH_UPDATE_ORIGIN": TAILNET_ORIGIN}
+    monkeypatch_env = {"TOKEN_DASHBOARD_UPDATE_ORIGIN": TAILNET_ORIGIN}
     import os
 
     os.environ.update(monkeypatch_env)
@@ -902,12 +902,12 @@ def test_api_status_remote_requires_session(loopback_app):
         r = _client().get("/api/update/status", headers={"host": HOST})
         assert r.status_code == 200
     finally:
-        del os.environ["TOKDASH_UPDATE_ORIGIN"]
+        del os.environ["TOKEN_DASHBOARD_UPDATE_ORIGIN"]
 
 
 def test_other_writes_stay_loopback(loopback_app, monkeypatch):
     # The remote exception must not leak into unrelated write endpoints.
-    monkeypatch.setenv("TOKDASH_UPDATE_ORIGIN", TAILNET_ORIGIN)
+    monkeypatch.setenv("TOKEN_DASHBOARD_UPDATE_ORIGIN", TAILNET_ORIGIN)
     r = _client().post(
         "/api/update-check/consent",
         headers={"host": TAILNET_HOST, "origin": TAILNET_ORIGIN},
@@ -919,7 +919,7 @@ def test_api_remote_plane_denied_when_bound_wide(eligible_env, monkeypatch):
     # The remote update plane exists ONLY for a loopback bind behind a serve proxy. A
     # 0.0.0.0 bind invalidates that assumption, so origin + session + CSRF together
     # still buy nothing: the plane is refused outright.
-    monkeypatch.setenv("TOKDASH_UPDATE_ORIGIN", TAILNET_ORIGIN)
+    monkeypatch.setenv("TOKEN_DASHBOARD_UPDATE_ORIGIN", TAILNET_ORIGIN)
     api.app.state.bind = "0.0.0.0"
     api.app.state.port = 55423
     try:
@@ -939,7 +939,7 @@ def test_api_remote_plane_denied_when_bound_wide(eligible_env, monkeypatch):
 
 @systemd_only
 def test_api_csrf_recovery_after_token_loss(loopback_app, eligible_env, monkeypatch):
-    monkeypatch.setenv("TOKDASH_UPDATE_ORIGIN", TAILNET_ORIGIN)
+    monkeypatch.setenv("TOKEN_DASHBOARD_UPDATE_ORIGIN", TAILNET_ORIGIN)
     monkeypatch.setattr(updatecheck, "is_enabled", lambda: True)
     monkeypatch.setattr(updatecheck, "check", lambda v, **k: {
         "current": v, "latest": "9.9.9", "update_available": True, "error": None, "cached": False,
@@ -998,7 +998,7 @@ class FakeRunner(update_helper.Runner):
         if args[:3] == ["systemctl", "--user", "show"] and "-p" in args and "ExecStart" in args:
             py = f"{self.data_dir}/venv/bin/python"
             stdout = (
-                f"{{ path={py} ; argv[]={py} -m tokdash serve --bind 127.0.0.1 "
+                f"{{ path={py} ; argv[]={py} -m token_dashboard serve --bind 127.0.0.1 "
                 "--port 55423 --no-open ; ignore_errors=no ; start_time=[n/a] ; "
                 "stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }\n"
             )
@@ -1018,8 +1018,8 @@ class FakeRunner(update_helper.Runner):
 def _seed_job(tmp_path, to_version="9.9.9", usage_db=None):
     job, created = update_jobs.create_job(
         to_version=to_version, from_version="2.6.6", trigger="dashboard",
-        install_argv=[f"{tmp_path}/venv/bin/python", "-m", "pip", "install", "--no-input", f"tokdash=={to_version}"],
-        service_type="systemd-user", service_name="tokdash",
+        install_argv=[f"{tmp_path}/venv/bin/python", "-m", "pip", "install", "--no-input", f"token_dashboard=={to_version}"],
+        service_type="systemd-user", service_name="token_dashboard",
         service_marker=manifest_mod.marker_token("abcd1234"),
         python_path=f"{tmp_path}/venv/bin/python", usage_db=usage_db,
     )
@@ -1039,7 +1039,7 @@ def test_helper_happy_path(eligible_env, tmp_path):
 
     def opener(url, timeout=5):
         if url.endswith("/health"):
-            return {"status": "ok", "service": "tokdash", "version": "9.9.9"}
+            return {"status": "ok", "service": "token_dashboard", "version": "9.9.9"}
         if url.endswith("/api/version"):
             return {"runtime_version": "9.9.9"}
         return {}
@@ -1072,7 +1072,7 @@ def test_helper_install_failure_recovers_service(eligible_env, tmp_path):
     runner.install_ok = False
 
     def opener(url, timeout=5):
-        return {"status": "ok", "service": "tokdash", "version": "2.6.6", "runtime_version": "2.6.6"}
+        return {"status": "ok", "service": "token_dashboard", "version": "2.6.6", "runtime_version": "2.6.6"}
 
     ok = update_helper.main(str(tmp_path), job["id"], runner=runner, opener=opener)
     assert ok is False
@@ -1116,10 +1116,10 @@ def test_helper_readiness_version_mismatch_fails(eligible_env, tmp_path):
     runner = FakeRunner(tmp_path, job["id"], lambda m: None)
 
     def opener(url, timeout=5):
-        return {"status": "ok", "service": "tokdash", "version": "2.6.6", "runtime_version": "2.6.6"}
+        return {"status": "ok", "service": "token_dashboard", "version": "2.6.6", "runtime_version": "2.6.6"}
 
     # Shrink the readiness window so the test is fast.
-    import tokdash.onboard.update_helper as helper_mod
+    import token_dashboard.onboard.update_helper as helper_mod
 
     import importlib
     saved = helper_mod.READY_TIMEOUT
@@ -1162,7 +1162,7 @@ def test_helper_heartbeat_joined_before_terminal_write(eligible_env, tmp_path, m
 
 
 def test_backup_holds_db_lock_until_replacement_done(eligible_env, tmp_path):
-    # Snapshot alone is not enough: the lock must exclude other tokdash writers for the
+    # Snapshot alone is not enough: the lock must exclude other token_dashboard writers for the
     # whole install window (it is released only when the NEW server is about to start).
     fcntl = pytest.importorskip("fcntl")
 
@@ -1237,7 +1237,7 @@ global.setTimeout = (fn) => { fn(); return 0; };  // the bounded loop must answe
 global.appPath = (u) => u;
 global.t = (k) => k + ' {phase} {message} {version}';  // keep placeholders substitutable
 global.updateIsLocalHost = () => true;
-global.UPDATE_CSRF_HEADER = 'X-Tokdash-CSRF';
+global.UPDATE_CSRF_HEADER = 'X-TokenDashboard-CSRF';
 global.updateCapabilityInfo = { target: '9.9.9', latest_job: null };
 global.updateUi = () => global.__ui;
 global.renderUpdateJob = (job) => { global.__renders.push(job); };
@@ -1459,12 +1459,12 @@ def test_failed_update_end_to_end_keeps_the_baseline(eligible_env, tmp_path):
 
 
 @systemd_only
-def test_helper_refuses_sibling_tokdash_process(eligible_env, tmp_path, monkeypatch):
-    # An idle co-tenant tokdash on the same data dir would resume writing the DB the
+def test_helper_refuses_sibling_token_dashboard_process(eligible_env, tmp_path, monkeypatch):
+    # An idle co-tenant token_dashboard on the same data dir would resume writing the DB the
     # replacement migrates; the honest answer is refusal, before any downtime.
     job = _seed_job(tmp_path)
     monkeypatch.setattr(
-        update_helper.Runner, "_sibling_tokdash_pids",
+        update_helper.Runner, "_sibling_token_dashboard_pids",
         lambda self, exclude, usage_db=None: [4242],
     )
     runner = FakeRunner(tmp_path, job["id"], lambda m: None)
@@ -1472,13 +1472,13 @@ def test_helper_refuses_sibling_tokdash_process(eligible_env, tmp_path, monkeypa
     assert ok is False
     record = update_jobs.get_job(job["id"])
     assert record["phase"] == "failed" and record["failed_phase"] == "preflight"
-    assert "another Tokdash process" in (record["message"] or "")
+    assert "another TokenDashboard process" in (record["message"] or "")
     assert not [c for c in runner.calls if c[:3] == ["systemctl", "--user", "stop"]]
 
 
 @systemd_only
 def test_helper_preflight_rejects_unrelated_execstart(eligible_env, tmp_path):
-    # Loaded configuration must run the RECORDED tokdash service — an ExecStart that
+    # Loaded configuration must run the RECORDED token_dashboard service — an ExecStart that
     # merely starts with our interpreter proves nothing.
     job = _seed_job(tmp_path)
 
@@ -1500,19 +1500,19 @@ def test_helper_preflight_rejects_unrelated_execstart(eligible_env, tmp_path):
     assert not [c for c in runner.calls if c[:3] == ["systemctl", "--user", "stop"]]
 
 
-def test_looks_like_tokdash():
-    assert update_helper._looks_like_tokdash(["/home/u/.local/bin/tokdash", "serve"])
-    assert update_helper._looks_like_tokdash(["tokdash", "serve"])  # resolved from PATH
-    assert update_helper._looks_like_tokdash(["/venv/bin/python", "-m", "tokdash", "serve"])
+def test_looks_like_token_dashboard():
+    assert update_helper._looks_like_token_dashboard(["/home/u/.local/bin/token-dashboard", "serve"])
+    assert update_helper._looks_like_token_dashboard(["token_dashboard", "serve"])  # resolved from PATH
+    assert update_helper._looks_like_token_dashboard(["/venv/bin/python", "-m", "token_dashboard", "serve"])
     # console script launched through its interpreter — the shape a venv parent produces
-    assert update_helper._looks_like_tokdash(
-        ["/venv/bin/python", "/home/user/.local/bin/tokdash", "serve"]
+    assert update_helper._looks_like_token_dashboard(
+        ["/venv/bin/python", "/home/user/.local/bin/token-dashboard", "serve"]
     )
-    assert update_helper._looks_like_tokdash(["python3", "main.py"])
-    assert not update_helper._looks_like_tokdash(
-        ["/venv/bin/python", "-m", "pip", "install", "tokdash==9.9.9"]
+    assert update_helper._looks_like_token_dashboard(["python3", "main.py"])
+    assert not update_helper._looks_like_token_dashboard(
+        ["/venv/bin/python", "-m", "pip", "install", "token_dashboard==9.9.9"]
     )
-    assert not update_helper._looks_like_tokdash(["systemctl", "--user", "restart", "tokdash"])
+    assert not update_helper._looks_like_token_dashboard(["systemctl", "--user", "restart", "token_dashboard"])
 
 
 def test_sibling_scan_covers_console_scripts_and_shared_db(eligible_env, tmp_path, monkeypatch):
@@ -1522,24 +1522,24 @@ def test_sibling_scan_covers_console_scripts_and_shared_db(eligible_env, tmp_pat
 
     def fake_snapshot(self):
         # 111: console-script shape, different data dir, SHARED usage DB → caught
-        yield 111, ["/venv/bin/python", "/home/user/.local/bin/tokdash", "serve"], \
-            {"TOKDASH_USAGE_DB_PATH": db}
-        # 222: our own pip child (not tokdash), shared DB → ignored
-        yield 222, ["/venv/bin/python", "-m", "pip", "install", "tokdash==9.9.9"], \
-            {"TOKDASH_USAGE_DB_PATH": db}
+        yield 111, ["/venv/bin/python", "/home/user/.local/bin/token-dashboard", "serve"], \
+            {"TOKEN_DASHBOARD_USAGE_DB_PATH": db}
+        # 222: our own pip child (not token_dashboard), shared DB → ignored
+        yield 222, ["/venv/bin/python", "-m", "pip", "install", "token_dashboard==9.9.9"], \
+            {"TOKEN_DASHBOARD_USAGE_DB_PATH": db}
         # 333: same data dir → caught
-        yield 333, ["tokdash", "serve"], {"TOKDASH_DATA_DIR": str(tmp_path)}
+        yield 333, ["token_dashboard", "serve"], {"TOKEN_DASHBOARD_DATA_DIR": str(tmp_path)}
         # 444: unrelated install → ignored
-        yield 444, ["tokdash", "serve"], {
-            "TOKDASH_DATA_DIR": "/home/u/.tokdash",
-            "TOKDASH_USAGE_DB_PATH": "/elsewhere/usage.sqlite3", "HOME": "/home/u",
+        yield 444, ["token_dashboard", "serve"], {
+            "TOKEN_DASHBOARD_DATA_DIR": "/home/u/.token_dashboard",
+            "TOKEN_DASHBOARD_USAGE_DB_PATH": "/elsewhere/usage.sqlite3", "HOME": "/home/u",
         }
         # self: excluded regardless of shape
-        yield _os.getpid(), ["tokdash", "serve"], {"TOKDASH_DATA_DIR": str(tmp_path)}
+        yield _os.getpid(), ["token_dashboard", "serve"], {"TOKEN_DASHBOARD_DATA_DIR": str(tmp_path)}
 
     monkeypatch.setattr(update_helper.Runner, "_proc_snapshot", fake_snapshot)
     r = update_helper.Runner(tmp_path, "j", lambda m: None)
-    pids = r._sibling_tokdash_pids(exclude={999}, usage_db=db)
+    pids = r._sibling_token_dashboard_pids(exclude={999}, usage_db=db)
     assert sorted(pids) == [111, 333]
 
 
@@ -1584,7 +1584,7 @@ def test_readiness_gives_a_cold_app_probe_a_real_budget(eligible_env, tmp_path):
 
     def opener(url, timeout=5):
         if url.endswith("/health"):
-            return {"service": "tokdash", "version": "9.9.9"}
+            return {"service": "token_dashboard", "version": "9.9.9"}
         if url.endswith("/api/version"):
             return {"runtime_version": "9.9.9"}
         # Simulate the cold cache: answering takes READY_APP_PROBE_TIMEOUT-ish;
@@ -1610,7 +1610,7 @@ def test_readiness_app_probe_still_bails_out(eligible_env, tmp_path, monkeypatch
 
     def opener(url, timeout=5):
         if url.endswith("/health"):
-            return {"service": "tokdash", "version": "9.9.9"}
+            return {"service": "token_dashboard", "version": "9.9.9"}
         if url.endswith("/api/version"):
             return {"runtime_version": "9.9.9"}
         raise RuntimeError("always slow")
@@ -1620,44 +1620,44 @@ def test_readiness_app_probe_still_bails_out(eligible_env, tmp_path, monkeypatch
         r.readiness("9.9.9", "127.0.0.1", 55423)
 
 
-def test_tokdash_launch_needs_a_launch_not_a_mention():
-    # An editor opened on the repo, or `git`/`find`/node naming a tokdash-ish
-    # path, must never be classified as a running tokdash — those refusals block
+def test_token_dashboard_launch_needs_a_launch_not_a_mention():
+    # An editor opened on the repo, or `git`/`find`/node naming a token-dashboard-ish
+    # path, must never be classified as a running token_dashboard — those refusals block
     # every future update of the REAL service over a false positive.
-    L = update_helper._tokdash_launch
-    assert L(["/home/u/.local/bin/tokdash", "serve"]) == "definite"
-    assert L(["tokdash", "serve"]) == "definite"
-    assert L(["/venv/bin/python", "-m", "tokdash", "serve"]) == "definite"
-    assert L(["/venv/bin/python", "/home/u/.local/bin/tokdash", "serve"]) == "definite"
+    L = update_helper._token_dashboard_launch
+    assert L(["/home/u/.local/bin/token-dashboard", "serve"]) == "definite"
+    assert L(["token_dashboard", "serve"]) == "definite"
+    assert L(["/venv/bin/python", "-m", "token_dashboard", "serve"]) == "definite"
+    assert L(["/venv/bin/python", "/home/u/.local/bin/token-dashboard", "serve"]) == "definite"
     assert L(["python3", "main.py"]) == "ambiguous"  # dev-runner shape — binder decides
     # Review round 6 #6: interpreter flags between the interpreter and the script
     # must not hide the launch position — `python -u main.py` is still a runner.
     assert L(["/usr/bin/python3", "-u", "main.py", "serve"]) == "ambiguous"
-    assert L(["python", "-X", "utf8", "-m", "tokdash", "serve"]) == "definite"
-    assert L(["/usr/bin/python", "-c", "import tokdash"]) is None  # inline code, no runner
-    assert L(["/usr/bin/python", "-m", "pip", "install", "tokdash==9.9.9"]) is None
-    assert L(["systemctl", "--user", "restart", "tokdash"]) is None
-    assert L(["/usr/bin/code", "/home/u/Dev/Tokdash_Project/tokdash"]) is None
+    assert L(["python", "-X", "utf8", "-m", "token_dashboard", "serve"]) == "definite"
+    assert L(["/usr/bin/python", "-c", "import token_dashboard"]) is None  # inline code, no runner
+    assert L(["/usr/bin/python", "-m", "pip", "install", "token_dashboard==9.9.9"]) is None
+    assert L(["systemctl", "--user", "restart", "token_dashboard"]) is None
+    assert L(["/usr/bin/code", "/home/u/Dev/TokenDashboard_Project/token-dashboard"]) is None
     assert L(["vim", "/home/u/other/main.py"]) is None
     assert L(["node", "main.py", "serve"]) is None
-    assert L(["git", "-C", "/home/u/Dev/tokdash", "status"]) is None
-    assert L(["/usr/bin/code", "tokdash"]) is None  # basename-only mention
+    assert L(["git", "-C", "/home/u/Dev/token-dashboard", "status"]) is None
+    assert L(["/usr/bin/code", "token_dashboard"]) is None  # basename-only mention
 
 
 def test_sibling_scan_requires_a_positive_binding(eligible_env, tmp_path, monkeypatch):
     # Home's DEFAULT data dir is the update's own — so an inferred default-location
     # match may only convict definite launches. The ambiguous `python main.py`
-    # shape additionally has to be sitting in a Tokdash project root, or every
+    # shape additionally has to be sitting in a TokenDashboard project root, or every
     # python project run under this $HOME would block the update forever.
     home = tmp_path / "home"
     home.mkdir()
-    (home / ".tokdash").symlink_to(tmp_path)  # inferred default == our data dir
+    (home / ".token_dashboard").symlink_to(tmp_path)  # inferred default == our data dir
     other = tmp_path / "other-project"
     (other / "sub").mkdir(parents=True)
-    proj = tmp_path / "tokdash-checkout"
-    (proj / "src" / "tokdash").mkdir(parents=True)
+    proj = tmp_path / "token-dashboard-checkout"
+    (proj / "src" / "token_dashboard").mkdir(parents=True)
     (proj / "main.py").write_text("# dev runner\n", encoding="utf-8")
-    (proj / "src" / "tokdash" / "__main__.py").write_text("", encoding="utf-8")
+    (proj / "src" / "token_dashboard" / "__main__.py").write_text("", encoding="utf-8")
 
     cwds = {111: other, 333: proj, 555: other, 666: other}
 
@@ -1676,27 +1676,27 @@ def test_sibling_scan_requires_a_positive_binding(eligible_env, tmp_path, monkey
     def fake_snapshot(self):
         # 111: unrelated project's main.py, no env, cwd elsewhere -> ignored
         yield 111, ["/usr/bin/python3", "main.py", "serve"], {"HOME": str(home)}
-        # 222: editor opened ON the tokdash checkout -> not even a launch
+        # 222: editor opened ON the token_dashboard checkout -> not even a launch
         yield 222, ["/usr/bin/code", str(proj)], {"HOME": str(home)}
         # 333: real dev-runner co-tenant on the default dir, cwd = project root -> caught
         yield 333, ["/usr/bin/python3", "main.py", "serve"], {"HOME": str(home)}
-        # 444: plain `tokdash serve`, no env -> definite launch + default dir -> caught
-        yield 444, ["tokdash", "serve"], {"HOME": str(home)}
+        # 444: plain `token_dashboard serve`, no env -> definite launch + default dir -> caught
+        yield 444, ["token_dashboard", "serve"], {"HOME": str(home)}
         # 555: `python main.py` in a shell that merely EXPORTS the dir (review
         # round 6 #6) — an exported default-ish dir must not convict every
         # `python main.py` ever typed there. cwd elsewhere -> ignored.
         yield 555, ["/usr/bin/python3", "main.py", "serve"], {
-            "HOME": str(home), "TOKDASH_DATA_DIR": str(tmp_path)}
+            "HOME": str(home), "TOKEN_DASHBOARD_DATA_DIR": str(tmp_path)}
         # 666: `python main.py` with the usage DB EXPLICITLY bound to ours —
         # a deliberate shared-DB run; the binding itself is the proof, cwd
         # elsewhere still convicts.
         yield 666, ["/usr/bin/python3", "main.py", "serve"], {
-            "HOME": str(home), "TOKDASH_USAGE_DB_PATH": str(tmp_path / "usage.sqlite3")}
+            "HOME": str(home), "TOKEN_DASHBOARD_USAGE_DB_PATH": str(tmp_path / "usage.sqlite3")}
 
     monkeypatch.setattr(update_helper.Runner, "_proc_snapshot", fake_snapshot)
     monkeypatch.setattr(update_helper.os, "readlink", fake_readlink)
     r = update_helper.Runner(tmp_path, "j", lambda m: None)
-    assert sorted(r._sibling_tokdash_pids(exclude=set())) == [333, 444, 666]
+    assert sorted(r._sibling_token_dashboard_pids(exclude=set())) == [333, 444, 666]
 
 
 def test_update_handlers_are_off_the_event_loop():
@@ -1988,23 +1988,23 @@ console.log(JSON.stringify(out));
 
 
 def test_update_help_and_verbs():
-    from tokdash.cli_help import CARD_VERBS, COMMAND_VERBS
+    from token_dashboard.cli_help import CARD_VERBS, COMMAND_VERBS
 
     assert "update-enroll" in COMMAND_VERBS
     assert "update-enroll" in CARD_VERBS
 
-    from tokdash.cli import build_parser
+    from token_dashboard.cli import build_parser
 
-    args = build_parser("tokdash").parse_args(["update", "--to", "2.7.0"])
+    args = build_parser("token_dashboard").parse_args(["update", "--to", "2.7.0"])
     assert args.to_version == "2.7.0"
-    args = build_parser("tokdash").parse_args(["update"])
+    args = build_parser("token_dashboard").parse_args(["update"])
     assert args.to_version is None
 
 
 def test_cmd_update_rejects_bad_target(tmp_path, monkeypatch, capsys):
     managed_manifest(tmp_path)
-    from tokdash.onboard import engine
-    from tokdash.onboard.plan import Options
+    from token_dashboard.onboard import engine
+    from token_dashboard.onboard.plan import Options
 
     monkeypatch.setattr(engine.updatecheck, "_is_newer", lambda a, b: True)
     rc = engine.cmd_update(Options(action="update", to_version="latest"))
@@ -2014,14 +2014,14 @@ def test_cmd_update_rejects_bad_target(tmp_path, monkeypatch, capsys):
 
 
 def test_cmd_update_attaches_to_live_job(eligible_env, capsys, monkeypatch):
-    from tokdash.onboard import engine
-    from tokdash.onboard.plan import Options
+    from token_dashboard.onboard import engine
+    from token_dashboard.onboard.plan import Options
 
     monkeypatch.setattr(engine.detect, "find_pipx", lambda: "/usr/bin/pipx")
 
     update_jobs.create_job(
         to_version="9.9.9", from_version="2.6.6", trigger="dashboard",
-        install_argv=["/p"], service_type="systemd-user", service_name="tokdash",
+        install_argv=["/p"], service_type="systemd-user", service_name="token_dashboard",
         service_marker="m", python_path="/p", usage_db=None,
     )
     rc = engine.cmd_update(Options(action="update"))
@@ -2033,8 +2033,8 @@ def test_cmd_update_attaches_to_live_job(eligible_env, capsys, monkeypatch):
 def test_cmd_update_heartbeats_during_install(eligible_env, monkeypatch):
     # A minutes-long terminal update must keep its job's heartbeat warm; otherwise a
     # dashboard polling beside it watches a LIVE update age into "interrupted".
-    from tokdash.onboard import engine
-    from tokdash.onboard.plan import Options
+    from token_dashboard.onboard import engine
+    from token_dashboard.onboard.plan import Options
 
     monkeypatch.setattr(engine.detect, "find_pipx", lambda: "/usr/bin/pipx")
     monkeypatch.setattr(engine, "_CLI_HEARTBEAT_SECONDS", 0.01)
@@ -2056,9 +2056,9 @@ def test_cmd_update_heartbeats_during_install(eligible_env, monkeypatch):
 
 
 def test_update_enroll_mints_code(monkeypatch, capsys):
-    monkeypatch.setenv("TOKDASH_UPDATE_ORIGIN", TAILNET_ORIGIN)
-    from tokdash.onboard import engine
-    from tokdash.onboard.plan import Options
+    monkeypatch.setenv("TOKEN_DASHBOARD_UPDATE_ORIGIN", TAILNET_ORIGIN)
+    from token_dashboard.onboard import engine
+    from token_dashboard.onboard.plan import Options
 
     rc = engine.cmd_update_enroll(Options(action="update-enroll"))
     assert rc == engine.EXIT_OK
@@ -2073,7 +2073,7 @@ def test_update_enroll_mints_code(monkeypatch, capsys):
 def test_boot_reconciliation_marks_stale_failed():
     job, _ = update_jobs.create_job(
         to_version="9.9.9", from_version="2.6.6", trigger="dashboard",
-        install_argv=["/p"], service_type="systemd-user", service_name="tokdash",
+        install_argv=["/p"], service_type="systemd-user", service_name="token_dashboard",
         service_marker="m", python_path="/p", usage_db=None,
     )
     with update_jobs.with_update_lock():

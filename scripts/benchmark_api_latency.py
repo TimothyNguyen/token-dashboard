@@ -200,7 +200,7 @@ def markdown_table(report: dict[str, Any]) -> str:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Benchmark Tokdash HTTP API endpoint latency.")
+    parser = argparse.ArgumentParser(description="Benchmark TokenDashboard HTTP API endpoint latency.")
     parser.add_argument("--base", action="append", default=[], help="Named base URL, e.g. stable=http://127.0.0.1:55423")
     parser.add_argument("--endpoint", action="append", default=[], help="Named endpoint, e.g. usage=/api/usage?period=today")
     parser.add_argument(

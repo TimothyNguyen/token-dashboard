@@ -5,7 +5,7 @@ ownership; an identical one changes nothing; and the DSH usage boundary
 follows every output clock seen, not only the last.
 """
 import pytest
-from tokdash.output_speed_readers import CodexResponseAssociation, dsh_stream_timing
+from token_dashboard.output_speed_readers import CodexResponseAssociation, dsh_stream_timing
 
 
 USAGE = {'input_tokens': 100, 'cached_input_tokens': 20, 'output_tokens': 60,

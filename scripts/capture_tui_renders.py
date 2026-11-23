@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Render the shipped TUI to text and SVG captures, for review against the design.
 
-    TOKDASH_TUI_NO_REMOTE=1 PYTHONPATH=src python3 scripts/capture_tui_renders.py
+    TOKEN_DASHBOARD_TUI_NO_REMOTE=1 PYTHONPATH=src python3 scripts/capture_tui_renders.py
 
 Every pane is driven by a real Textual pilot over the contract-shaped payloads
 the TUI tests already pin (tests/support/tui.py), with the fetch
@@ -23,9 +23,9 @@ import os
 import sys
 from pathlib import Path
 
-os.environ.setdefault("TOKDASH_TUI_NO_REMOTE", "1")
-os.environ.setdefault("TOKDASH_DATA_DIR", "/tmp/tui-rev5-capture-data")
-# NO_COLOR is not a tokdash setting. Textual reads it when the App is built and
+os.environ.setdefault("TOKEN_DASHBOARD_TUI_NO_REMOTE", "1")
+os.environ.setdefault("TOKEN_DASHBOARD_DATA_DIR", "/tmp/tui-rev5-capture-data")
+# NO_COLOR is not a token_dashboard setting. Textual reads it when the App is built and
 # installs a Monochrome line filter that bakes greyscale into every rendered
 # strip, SVG screenshot included. A capture of the palette must be taken without
 # it; the monochrome cases put it back on purpose, per app.
@@ -37,9 +37,9 @@ sys.path.insert(0, str(ROOT / "tests"))
 OUT = ROOT / "output" / "tui-rev5-captures"
 
 import support.tui as fx  # noqa: E402  (contract-shaped fixtures)
-import tokdash.tui.app as app_mod  # noqa: E402
-from tokdash.sessions import SESSION_TOOLS  # noqa: E402
-from tokdash.tui.app import TokdashApp  # noqa: E402
+import token_dashboard.tui.app as app_mod  # noqa: E402
+from token_dashboard.sessions import SESSION_TOOLS  # noqa: E402
+from token_dashboard.tui.app import TokenDashboardApp  # noqa: E402
 
 
 FAKE: fx.FakeApi | None = None  # the current frame's fake, for cases that edit it
@@ -67,7 +67,7 @@ def install_fakes() -> fx.FakeApi:
     for name, (key, pick) in seams.items():
         setattr(app_mod, name, fake.seam(key, pick))
     app_mod.follow_output_speed_job = fake.follow
-    app_mod.db_summary = lambda: "usage db disabled (TOKDASH_USAGE_DB=0) - live parsing"
+    app_mod.db_summary = lambda: "usage db disabled (TOKEN_DASHBOARD_USAGE_DB=0) - live parsing"
     app_mod.ensure_usage_db_compatible = lambda: None
     app_mod._local_today = lambda: fx.TODAY
     return fake
@@ -95,7 +95,7 @@ def capture(name: str, size: tuple[int, int], body, *, initial: str = "today",
         os.environ["NO_COLOR"] = "1"
     else:
         os.environ.pop("NO_COLOR", None)
-    app = TokdashApp(initial_period=initial)
+    app = TokenDashboardApp(initial_period=initial)
 
     async def main():
         async with app.run_test(size=size) as pilot:
@@ -861,8 +861,8 @@ def use_rich_payloads() -> None:
 # every tool looks alike cannot show whether it orders itself usefully, thins
 # itself at eighty columns, or keeps the tool that is in force on screen.
 _RICH_PROJECTS = [
-    ("tokdash", "TUI parity"),
-    ("tokdash", "pricing normalize aliases"),
+    ("token_dashboard", "TUI parity"),
+    ("token_dashboard", "pricing normalize aliases"),
     ("companion", "status refresh"),
     ("campus_runs", "r56B budget sweep"),
     ("ad-prof", "stage_w train"),

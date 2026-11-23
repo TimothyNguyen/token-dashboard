@@ -14,10 +14,10 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import sessions
-from tokdash.dateutil import parse_date_range
-from tokdash.pricing import PricingDatabase
-from tokdash.sessions import (
+from token_dashboard import sessions
+from token_dashboard.dateutil import parse_date_range
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sessions import (
     SESSION_TOOLS,
     _omp_session_roots,
     _omp_sessions,
@@ -25,7 +25,7 @@ from tokdash.sessions import (
     get_sessions_data,
     reload_pricing_db,
 )
-from tokdash.sources.coding_tools import BaseParser, OmpParser, _sig_cache
+from token_dashboard.sources.coding_tools import BaseParser, OmpParser, _sig_cache
 
 from test_omp_parser import _omp_session_lines
 

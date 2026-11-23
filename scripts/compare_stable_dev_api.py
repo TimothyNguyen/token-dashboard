@@ -125,7 +125,7 @@ def compare_once(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Compare stable and dev Tokdash API totals over time.")
+    parser = argparse.ArgumentParser(description="Compare stable and dev TokenDashboard API totals over time.")
     parser.add_argument("--stable-url", required=True)
     parser.add_argument("--dev-url", required=True)
     parser.add_argument("--duration-seconds", type=int, default=900)

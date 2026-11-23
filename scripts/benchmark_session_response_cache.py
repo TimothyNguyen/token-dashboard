@@ -24,9 +24,9 @@ def main() -> None:
     parser.add_argument("--real-tools", nargs="*", default=[])
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
-    os.environ["TOKDASH_DATA_DIR"] = str(args.output / "isolated-data")
-    os.environ["TOKDASH_WARM_ON_START"] = "0"
-    from tokdash import api, sessions
+    os.environ["TOKEN_DASHBOARD_DATA_DIR"] = str(args.output / "isolated-data")
+    os.environ["TOKEN_DASHBOARD_WARM_ON_START"] = "0"
+    from token_dashboard import api, sessions
 
     original_key = api._session_response_cache_key
 

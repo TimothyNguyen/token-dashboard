@@ -4,10 +4,10 @@ Run this after any pricing DB update (manual or auto-generated) to verify
 that representative aliases, manual models, and derived models still resolve
 correctly through PricingDatabase.
 
-This test lives in tokdash (the consumer), not the updater repo.
+This test lives in token_dashboard (the consumer), not the updater repo.
 """
 
-from tokdash.pricing import PricingDatabase
+from token_dashboard.pricing import PricingDatabase
 
 
 def test_manual_models_resolve():

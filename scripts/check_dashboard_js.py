@@ -30,7 +30,7 @@ class Scripts(HTMLParser):
 def main():
     root = Path(__file__).resolve().parents[1]
     parser = Scripts()
-    parser.feed((root / 'src/tokdash/static/index.html').read_text(encoding='utf-8'))
+    parser.feed((root / 'src/token_dashboard/static/index.html').read_text(encoding='utf-8'))
     for script, module in parser.scripts:
         subprocess.run(['node', '--check', '--input-type=module' if module else '--input-type=commonjs'], input=script, encoding='utf-8', check=True, cwd=root)
     print(f'{len(parser.scripts)} dashboard scripts parsed')

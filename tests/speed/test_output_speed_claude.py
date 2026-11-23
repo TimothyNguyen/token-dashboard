@@ -22,12 +22,12 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from tokdash import clientpaths, compute, sessions, session_speed, speed_cache, speed_trend, speed_worker
-from tokdash.compute import _collect_parser_file
-from tokdash.output_speed_readers import ClaudeRequestAssociation
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import ClaudeParser, CodingToolsUsageTracker
-from tokdash.speed_mode import collect_timings
+from token_dashboard import clientpaths, compute, sessions, session_speed, speed_cache, speed_trend, speed_worker
+from token_dashboard.compute import _collect_parser_file
+from token_dashboard.output_speed_readers import ClaudeRequestAssociation
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import ClaudeParser, CodingToolsUsageTracker
+from token_dashboard.speed_mode import collect_timings
 
 T0 = datetime(2026, 10, 1, 12, tzinfo=timezone.utc)
 T0_MS = int(T0.timestamp() * 1000)
@@ -282,8 +282,8 @@ def test_model_rows_and_the_session_timeline_come_from_one_build(claude_home):
 
 @pytest.mark.parametrize('change', ['snapshots', 'reclassification'])
 def test_ownership_swaps_rebuild_timing_with_unchanged_file_counts(claude_home, monkeypatch, change):
-    from tokdash import usage_store
-    from tokdash.sources.coding_tools import _sig_cache
+    from token_dashboard import usage_store
+    from token_dashboard.sources.coding_tools import _sig_cache
 
     # Repeated publications in one clock tick must still invalidate their inputs.
     class FrozenDatetime(datetime):
@@ -292,7 +292,7 @@ def test_ownership_swaps_rebuild_timing_with_unchanged_file_counts(claude_home, 
             return T0.astimezone(tz)
 
     monkeypatch.setattr(usage_store, 'datetime', FrozenDatetime)
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION', '1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION', '1')
 
     def call(mid, start, end, sid, *, out=400, cached=False):
         sender = user(f'{sid}-{mid}-u', None, start, sid=sid)

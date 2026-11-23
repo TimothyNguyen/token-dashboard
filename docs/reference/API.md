@@ -1,11 +1,11 @@
-# Tokdash API Reference
+# TokenDashboard API Reference
 
-Tokdash exposes a local HTTP API (FastAPI) for querying token usage, costs, and session data across Claude Code, Codex, OpenClaw, and other supported tools.
+TokenDashboard exposes a local HTTP API (FastAPI) for querying token usage, costs, and session data across Claude Code, Codex, OpenClaw, and other supported tools.
 
 - **Default bind:** `127.0.0.1:55423`
-- **Start:** `tokdash serve --bind 127.0.0.1 --port 55423`
+- **Start:** `token-dashboard serve --bind 127.0.0.1 --port 55423`
 - **OpenAPI schema:** `GET /openapi.json` (feed it to any OpenAPI viewer or client generator)
-- **Interactive docs:** none. Tokdash doesn't serve `/docs` (Swagger UI) or `/redoc`, because
+- **Interactive docs:** none. TokenDashboard doesn't serve `/docs` (Swagger UI) or `/redoc`, because
   both load their scripts from a third-party CDN onto the dashboard's origin. This page is
   the reference.
 
@@ -19,7 +19,7 @@ per-session token); see [`docs/SECURITY.md`](../SECURITY.md) and `PUT /api/prici
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/health` | Liveness probe (with a Tokdash fingerprint) |
+| `GET` | `/health` | Liveness probe (with a TokenDashboard fingerprint) |
 | `GET` | `/api/version` | Runtime version + setup install method |
 | `GET` | `/api/csrf-token` | Per-session write token (loopback/same-origin only) |
 | `GET` | `/api/update-check` | Opt-in cached PyPI version check (read-only) |
@@ -110,7 +110,7 @@ the month is 1 day, not 30.
 ## `GET /health`
 
 Liveness check. Carries a distinctive `service`/`version` fingerprint so a port probe can
-tell "this is Tokdash" rather than trusting a generic `{"status":"ok"}` any app could return.
+tell "this is TokenDashboard" rather than trusting a generic `{"status":"ok"}` any app could return.
 
 `instance_id` identifies this daemon, so a dashboard that reaches one machine over
 several URLs (loopback, Serve name, SSH forward) can recognise it as one server instead
@@ -120,7 +120,7 @@ agree on it because they read the same session logs, and two daemons in two dire
 differ even on one machine. The field is omitted rather than guessed when the file can be
 neither written nor read, and the daemon logs one warning naming that file. A file it
 cannot parse is left exactly as it is and is not re-read until the daemon starts again, so
-clearing that up means deleting the file and restarting Tokdash.
+clearing that up means deleting the file and restarting TokenDashboard.
 
 It is a durable identifier for this machine, so it is covered by the same origin policy as
 everything else on this route, and that policy must not be widened to make it readable
@@ -130,7 +130,7 @@ from a page that cannot already read the daemon.
 ```json
 {
   "status": "ok",
-  "service": "tokdash",
+  "service": "token-dashboard",
   "version": "1.0.7",
   "instance_id": "6c1f2b0e-9a4d-4c37-8f1e-2d0b5a7c9e11"
 }
@@ -145,15 +145,15 @@ Local version/provenance. `install_method` is read from the setup manifest
 
 `usage_db_schema_supported` is the usage-database schema version this build can
 read — a compile-time constant, not a read of the database, so this route stays
-as cheap as `/health`. Comparing it across two Tokdash processes that share a
+as cheap as `/health`. Comparing it across two TokenDashboard processes that share a
 data directory is how a version skew is spotted without opening the file;
 migrations run forward only, so the older build cannot read a database the newer
-one has migrated. `tokdash doctor` reports the schema actually stored on disk.
+one has migrated. `token-dashboard doctor` reports the schema actually stored on disk.
 
 **Response**
 ```json
 {
-  "service": "tokdash",
+  "service": "token-dashboard",
   "runtime_version": "1.0.7",
   "install_method": "pipx",
   "update_check_enabled": false,
@@ -165,7 +165,7 @@ one has migrated. `tokdash doctor` reports the schema actually stored on disk.
 
 ## `GET /api/csrf-token`
 
-Issues the per-session write token the dashboard echoes back as `X-Tokdash-Token` on
+Issues the per-session write token the dashboard echoes back as `X-TokenDashboard-Token` on
 mutating requests. Returns `403` unless the server is loopback-bound and the request's
 `Host`/`Origin` are in the loopback allowlist (so a page on another localhost port cannot
 read it).
@@ -182,11 +182,11 @@ read it).
 Opt-in, default-off PyPI version check (see `docs/guides/ONBOARDING.md` → Update checks). **Read-only**
 — PyPI read plus an in-memory cache, no disk write — so it is served as `GET` and is **not**
 write-gated; it works over Tailscale/WSL/any forward like `GET /api/quota/refresh` (see
-`docs/SECURITY.md`). No-op unless update checks are enabled (`TOKDASH_UPDATE_CHECK=1` or saved
+`docs/SECURITY.md`). No-op unless update checks are enabled (`TOKEN_DASHBOARD_UPDATE_CHECK=1` or saved
 consent). Result is cached for hours; never an automatic/background call, and this endpoint
 itself only *reports*. Starting an upgrade is a separate, gated flow — the eligible managed
 install's dashboard `POST /api/update/start` (see the update endpoints above and
-`docs/guides/ONBOARDING.md` → "Dashboard updates"), or `tokdash update` from a terminal.
+`docs/guides/ONBOARDING.md` → "Dashboard updates"), or `token-dashboard update` from a terminal.
 
 **Response (enabled)**
 ```json
@@ -202,7 +202,7 @@ install's dashboard `POST /api/update/start` (see the update endpoints above and
 ## `POST /api/update-check/consent`
 
 Persists one-time consent (`update_check: true`) to `<data_dir>/config.json` so update checks are
-enabled. **Write-gated** like all mutations. `TOKDASH_UPDATE_CHECK=0` remains a hard kill switch that
+enabled. **Write-gated** like all mutations. `TOKEN_DASHBOARD_UPDATE_CHECK=0` remains a hard kill switch that
 overrides saved consent.
 
 **Response**
@@ -214,9 +214,9 @@ overrides saved consent.
 
 ## `GET /api/quota`
 
-Returns current subscription quota state. This route never performs provider network I/O; it reads the local `quota_snapshots` table (and local plan/tier metadata). Session files are not scanned here — the background poller ingests them. Provider API polling is default-off and happens only through `GET /api/quota/refresh`, the background poller after consent, or `tokdash quota poll`.
+Returns current subscription quota state. This route never performs provider network I/O; it reads the local `quota_snapshots` table (and local plan/tier metadata). Session files are not scanned here — the background poller ingests them. Provider API polling is default-off and happens only through `GET /api/quota/refresh`, the background poller after consent, or `token-dashboard quota poll`.
 
-`enabled` is the quota master switch (`config.json` `quota.enabled`, default `true`, forced `false` by the `TOKDASH_QUOTA_POLL=0` kill switch). When it is `false` the dashboard renders an *enable quota tracking* card instead of provider data. `poll.interval` is the **effective** interval in seconds and `poll.interval_source` is one of `env` / `config` / `default`.
+`enabled` is the quota master switch (`config.json` `quota.enabled`, default `true`, forced `false` by the `TOKEN_DASHBOARD_QUOTA_POLL=0` kill switch). When it is `false` the dashboard renders an *enable quota tracking* card instead of provider data. `poll.interval` is the **effective** interval in seconds and `poll.interval_source` is one of `env` / `config` / `default`.
 
 **Response shape**
 ```json
@@ -326,7 +326,7 @@ happens two ways.
 **Its config directory is observed to be gone** — a renamed or deleted install, a
 `~/.claude-<profile>` sibling or `~/.claude` itself once the sign-in has moved to a sibling.
 Absence has to be observed: the test is whether the listing that names the installs (the home
-directory, or the paths in `TOKDASH_CLAUDE_PROFILES`) could be read, named at least one
+directory, or the paths in `TOKEN_DASHBOARD_CLAUDE_PROFILES`) could be read, named at least one
 install, and did not name this one.
 
 This is about what this machine holds, not whether the subscription still works. A sign-in
@@ -388,7 +388,7 @@ History series are unified per `(provider, bucket)`: a Codex session row (accoun
 
 ## `POST /api/quota/consent`
 
-Persists the separate local-credential-read consent (`credential_scan`) and per-provider quota API **network** consent to `<data_dir>/config.json`. Network polling requires both `credential_scan=true` and the matching provider flag. **Write-gated** like all mutations. `TOKDASH_QUOTA_POLL=0` remains a hard kill switch.
+Persists the separate local-credential-read consent (`credential_scan`) and per-provider quota API **network** consent to `<data_dir>/config.json`. Network polling requires both `credential_scan=true` and the matching provider flag. **Write-gated** like all mutations. `TOKEN_DASHBOARD_QUOTA_POLL=0` remains a hard kill switch.
 
 **Request**
 ```json
@@ -416,7 +416,7 @@ Persists the quota master switch and background poll interval to `<data_dir>/con
 
 ## `GET /api/quota/refresh`
 
-Runs an immediate network poll for consented providers and stores snapshots in the local usage DB. This only reads providers' usage endpoints (no quota is consumed), so it is served as `GET`, not write-gated, and works over Tailscale Serve/WSL/any forward — see [`SECURITY.md`](../SECURITY.md#quota-refresh-and-update-check-are-read-only-gets). It is still rate-limited with a 60 second cooldown (`429`). It never refreshes provider tokens; expired tokens produce stale-token snapshots. Returns `409` when quota tracking is disabled (master switch off or `TOKDASH_QUOTA_POLL=0`).
+Runs an immediate network poll for consented providers and stores snapshots in the local usage DB. This only reads providers' usage endpoints (no quota is consumed), so it is served as `GET`, not write-gated, and works over Tailscale Serve/WSL/any forward — see [`SECURITY.md`](../SECURITY.md#quota-refresh-and-update-check-are-read-only-gets). It is still rate-limited with a 60 second cooldown (`429`). It never refreshes provider tokens; expired tokens produce stale-token snapshots. Returns `409` when quota tracking is disabled (master switch off or `TOKEN_DASHBOARD_QUOTA_POLL=0`).
 
 **Response**
 ```json
@@ -568,14 +568,14 @@ List of sessions for a specific tool.
 
 | Name | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `tool` | string | **yes** | – | Session tool name. Accepted values are the ones registered in `SESSION_TOOLS` (`src/tokdash/sessions.py`) -- the enumeration lives with the code, not here |
+| `tool` | string | **yes** | – | Session tool name. Accepted values are the ones registered in `SESSION_TOOLS` (`src/token_dashboard/sessions.py`) -- the enumeration lives with the code, not here |
 | `period` | string | no | `"today"` | See [Period parameter](#period-parameter) |
 | `date_from` | string | no | – | Start date (`YYYY-MM-DD`) |
 | `date_to` | string | no | – | End date (`YYYY-MM-DD`) |
 | `include_review_sessions` | boolean | no | `false` | Include Codex review / auto-permission sessions (hidden by default) |
 | `refresh` | boolean | no | `false` | Bypass the response cache |
 
-Session responses are invalidated when source file signatures change, including SQLite WAL sidecars. Fixed database inventories (including Hermes) are checked on each request. Transcript-tree inventories reuse their last successful scan for `TOKDASH_SIG_TTL` (default 5 seconds), then refresh in the background; the next request after a changed inventory is published fetches fresh session data. `refresh=true` checks the inventory immediately. Unchanged inputs continue to use the response cache.
+Session responses are invalidated when source file signatures change, including SQLite WAL sidecars. Fixed database inventories (including Hermes) are checked on each request. Transcript-tree inventories reuse their last successful scan for `TOKEN_DASHBOARD_SIG_TTL` (default 5 seconds), then refresh in the background; the next request after a changed inventory is published fetches fresh session data. `refresh=true` checks the inventory immediately. Unchanged inputs continue to use the response cache.
 
 **Response fields**
 
@@ -591,7 +591,7 @@ Session responses are invalidated when source file signatures change, including 
 
 `cost` is calculated when the response is built, from the billing inputs stored
 per turn (model, fresh input, cache reads, cache writes, output) and the pricing
-database this process has loaded. Two Tokdash builds sharing one usage database
+database this process has loaded. Two TokenDashboard builds sharing one usage database
 each report under their own pricing.
 
 Editing a rate reprices `codex`, `claude` and `kimi` without rereading any
@@ -611,7 +611,7 @@ rate, fixed at parse time and never repriced; token-only qoder_cli turns price
 from the DB like everyone else's.
 
 Rows written before turns carried billing inputs — including rows kept by
-`TOKDASH_USAGE_DB_DURABLE` after their source log disappeared — are priced from
+`TOKEN_DASHBOARD_USAGE_DB_DURABLE` after their source log disappeared — are priced from
 their stored totals instead. That reproduces the same number under any rates,
 because every cached source billed a turn as
 `get_cost(model, tokens_in, tokens_out, tokens_cache, 0)`, but it cannot separate
@@ -742,7 +742,7 @@ read. Each input records the usage store's state for its file (or the identity o
 a native database) and the timing contract, so readiness does not depend on the
 requested dates or on usage that landed in other inputs. One model build serves
 every range, and its job is the same for every range. An input written within the
-last `TOKDASH_SPEED_SETTLE_SECONDS` keeps its last timing: the view stays ready,
+last `TOKEN_DASHBOARD_SPEED_SETTLE_SECONDS` keeps its last timing: the view stays ready,
 counts it in `deferred_inputs`, and reads it once it has gone quiet. `refresh=1`
 reads it at once. A newer reader or contract never waits. Session views keep
 their generation-pinned membership. `cache.publication_revision` increments on
@@ -842,7 +842,7 @@ snapshot. Loading/pending labels identify active builds or unindexed timing;
 stale data is not presented as an indefinitely running request.
 
 SQLite publication locks on speed reads/build requests return a retryable **503**
-with a Tokdash `detail`, so clients retain route health and use bounded backoff.
+with a TokenDashboard `detail`, so clients retain route health and use bounded backoff.
 Other direct database request errors remain **500**; a lock is not an empty timing
 range. Worker failures retain their `error` cache metadata and last-good rows.
 
@@ -1018,7 +1018,7 @@ separate from `/api/usage` because it reads every supported session source.
 | `comparison` | object\|null | The same two figures for the previous window and the percentage change: `{active_ms_prev, active_ms_sum_prev, active_ms_pct, active_ms_sum_pct}`. A percentage is `null` when the previous window is empty, and the whole object is `null` if that window could not be read |
 | `by_tool` | object | Per-tool `{tool_label, session_count, active_ms, active_ms_sum}` |
 | `unavailable_tools` | array | Tools that could not be read or summarized for this window (excluded from the totals, so the rest still answer) |
-| `active_gap_cap_ms` | int | Idle cap in effect (`TOKDASH_ACTIVE_GAP_CAP_SECONDS`) |
+| `active_gap_cap_ms` | int | Idle cap in effect (`TOKEN_DASHBOARD_ACTIVE_GAP_CAP_SECONDS`) |
 | `active_time_estimated` | bool | Always `true` — see the method below |
 | `active_time_method` | string | `"capped-inter-event-gap"` |
 | `include_review_sessions` | bool | The effective setting applied, param or server default |
@@ -1220,7 +1220,7 @@ scan plus a session-record read.
 
 ## `GET /api/pricing-db`
 
-Returns the **effective** pricing database: the user override under `TOKDASH_DATA_DIR` when
+Returns the **effective** pricing database: the user override under `TOKEN_DASHBOARD_DATA_DIR` when
 present (it fully replaces the baseline — WYSIWYG editor semantics), otherwise the packaged
 baseline. A corrupt override falls back to the baseline (never wipes pricing).
 
@@ -1229,7 +1229,7 @@ baseline. A corrupt override falls back to the baseline (never wipes pricing).
 | Field | Type | Description |
 |---|---|---|
 | `path` | string | Where edits PERSIST — the override file under the data dir (`<data_dir>/pricing_db.json`) |
-| `baseline_path` | string | The read-only packaged baseline (`…/site-packages/tokdash/pricing_db.json`) |
+| `baseline_path` | string | The read-only packaged baseline (`…/site-packages/token-dashboard/pricing_db.json`) |
 | `baseline_version` | string \| null | The shipped baseline's `version`, reported even when an override is active so a UI can warn when an override has drifted behind newer bundled pricing |
 | `source` | string | `"override"` if the data dir override is in effect, else `"baseline"` |
 | `data` | object | The effective pricing database (versions, aliases, model rates) |
@@ -1251,8 +1251,8 @@ The `data` object contains:
 ## `PUT /api/pricing-db`
 
 Saves pricing edits. Body must match the GET response `data` shape (or `{"text": "<json>"}`).
-Edits are written to the **override** file under `TOKDASH_DATA_DIR` (never the packaged
-baseline), so they survive `tokdash update` (a pip/pipx reinstall) and succeed on a read-only
+Edits are written to the **override** file under `TOKEN_DASHBOARD_DATA_DIR` (never the packaged
+baseline), so they survive `token-dashboard update` (a pip/pipx reinstall) and succeed on a read-only
 install. The override fully replaces the baseline once saved (so deletions stick); delete the
 override file to revert to the shipped defaults. Returns the same `{path, baseline_path,
 baseline_version, source, data, text}` shape as GET (with `source: "override"`).
@@ -1261,14 +1261,14 @@ baseline_version, source, data, text}` shape as GET (with `source: "override"`).
 
 - the server must be bound to loopback;
 - `Host` (and any `Origin`/`Referer`) must be a loopback address in the allowlist;
-- the request must carry a valid `X-Tokdash-Token` (fetch it from `GET /api/csrf-token`).
+- the request must carry a valid `X-TokenDashboard-Token` (fetch it from `GET /api/csrf-token`).
 
 The dashboard does this automatically. A scripted client must fetch the token first:
 
 ```bash
 TOKEN=$(curl -s http://127.0.0.1:55423/api/csrf-token | jq -r .token)
 curl -s -X PUT http://127.0.0.1:55423/api/pricing-db \
-  -H "Content-Type: application/json" -H "X-Tokdash-Token: $TOKEN" \
+  -H "Content-Type: application/json" -H "X-TokenDashboard-Token: $TOKEN" \
   -d '{"data": { ... }}'
 ```
 
@@ -1327,26 +1327,26 @@ Returns Codex activity insights derived from usage data.
 }
 ```
 
-**Caching:** The cache key is scoped to the day. Entries expire on the normal `TOKDASH_CACHE_TTL` (600 seconds by default). Pass `refresh=true` to bypass.
+**Caching:** The cache key is scoped to the day. Entries expire on the normal `TOKEN_DASHBOARD_CACHE_TTL` (600 seconds by default). Pass `refresh=true` to bypass.
 
 ---
 
 ## `GET /manifest.webmanifest`
 
-Returns the PWA web manifest for installing Tokdash as a progressive web app.
+Returns the PWA web manifest for installing TokenDashboard as a progressive web app.
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `base` | `string` | none | Optional public URL prefix (e.g. `/tokdash`). The dashboard passes `?base=/tokdash` behind Tailscale Serve. The prefix can also come from `X-Forwarded-Prefix` / `X-Script-Name` or `TOKDASH_PUBLIC_BASE_PATH`. |
+| `base` | `string` | none | Optional public URL prefix (e.g. `/token-dashboard`). The dashboard passes `?base=/token-dashboard` behind Tailscale Serve. The prefix can also come from `X-Forwarded-Prefix` / `X-Script-Name` or `TOKEN_DASHBOARD_PUBLIC_BASE_PATH`. |
 
 **Response:** `application/manifest+json`
 
 ```json
 {
-  "name": "Tokdash",
-  "short_name": "Tokdash",
+  "name": "TokenDashboard",
+  "short_name": "TokenDashboard",
   "description": "OpenClaw + coding tools usage, cost, and activity.",
   "start_url": "/",
   "scope": "/",
@@ -1370,7 +1370,7 @@ Returns the PWA web manifest for installing Tokdash as a progressive web app.
 }
 ```
 
-Note: `start_url`, `scope`, and icon `src` paths are rewritten to the public base path (e.g. `/tokdash/`) when Tokdash is served behind a proxy that strips the prefix.
+Note: `start_url`, `scope`, and icon `src` paths are rewritten to the public base path (e.g. `/token-dashboard/`) when TokenDashboard is served behind a proxy that strips the prefix.
 
 ---
 
@@ -1382,7 +1382,7 @@ Returns the service worker JavaScript for offline caching and PWA functionality.
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `base` | `string` | none | Optional public URL prefix (e.g. `/tokdash`). The dashboard passes `?base=/tokdash` behind Tailscale Serve. The prefix can also come from `X-Forwarded-Prefix` / `X-Script-Name` or `TOKDASH_PUBLIC_BASE_PATH`. |
+| `base` | `string` | none | Optional public URL prefix (e.g. `/token-dashboard`). The dashboard passes `?base=/token-dashboard` behind Tailscale Serve. The prefix can also come from `X-Forwarded-Prefix` / `X-Script-Name` or `TOKEN_DASHBOARD_PUBLIC_BASE_PATH`. |
 
 **Response:** `application/javascript`
 
@@ -1392,7 +1392,7 @@ Returns the service worker JavaScript for offline caching and PWA functionality.
 
 > **Ready-made templates:** [`docs/guides/statusline/`](../guides/statusline/) ships a minimal and a full statusline script plus install/config notes. The snippet below is the minimal one, reproduced here for reference.
 
-Tokdash's `/api/usage` endpoint is well suited for embedding daily totals into the Claude Code status line. The snippet below queries today's usage with a 1-second timeout, falls back silently if tokdash is unreachable, and renders a compact summary like `📊 69.9M ($55.64) today`.
+TokenDashboard's `/api/usage` endpoint is well suited for embedding daily totals into the Claude Code status line. The snippet below queries today's usage with a 1-second timeout, falls back silently if token-dashboard is unreachable, and renders a compact summary like `📊 69.9M ($55.64) today`.
 
 ### Status line script (`~/.claude/scripts/statusline.sh`)
 
@@ -1403,12 +1403,12 @@ input=$(cat)
 MODEL=$(echo "$input" | jq -r '.model.display_name')
 DIR=$(echo "$input" | jq -r '.workspace.current_dir')
 
-# Fetch tokdash totals — fail silently if unreachable
-TOKDASH_STR=""
-TOKDASH_JSON=$(curl -s -m 1 "http://127.0.0.1:55423/api/usage?period=today" 2>/dev/null)
-if [ -n "$TOKDASH_JSON" ]; then
-  TODAY_TOKENS=$(echo "$TOKDASH_JSON" | jq -r '.total_tokens // 0' 2>/dev/null)
-  TODAY_COST=$(echo "$TOKDASH_JSON" | jq -r '.total_cost // 0' 2>/dev/null)
+# Fetch token-dashboard totals — fail silently if unreachable
+TOKEN_DASHBOARD_STR=""
+TOKEN_DASHBOARD_JSON=$(curl -s -m 1 "http://127.0.0.1:55423/api/usage?period=today" 2>/dev/null)
+if [ -n "$TOKEN_DASHBOARD_JSON" ]; then
+  TODAY_TOKENS=$(echo "$TOKEN_DASHBOARD_JSON" | jq -r '.total_tokens // 0' 2>/dev/null)
+  TODAY_COST=$(echo "$TOKEN_DASHBOARD_JSON" | jq -r '.total_cost // 0' 2>/dev/null)
   if [ -n "$TODAY_TOKENS" ] && [ "$TODAY_TOKENS" != "0" ]; then
     if [ "$TODAY_TOKENS" -ge 1000000 ]; then
       TOK_FMT=$(awk "BEGIN {printf \"%.1fM\", $TODAY_TOKENS/1000000}")
@@ -1418,11 +1418,11 @@ if [ -n "$TOKDASH_JSON" ]; then
       TOK_FMT="$TODAY_TOKENS"
     fi
     COST_TODAY=$(printf '$%.2f' "$TODAY_COST")
-    TOKDASH_STR=" | 📊 ${TOK_FMT} (${COST_TODAY}) today"
+    TOKEN_DASHBOARD_STR=" | 📊 ${TOK_FMT} (${COST_TODAY}) today"
   fi
 fi
 
-echo "[$MODEL] 📁 ${DIR##*/}${TOKDASH_STR}"
+echo "[$MODEL] 📁 ${DIR##*/}${TOKEN_DASHBOARD_STR}"
 ```
 
 ### Claude Code settings (`~/.claude/settings.json`)
@@ -1447,8 +1447,8 @@ echo "[$MODEL] 📁 ${DIR##*/}${TOKDASH_STR}"
 
 ### Notes
 
-- Keep the curl timeout small (`-m 1`) so the status line doesn't stall if tokdash is restarting.
-- The `📊 ...` segment is omitted entirely when tokdash returns nothing — no error noise in the status bar.
+- Keep the curl timeout small (`-m 1`) so the status line doesn't stall if token-dashboard is restarting.
+- The `📊 ...` segment is omitted entirely when token-dashboard returns nothing — no error noise in the status bar.
 - For per-tool detail, swap in `.by_tool.claude.tokens` or similar from the same response.
 - For weekly/monthly totals, change `period=today` to `period=week` or `period=month`.
 
@@ -1469,7 +1469,7 @@ alias tokens-today='curl -s http://127.0.0.1:55423/api/usage?period=today | jq "
 # Warn when daily spend crosses $50
 COST=$(curl -s http://127.0.0.1:55423/api/usage?period=today | jq -r '.total_cost')
 if (( $(echo "$COST > 50" | bc -l) )); then
-  notify-send "Tokdash" "Daily spend has exceeded \$50 ($COST)"
+  notify-send "TokenDashboard" "Daily spend has exceeded \$50 ($COST)"
 fi
 ```
 

@@ -3,8 +3,8 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import BaseParser, PiAgentParser, _sig_cache
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import BaseParser, PiAgentParser, _sig_cache
 
 
 def _make_session_lines(session_id="abc12345"):
@@ -108,7 +108,7 @@ def test_pi_agent_parser_nonzero_cache(monkeypatch, tmp_path):
     assert e["cacheRead"] == 8000
     assert e["cacheWrite"] == 500
     # Full prompt input = fresh + cacheWrite + cacheRead = 9500; hit rate = 8000/9500.
-    from tokdash.compute import cache_hit_rate
+    from token_dashboard.compute import cache_hit_rate
     assert cache_hit_rate(e["input"] + e["cacheWrite"], e["cacheRead"]) == round(8000 / 9500, 4)
 
 

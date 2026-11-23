@@ -4,9 +4,9 @@ The faithful definition is cacheRead / (prompt input), where prompt input is
 tokens_in + tokens_cache (tokens_in already folds cacheWrite into billable input).
 Output and reasoning tokens are excluded. None when there is no prompt input.
 """
-import tokdash.compute as C
-from tokdash.compute import cache_hit_rate, parse_entries_json
-from tokdash.sessions import _billing_record, _build_turn, _summarize_session
+import token_dashboard.compute as C
+from token_dashboard.compute import cache_hit_rate, parse_entries_json
+from token_dashboard.sessions import _billing_record, _build_turn, _summarize_session
 
 
 def test_helper_edges_and_math():

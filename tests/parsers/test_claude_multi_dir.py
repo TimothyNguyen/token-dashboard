@@ -5,9 +5,9 @@ including placeholder deduplication, streaming snapshots, and cache reclassifica
 """
 from pathlib import Path
 
-import tokdash.sessions as sessions
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import BaseParser, ClaudeParser, _sig_cache
+import token_dashboard.sessions as sessions
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import BaseParser, ClaudeParser, _sig_cache
 
 
 def _write_claude_session(root: Path, session_id: str, message_id: str, tokens: int) -> None:

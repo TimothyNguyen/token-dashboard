@@ -7,8 +7,8 @@
     "connection": "Offline",
     "dot": "err",
     "banner": {
-      "title": "Tokdash is not reachable",
-      "body_contains": "Start Tokdash",
+      "title": "TokenDashboard is not reachable",
+      "body_contains": "Start TokenDashboard",
       "actions": ["Retry", "Settings"]
     },
     "last_good_data": "dimmed",

@@ -403,7 +403,7 @@ def _run(tmp_path: Path, scenario: str) -> dict:
 
 
 def _is_loading(markup: str) -> bool:
-    return "tokdash-loading-placeholder" in markup
+    return "token-dashboard-loading-placeholder" in markup
 
 
 def test_a_range_change_clears_the_breakdowns_before_its_data_arrives(tmp_path):

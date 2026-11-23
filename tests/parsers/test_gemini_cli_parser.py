@@ -6,8 +6,8 @@ cache-inclusive input.
 from datetime import datetime, timezone
 from pathlib import Path
 
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import BaseParser, GeminiCLIParser, _sig_cache
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import BaseParser, GeminiCLIParser, _sig_cache
 
 
 def test_gemini_cli_parser_reads_jsonl_sessions(monkeypatch, tmp_path):

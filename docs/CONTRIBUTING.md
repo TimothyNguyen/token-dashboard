@@ -30,13 +30,13 @@ FastAPI's test client, `build` for the packaging tests, and `pytest-timeout` and
 `pytest-xdist` for the per-test cap and the parallel run. Some frontend tests also run
 `node` and are skipped when it is not installed.
 
-Run from source with its own data directory. A source checkout can be ahead of the Tokdash
+Run from source with its own data directory. A source checkout can be ahead of the TokenDashboard
 you have installed, and opening the usage database migrates it to the newer schema, which
-the installed version then refuses to read. A separate `TOKDASH_DATA_DIR` keeps the two
+the installed version then refuses to read. A separate `TOKEN_DASHBOARD_DATA_DIR` keeps the two
 apart (`output/` is gitignored):
 ```bash
-TOKDASH_DATA_DIR=output/dev-data python3 main.py
-# PowerShell: $env:TOKDASH_DATA_DIR = "output/dev-data"; python main.py
+TOKEN_DASHBOARD_DATA_DIR=output/dev-data python3 main.py
+# PowerShell: $env:TOKEN_DASHBOARD_DATA_DIR = "output/dev-data"; python main.py
 ```
 
 For UI work, start the real dashboard against a dense synthetic dataset:
@@ -52,7 +52,7 @@ grid alike -- scale with the window they were asked for and agree about it, and
 `/api/active-time` answers the review-sessions toggle. The session lists are the
 exception: they serve a fixed set of rows whatever window you ask for.
 
-Both flags are only accepted by `serve` — `tokdash export --dev-fixture dense` is a
+Both flags are only accepted by `serve` — `token-dashboard export --dev-fixture dense` is a
 usage error rather than a silent export of your real usage. `/api/insights` answers
 from a seeded fixture while one is active, inventing the rows and folding them with
 the production fold functions, so the Report tab can be developed and screenshotted
@@ -93,7 +93,7 @@ as soon as the app is idle, and `wait_for()` polls a predicate, both from `tests
 A fixed `pilot.pause(0.25)` costs every leg of CI that long on every call, and is still too
 short on a slow Windows runner.
 
-The suite points `TOKDASH_DATA_DIR` at a temporary directory itself, so it never touches
+The suite points `TOKEN_DASHBOARD_DATA_DIR` at a temporary directory itself, so it never touches
 your real data.
 
 ## Chinese, Japanese and Korean text
@@ -110,7 +110,7 @@ scripts/vendor_cjk_fonts.sh
 
 It fetches Noto Sans SC into `static/vendor/fonts/`, which is gitignored, and the
 dashboard serves it from the next restart. Downloads are staged with their license;
-a failed download preserves the installed copy. `TOKDASH_CJK_WEIGHTS` selects the
+a failed download preserves the installed copy. `TOKEN_DASHBOARD_CJK_WEIGHTS` selects the
 weights (default `400;500;700`). Keep the same weights when repairing an installed
 upstream version, because its stylesheet URL is cached as immutable. This script
 affects a source-tree run; it does not modify an installed pipx service.

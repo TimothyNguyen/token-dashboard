@@ -25,8 +25,8 @@ menus, focus, dismissal, and window shape remain native.
 
 Default: one monochrome template icon.
 
-- Accessible name: `Tokdash`.
-- Tooltip/help: `Tokdash — Today $3.42 · 18.7M tokens`.
+- Accessible name: `TokenDashboard`.
+- Tooltip/help: `TokenDashboard — Today $3.42 · 18.7M tokens`.
 - Optional later setting: show `$3.42` beside the icon.
 - Offline: a stable disconnected variant or small badge; no animation.
 - Urgent quota: do not recolor the whole icon. A restrained warning mark is enough.
@@ -35,11 +35,11 @@ Default: one monochrome template icon.
 
 Default: one icon with a unique outline and transparent background.
 
-- Tooltip: `Tokdash — Today $3.42 · 18.7M tokens`.
+- Tooltip: `TokenDashboard — Today $3.42 · 18.7M tokens`.
 - Do not attempt a text label in the notification area.
 - Use the same high-level normal, warning, and offline states as macOS.
 - Single click and keyboard activation open the flyout.
-- Right click opens a short native menu: Open Tokdash, Refresh, Settings, Exit.
+- Right click opens a short native menu: Open TokenDashboard, Refresh, Settings, Exit.
 
 ## Open state
 
@@ -54,7 +54,7 @@ The exact dimensions should follow native control metrics and text scaling.
 
 Left:
 
-- Tokdash wordmark or small icon.
+- TokenDashboard wordmark or small icon.
 - Connection line: `Local · Connected`, `Tailscale · Connected`, `Busy`, or `Offline`.
 
 Right:
@@ -90,7 +90,7 @@ Rules:
 - Use `total_cost`, `total_tokens`, and `total_messages`.
 - Use `comparison.cost_pct` for the short comparison line.
 - If previous-period data is unavailable, omit the comparison rather than showing zero.
-- Cost is still labelled as Tokdash's estimate wherever the dashboard uses price estimates;
+- Cost is still labelled as TokenDashboard's estimate wherever the dashboard uses price estimates;
   do not imply a provider invoice.
 - Tokens use compact notation; exact values can appear in accessibility text or a tooltip.
 
@@ -161,7 +161,7 @@ This is the first item to remove if the surface feels crowded.
 
 - Primary: `Open Dashboard`.
 - Secondary icon button: `Refresh`.
-- macOS may put `Quit Tokdash Companion` in a footer menu or settings menu.
+- macOS may put `Quit TokenDashboard Companion` in a footer menu or settings menu.
 - Windows keeps `Exit` in the right-click menu and settings.
 
 `Refresh` refetches companion data. A provider network poll, if added later, must be a
@@ -196,8 +196,8 @@ expose cache implementation terms during normal operation.
 ### Offline
 
 ```text
-Tokdash is not reachable
-Start Tokdash, or check the server address in Settings.
+TokenDashboard is not reachable
+Start TokenDashboard, or check the server address in Settings.
 
 [Retry]  [Settings]
 ```
@@ -207,7 +207,7 @@ Keep the last in-memory data visible but clearly marked as last updated, if avai
 ### Busy (`503`)
 
 ```text
-Tokdash is busy — retrying
+TokenDashboard is busy — retrying
 Last data from 3 min ago
 ```
 
@@ -229,10 +229,10 @@ Zero is valid data. Do not show an error illustration.
 
 ### Wrong service
 
-If `/health` does not return `service: "tokdash"`:
+If `/health` does not return `service: "token-dashboard"`:
 
 ```text
-This address is not a Tokdash service
+This address is not a TokenDashboard service
 ```
 
 Do not continue calling usage endpoints.
@@ -269,7 +269,7 @@ Do not continue calling usage endpoints.
 - Do not repeat on every background refresh.
 - A new reset epoch re-arms the notification.
 - Clicking a notification opens the companion directly to Quota.
-- Do not notify for Tokdash being offline, busy responses, estimated-data staleness, or
+- Do not notify for TokenDashboard being offline, busy responses, estimated-data staleness, or
   quota recovery in MVP.
 - If a bucket has no reset time, keep it suppressed until there is an explicit product
   rule for re-arming it.

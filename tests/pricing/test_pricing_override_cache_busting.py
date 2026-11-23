@@ -11,16 +11,16 @@ import os
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
-import tokdash.api as api
-import tokdash.compute as compute_module
-import tokdash.usage_store as usage_store_module
-from tokdash.onboard import paths
-from tokdash.pricing import PricingDatabase
+import token_dashboard.api as api
+import token_dashboard.compute as compute_module
+import token_dashboard.usage_store as usage_store_module
+from token_dashboard.onboard import paths
+from token_dashboard.pricing import PricingDatabase
 import pytest
 
-from tokdash.sources import openclaw
-from tokdash.sources.coding_tools import ClaudeParser
-from tokdash.usage_store import usage_billing_pricing
+from token_dashboard.sources import openclaw
+from token_dashboard.sources.coding_tools import ClaudeParser
+from token_dashboard.usage_store import usage_billing_pricing
 
 
 def _write_override() -> None:
@@ -326,7 +326,7 @@ def test_sessions_singleton_reloads_when_override_changes_out_of_band():
     # (manual edit while serving / a sibling --workers process), the read path's
     # _pricing_signature() must reload the singleton so a cache MISS re-parses at the NEW
     # rates. (Regression: pricing-sessions-singleton-stale.)
-    from tokdash import sessions
+    from token_dashboard import sessions
 
     # Start from a known baseline state with the last-loaded signature in sync.
     sessions._PRICING_DB.load()
@@ -350,7 +350,7 @@ def test_sessions_singleton_reloads_when_override_changes_out_of_band():
 def test_api_response_cache_busts_when_override_changes_out_of_band(monkeypatch):
     # Parser/storage cache signatures are not enough: the route-level response cache also
     # needs the pricing signature, or a manual override edit can keep serving stale JSON
-    # until TOKDASH_CACHE_TTL expires.
+    # until TOKEN_DASHBOARD_CACHE_TTL expires.
     api._clear_cache()
     calls = []
 

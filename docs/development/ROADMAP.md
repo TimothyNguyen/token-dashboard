@@ -1,11 +1,11 @@
-# Tokdash Roadmap / Notes
+# TokenDashboard Roadmap / Notes
 
 _Last updated: 2026-08-10_
 
 ## History retention / durable usage store
-Tokdash now keeps a local SQLite usage index at `~/.tokdash/usage.sqlite3` by default. Durable
+TokenDashboard now keeps a local SQLite usage index at `~/.token-dashboard/usage.sqlite3` by default. Durable
 mode keeps rows that were already indexed when a source file later disappears, but it cannot
-recover logs deleted before Tokdash indexed them. Client retention settings therefore still
+recover logs deleted before TokenDashboard indexed them. Client retention settings therefore still
 matter — notably for **Claude Code** and **Gemini CLI** (30-day default cleanup). The full
 per-client survey and one-line retention fixes live in
 [`docs/reference/HISTORY_RETENTION.md`](../reference/HISTORY_RETENTION.md). The separate
@@ -13,8 +13,8 @@ snapshot-store design remains parked in [`docs/SNAPSHOTS_PLAN.md`](SNAPSHOTS_PLA
 future need such as non-disable-able client cleanup or multi-machine history sync.
 
 ## Goals
-- **Easy install**: `pip install tokdash` (no Docker on the roadmap for now).
-- **Easy run**: `tokdash serve` to start the local dashboard.
+- **Easy install**: `pip install token-dashboard` (no Docker on the roadmap for now).
+- **Easy run**: `token-dashboard serve` to start the local dashboard.
 - **Accurate accounting**: only emit usage when clients provide **explicit** token fields.
 - **Safe defaults**: bind to localhost by default; no surprise LAN exposure.
 
@@ -23,9 +23,9 @@ future need such as non-disable-able client cleanup or multi-machine history syn
   sessions, stats, and companion hero totals combine reachable selections; quota remains
   grouped by server. The HTTP API remains one-server-per-machine.
 - FastAPI backend in:
-  - `src/tokdash/api.py` (routes/app; serves `src/tokdash/static/index.html` + `/api/*`)
-  - `src/tokdash/compute.py` (aggregation/merging logic)
-- Local parsers in `src/tokdash/sources/coding_tools.py`:
+  - `src/token_dashboard/api.py` (routes/app; serves `src/token_dashboard/static/index.html` + `/api/*`)
+  - `src/token_dashboard/compute.py` (aggregation/merging logic)
+- Local parsers in `src/token_dashboard/sources/coding_tools.py`:
   - ✅ OpenCode
   - ✅ Mimo / Mimocode
   - ✅ Codex
@@ -38,21 +38,21 @@ future need such as non-disable-able client cleanup or multi-machine history syn
   - ✅ GitHub Copilot CLI
   - ✅ Hermes
   - 🟡 Amp (placeholder)
-- OpenClaw parser in `src/tokdash/sources/openclaw.py` (reads `~/.openclaw/agents/*/sessions`).
-- Local pricing DB: `src/tokdash/pricing_db.json`.
+- OpenClaw parser in `src/token_dashboard/sources/openclaw.py` (reads `~/.openclaw/agents/*/sessions`).
+- Local pricing DB: `src/token_dashboard/pricing_db.json`.
 
 ## Packaging plan (pip)
 _Target UX:_
-- `pip install tokdash`
-- `tokdash serve` → open `http://127.0.0.1:55423`
+- `pip install token-dashboard`
+- `token-dashboard serve` → open `http://127.0.0.1:55423`
 
 _Phased approach:_
-1. ✅ Add `pyproject.toml` and a `src/tokdash/` package layout.
-2. ✅ Moved backend + parsers into `src/tokdash/` and removed `sys.path` hacks.
+1. ✅ Add `pyproject.toml` and a `src/token_dashboard/` package layout.
+2. ✅ Moved backend + parsers into `src/token_dashboard/` and removed `sys.path` hacks.
 3. ✅ Bundle `static/` + `pricing_db.json` as package data (setuptools package-data).
-4. ✅ Added a small CLI (`tokdash`) with subcommands:
-   - `tokdash serve` (host/port/CORS/cache-ttl flags; env vars still supported)
-   - `tokdash export --json` (one-shot terminal output)
+4. ✅ Added a small CLI (`token-dashboard`) with subcommands:
+   - `token-dashboard serve` (host/port/CORS/cache-ttl flags; env vars still supported)
+   - `token-dashboard export --json` (one-shot terminal output)
 5. Keep `python3 main.py` as a compatibility entrypoint temporarily (then deprecate).
 6. ✅ Added GitHub Actions Trusted Publishing (OIDC) to publish to PyPI on version tags.
 
@@ -63,14 +63,14 @@ _Phased approach:_
 - **macOS:** launchd plist template.
 - **Cross-platform fallbacks:** `tmux`, `nohup`, `screen`.
 - Templates:
-  - `docs/guides/agents/systemd/templates/tokdash.service`
-  - `docs/guides/agents/systemd/templates/com.tokdash.tokdash.plist`
+  - `docs/guides/agents/systemd/templates/token-dashboard.service`
+  - `docs/guides/agents/systemd/templates/com.token_dashboard.token_dashboard.plist`
 
 ## Terminal mode (interactive TUI)
 Decision: build a **full interactive** terminal UI (like `nvitop`/`nvtop`), as an optional extra.
 
-- Command: `tokdash tui`
-- Dependency: `tokdash[tui]` (keep core install minimal)
+- Command: `token-dashboard tui`
+- Dependency: `token-dashboard[tui]` (keep core install minimal)
 - Implementation: `textual`-based (interactive tables, keybindings, live refresh)
 - v1 scope:
   - Period selector (today/week/month/N days)
@@ -89,10 +89,10 @@ service worker), which covers the "standalone app window" want with zero code.
   `docs/examples/`, same pattern as the statusline templates. Candidates: xbar/SwiftBar plugin
   (macOS menu bar), a small PowerShell tray script (Windows — also covers WSL2 servers via
   localhost forwarding), Waybar/i3status snippet (Linux). Each polls the local API read-only and
-  renders e.g. `12.3M ($4.56) today` plus the nearest quota reset; fails silently when Tokdash
+  renders e.g. `12.3M ($4.56) today` plus the nearest quota reset; fails silently when TokenDashboard
   isn't running.
-- **Tier 2 — `tokdash[tray]` optional extra (demand-gated):** a real cross-platform tray icon via
-  `pystray` (+`Pillow` for icon rendering) as an optional extra, mirroring the `tokdash[tui]`
+- **Tier 2 — `token-dashboard[tray]` optional extra (demand-gated):** a real cross-platform tray icon via
+  `pystray` (+`Pillow` for icon rendering) as an optional extra, mirroring the `token-dashboard[tui]`
   plan. Menu: open dashboard, today's totals, quota bars, quit. Caveats to respect: needs a GUI
   session (headless/WSL servers should use the Tier 1 Windows-side script instead), and Linux
   tray support is fragmented (appindicator vs legacy X tray).
@@ -110,7 +110,7 @@ installs can now apply an update from the dashboard itself. The safety framing c
 constraint instead of the prohibition: server-side eligibility only (the page's claims prove
 nothing), loopback or pairing-code/session auth, the apply executed by an isolated transient
 systemd helper OUTSIDE the server process (never a thread or child of what it stops), bounded
-recovery, and the copyable `tokdash update` command kept as the fallback for every install the
+recovery, and the copyable `token-dashboard update` command kept as the fallback for every install the
 click path does not cover. The feasibility study that preceded it lives in the project's
 untracked local design archive (`docs/local/`, gitignored by convention — it is not a link
 any clone can follow); user-facing: `docs/guides/ONBOARDING.md` ("Dashboard updates");
@@ -137,7 +137,7 @@ fixture-frozen response shape, (3) a consent key, and (4) a provider card/series
 
 ## README / polish
 - ✅ Add a clear “Supported clients” matrix (implemented vs placeholder).
-- ✅ Create a Tokdash logo and set the dashboard favicon to it.
+- ✅ Create a TokenDashboard logo and set the dashboard favicon to it.
 - ✅ Add supported-client logos/badges and a security note (LAN binding + CORS).
 - ✅ Add screenshots in `docs/assets/` (Overview, Sessions, Stats, and Quota).
 - Optional: add a short GIF of refresh + scrolling.
@@ -155,9 +155,9 @@ Remaining:
 - Reuse the session-detail Chart.js instances; chart animations are already disabled.
 
 ## Pricing DB updates
-- Keep `src/tokdash/pricing_db.json` open-source.
+- Keep `src/token_dashboard/pricing_db.json` open-source.
 - Add a periodic pricing updater/scraper (in a separate private repo) to scrape OpenAI/OpenRouter/etc and regenerate `pricing_db.json` (bump `version` + `lastUpdated`), then open a PR here.
-  - Keep schema/validator tests in the updater repo; Tokdash only consumes the generated JSON.
+  - Keep schema/validator tests in the updater repo; TokenDashboard only consumes the generated JSON.
 
 ## Cleanup candidates
 - Audit static assets for unused files.

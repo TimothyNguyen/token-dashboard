@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-OpenClaw cron job: Tokdash combined usage report (OpenClaw + coding tools).
+OpenClaw cron job: TokenDashboard combined usage report (OpenClaw + coding tools).
 
 Intended for:
 - manual usage (run once)
@@ -8,7 +8,7 @@ Intended for:
 
 Repo location: docs/guides/agents/openclaw_reporting/openclaw_cron_job.py
 
-It reads the Tokdash API:
+It reads the TokenDashboard API:
   GET /api/usage?period=<period>
 """
 
@@ -39,12 +39,12 @@ def fetch_usage(base_url: str, period: str, timeout_s: int) -> Dict[str, Any]:
             raw = resp.read().decode("utf-8", errors="replace")
         data = json.loads(raw)
         if not isinstance(data, dict):
-            raise RuntimeError("Tokdash API returned non-object JSON.")
+            raise RuntimeError("TokenDashboard API returned non-object JSON.")
         return data
     except urllib.error.URLError as e:
-        raise RuntimeError(f"Failed to reach Tokdash API at {url}: {e}")
+        raise RuntimeError(f"Failed to reach TokenDashboard API at {url}: {e}")
     except json.JSONDecodeError as e:
-        raise RuntimeError(f"Failed to parse Tokdash API response as JSON: {e}")
+        raise RuntimeError(f"Failed to parse TokenDashboard API response as JSON: {e}")
 
 
 def period_labels(period: str) -> Tuple[str, str]:
@@ -91,7 +91,7 @@ def build_report(data: Dict[str, Any], *, period: str, lang: str, max_models: in
 
     # English
     en = []
-    en.append(f"📊 Combined {label} Token Usage Report (tokdash)")
+    en.append(f"📊 Combined {label} Token Usage Report (token_dashboard)")
     en.append(f"Generated: {ts}")
     en.append(f"Summary: Total ${grand_total:.2f} (${openclaw_total:.2f} OpenClaw + ${coding_total:.2f} Coding Tools)")
     en.append("")
@@ -130,7 +130,7 @@ def build_report(data: Dict[str, Any], *, period: str, lang: str, max_models: in
 
     # Chinese
     zh = []
-    zh.append(f"📊 {zh_label}代币用量综合报告 (tokdash)")
+    zh.append(f"📊 {zh_label}代币用量综合报告 (token_dashboard)")
     zh.append(f"生成时间：{ts}")
     zh.append(f"摘要：总计 ${grand_total:.2f} (OpenClaw ${openclaw_total:.2f} + 编程工具 ${coding_total:.2f})")
     zh.append("")
@@ -180,8 +180,8 @@ def build_report(data: Dict[str, Any], *, period: str, lang: str, max_models: in
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description="Tokdash combined usage report")
-    p.add_argument("--base-url", type=str, default="http://127.0.0.1:55423", help="Tokdash base URL (default: http://127.0.0.1:55423)")
+    p = argparse.ArgumentParser(description="TokenDashboard combined usage report")
+    p.add_argument("--base-url", type=str, default="http://127.0.0.1:55423", help="TokenDashboard base URL (default: http://127.0.0.1:55423)")
     p.add_argument("--period", type=str, default="today", help='Usage period: "today", "week", "month", "3days", "14days", or an integer N (days)')
     p.add_argument("--timeout", type=int, default=20, help="HTTP timeout seconds (default: 20)")
     p.add_argument("--lang", type=str, default="both", choices=["en", "zh", "both"], help="Report language (default: both)")

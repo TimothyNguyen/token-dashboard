@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import sqlite3
 
-from tokdash.sources.quota import credential_sources
+from token_dashboard.sources.quota import credential_sources
 
 
 def test_discovers_current_antigravity_token_path(monkeypatch, tmp_path):

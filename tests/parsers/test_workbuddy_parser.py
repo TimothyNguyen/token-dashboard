@@ -11,10 +11,10 @@ from pathlib import Path
 
 import pytest
 
-import tokdash.compute as compute
-from tokdash.compute import _collect_parser_tail
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import (
+import token_dashboard.compute as compute
+from token_dashboard.compute import _collect_parser_tail
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import (
     BaseParser,
     CodingToolsUsageTracker,
     WorkBuddyParser,
@@ -461,10 +461,10 @@ def test_workbuddy_reasoning_split_billed_as_completion(monkeypatch, tmp_path):
 
 def test_workbuddy_pricing_change_reprices_without_parsing_logs(monkeypatch, tmp_path):
     home = _isolate_home(monkeypatch, tmp_path)
-    data_dir = tmp_path / "tokdash-data"
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(data_dir))
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
-    monkeypatch.setenv("TOKDASH_USAGE_DB_DURABLE", "1")
+    data_dir = tmp_path / "token-dashboard-data"
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_DURABLE", "1")
     monkeypatch.delenv("WORKBUDDY_DATA_DIR", raising=False)
     model = "workbuddy-priced-test"
     _write_pricing(
@@ -523,9 +523,9 @@ def test_workbuddy_billing_provenance_never_reaches_api_or_export_output(
     monkeypatch, tmp_path
 ):
     home = _isolate_home(monkeypatch, tmp_path)
-    data_dir = tmp_path / "tokdash-data"
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(data_dir))
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    data_dir = tmp_path / "token-dashboard-data"
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     monkeypatch.delenv("WORKBUDDY_DATA_DIR", raising=False)
     model = "workbuddy-private-test"
     _write_pricing(
@@ -565,7 +565,7 @@ def test_workbuddy_billing_provenance_never_reaches_api_or_export_output(
     assert [entry["source"] for entry in stored_entries] == ["workbuddy"]
     assert not _private_keys(stored_entries)
 
-    # /api/tools aggregates through get_tools_data; `tokdash export` calls
+    # /api/tools aggregates through get_tools_data; `token_dashboard export` calls
     # compute_usage. Neither public payload may carry the private record.
     assert not _private_keys(compute.get_tools_data("all"))
     assert not _private_keys(compute.compute_usage("all"))
@@ -585,7 +585,7 @@ def test_workbuddy_billing_provenance_never_reaches_api_or_export_output(
     }
 
     # The non-persistent fallback path is public too.
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     _reset_caches()
     live_entries = compute.run_local_coding_tools_json([])["entries"]
     assert [entry["source"] for entry in live_entries] == ["workbuddy"]
@@ -798,7 +798,7 @@ def test_workbuddy_append_tail_ingests_only_new_rows(monkeypatch, tmp_path):
 @pytest.mark.parametrize("row_type,role", [("function_call", None), ("message", "user"), ("other", None)])
 @pytest.mark.parametrize("fallback", [False, True])
 def test_workbuddy_usage_independent_of_row_type(monkeypatch, tmp_path, row_type, role, fallback):
-    from tokdash import sessions
+    from token_dashboard import sessions
 
     home = _isolate_home(monkeypatch, tmp_path)
     monkeypatch.delenv("WORKBUDDY_DATA_DIR", raising=False)
@@ -827,7 +827,7 @@ def test_workbuddy_usage_independent_of_row_type(monkeypatch, tmp_path, row_type
 
 
 def test_workbuddy_default_roots_and_explicit_override(monkeypatch, tmp_path):
-    from tokdash import clientpaths
+    from token_dashboard import clientpaths
 
     home = _isolate_home(monkeypatch, tmp_path)
     monkeypatch.delenv("WORKBUDDY_DATA_DIR", raising=False)

@@ -33,7 +33,7 @@ def _run_readable_token_js(
     )
     key_match = (
         "const OVERVIEW_READABLE_TOKENS_STORAGE_KEY = "
-        "'tokdash-overview-readable-tokens';"
+        "'token-dashboard-overview-readable-tokens';"
     )
     assert key_match in source
     harness = tmp_path / "readable-tokens.js"
@@ -163,8 +163,8 @@ def test_readable_token_preference_defaults_and_fails_soft(tmp_path: Path) -> No
         "disabled": False,
         "broken": True,
         "writes": [
-            ["tokdash-overview-readable-tokens", "0"],
-            ["tokdash-overview-readable-tokens", "1"],
+            ["token-dashboard-overview-readable-tokens", "0"],
+            ["token-dashboard-overview-readable-tokens", "1"],
         ],
     }
 
@@ -263,7 +263,7 @@ const out = {};
 setOverviewReadableTokens(false);
 out.flip = {
   readable: overviewReadableTokens,
-  stored: stored['tokdash-overview-readable-tokens'] ?? null,
+  stored: stored['token-dashboard-overview-readable-tokens'] ?? null,
   ariaChecked: node('readableTokensToggle').getAttribute('aria-checked'),
   overviewRepaintedWith: (repaints.find((call) => call[0] === 'renderOverviewTab') || [])[1] ?? null,
   repaints: names(),
@@ -306,7 +306,7 @@ def test_the_switch_saves_the_choice_and_repaints_every_cached_view_without_a_re
     source = index_source()
     functions = "\n".join(
         [
-            "const OVERVIEW_READABLE_TOKENS_STORAGE_KEY = 'tokdash-overview-readable-tokens';",
+            "const OVERVIEW_READABLE_TOKENS_STORAGE_KEY = 'token-dashboard-overview-readable-tokens';",
             *(
                 extract_js_function(source, signature)
                 for signature in (
@@ -319,7 +319,7 @@ def test_the_switch_saves_the_choice_and_repaints_every_cached_view_without_a_re
         ]
     )
     # The key is the stored preference's name, which existing users already have.
-    assert "const OVERVIEW_READABLE_TOKENS_STORAGE_KEY = 'tokdash-overview-readable-tokens';" in source
+    assert "const OVERVIEW_READABLE_TOKENS_STORAGE_KEY = 'token-dashboard-overview-readable-tokens';" in source
     harness = tmp_path / "readable-tokens-toggle.js"
     harness.write_text(TOGGLE_HARNESS.replace("__FUNCTIONS__", functions), encoding="utf-8")
     out = json.loads(run_node(harness))

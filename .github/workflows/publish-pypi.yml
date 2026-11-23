@@ -50,10 +50,10 @@ jobs:
           if not project_body:
               raise SystemExit('Could not find [project] section in pyproject.toml')
 
-          package_init = Path('src/tokdash/__init__.py').read_text(encoding='utf-8')
+          package_init = Path('src/token_dashboard/__init__.py').read_text(encoding='utf-8')
           package_match = re.search(r'^__version__\s*=\s*"([^"]+)"\s*$', package_init, flags=re.M)
           if not package_match:
-              raise SystemExit('Could not find __version__ in src/tokdash/__init__.py')
+              raise SystemExit('Could not find __version__ in src/token_dashboard/__init__.py')
           package_version = package_match.group(1)
 
           project_match = re.search(r'^\s*version\s*=\s*"([^"]+)"\s*$', project_body, flags=re.M)
@@ -71,9 +71,9 @@ jobs:
               attr_match = re.search(r'^\s*version\s*=\s*\{\s*attr\s*=\s*"([^"]+)"\s*\}\s*$', dynamic_body, flags=re.M)
               if not attr_match:
                   raise SystemExit('Could not find tool.setuptools.dynamic.version attr in pyproject.toml')
-              if attr_match.group(1) != 'tokdash.__version__':
+              if attr_match.group(1) != 'token_dashboard.__version__':
                   raise SystemExit(
-                      'Expected tool.setuptools.dynamic.version to reference tokdash.__version__.'
+                      'Expected tool.setuptools.dynamic.version to reference token_dashboard.__version__.'
                   )
               project_version = package_version
 
@@ -120,7 +120,7 @@ jobs:
     # protections for the `pypi` environment in GitHub settings.
     environment:
       name: pypi
-      url: https://pypi.org/p/tokdash
+      url: https://pypi.org/p/token-dashboard
     steps:
       - name: Download dist
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2

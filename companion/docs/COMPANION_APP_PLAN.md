@@ -1,8 +1,8 @@
-# Tokdash Companion app plan
+# TokenDashboard Companion app plan
 
 ## 1. Product statement
 
-Tokdash Companion is a resident, glanceable client for the existing Tokdash service.
+TokenDashboard Companion is a resident, glanceable client for the existing TokenDashboard service.
 Clicking its macOS menu-bar item or Windows notification-area icon opens two compact
 views:
 
@@ -11,16 +11,16 @@ views:
 
 Anything requiring investigation opens the existing web dashboard.
 
-The companion is a client, not another Tokdash runtime. It must not parse logs, calculate
+The companion is a client, not another TokenDashboard runtime. It must not parse logs, calculate
 prices, scan credentials, manage provider tokens, or duplicate dashboard features.
 
 ## 2. MVP scope
 
 ### Included
 
-- Connect to a configurable Tokdash base URL, defaulting to
+- Connect to a configurable TokenDashboard base URL, defaulting to
   `http://127.0.0.1:55423`.
-- Verify the endpoint with `GET /health`; require `service == "tokdash"`.
+- Verify the endpoint with `GET /health`; require `service == "token-dashboard"`.
 - Provide two views inside one flyout/popover: Usage and Quota.
 - Show today's cost, tokens, and previous-day comparison on Usage.
 - Show current-month cost as context on Usage.
@@ -39,9 +39,9 @@ prices, scan credentials, manage provider tokens, or duplicate dashboard feature
 ### Excluded from MVP
 
 - Session browsing, charts, pricing editing, or contribution heatmaps.
-- Provider consent and other Tokdash configuration writes.
-- Reading Tokdash logs, SQLite data, or provider credential files directly.
-- Automatic Tokdash installation, startup, upgrade, or repair.
+- Provider consent and other TokenDashboard configuration writes.
+- Reading TokenDashboard logs, SQLite data, or provider credential files directly.
+- Automatic TokenDashboard installation, startup, upgrade, or repair.
 - Multiple simultaneous server profiles.
 - Persistent usage history in the companion.
 
@@ -61,16 +61,16 @@ accessibility work while making both surfaces feel less native.
 
 ### Suggested repository
 
-Create one separate `tokdash-companion` repository after UI alignment:
+Create one separate `token-dashboard-companion` repository after UI alignment:
 
 ```text
-tokdash-companion/
+token-dashboard-companion/
   macos/
-    TokdashCompanion/
-    TokdashCompanionTests/
+    TokenDashboardCompanion/
+    TokenDashboardCompanionTests/
   windows/
-    TokdashCompanion/
-    TokdashCompanion.Tests/
+    TokenDashboardCompanion/
+    TokenDashboardCompanion.Tests/
   contract/
     fixtures/
     COMPANION_API.md
@@ -78,7 +78,7 @@ tokdash-companion/
 ```
 
 This keeps native installers, signing, platform CI, and release cadence out of the Python
-package repository. The Tokdash API remains the integration boundary. If a separate repo is
+package repository. The TokenDashboard API remains the integration boundary. If a separate repo is
 undesirable, the same structure can live under `companion/` here, but packaging must be
 excluded from the Python wheel and sdist.
 
@@ -136,13 +136,13 @@ separate explicit action.
 
 ### Client behavior
 
-- Join endpoint paths correctly when the configured base URL contains `/tokdash`.
+- Join endpoint paths correctly when the configured base URL contains `/token-dashboard`.
 - Use short connection timeouts for `/health` and longer timeouts for usage requests,
   which can trigger a cold parse.
 - Fetch today, month, and quota concurrently after a successful health check.
 - Decode additively: ignore unknown fields and tolerate absent optional fields.
 - Treat a valid response with no usage as an empty state, not an error.
-- On `503`, keep the last good in-memory data and show **Tokdash is busy — retrying**.
+- On `503`, keep the last good in-memory data and show **TokenDashboard is busy — retrying**.
 - On a partial failure, render successful sections and mark only the failed section.
 - Use the usage `timestamp` and `response_cache.age_seconds` when available to calculate
   freshness.
@@ -153,7 +153,7 @@ separate explicit action.
 
 - Fetch immediately when the flyout opens if data is older than 60 seconds.
 - While open, refresh no more often than every 60 seconds.
-- While resident and closed, check every 10 minutes, matching Tokdash's default
+- While resident and closed, check every 10 minutes, matching TokenDashboard's default
   600-second response cache.
 - Pause periodic work during sleep and resume with one coalesced request.
 - Back off after failures: 15 seconds, 30 seconds, 60 seconds, then 5 minutes.
@@ -169,7 +169,7 @@ Suggested deployment target: macOS 13 or later. `MenuBarExtra` is available ther
 SwiftUI controls adopt the current system appearance on newer macOS releases.
 
 ```text
-TokdashCompanionApp
+TokenDashboardCompanionApp
   MenuBarExtra(.window)
     CompanionPopover
       SummarySection
@@ -178,7 +178,7 @@ TokdashCompanionApp
       ActionBar
   Settings scene
 
-TokdashClient actor
+TokenDashboardClient actor
   URLSession
   health()
   usage(period:)
@@ -220,7 +220,7 @@ App (single instance)
     taskbar-edge positioning and light dismiss
   SettingsWindow
 
-TokdashClient
+TokenDashboardClient
   HttpClient
   health / usage / quota
 
@@ -245,7 +245,7 @@ Implementation notes:
   animate rapid usage changes.
 - Use an icon-only notification-area presence. Put today's short summary in the tooltip.
 - Ship a signed self-contained portable ZIP for v0.1.0. Defer MSIX until an
-  installed clean-machine test proves loopback access to unpackaged Tokdash and
+  installed clean-machine test proves loopback access to unpackaged TokenDashboard and
   packaged startup behavior without developer exemptions.
 
 The first Windows milestone should be a throwaway technical spike that proves icon
@@ -304,14 +304,14 @@ Exit: both platforms meet the same data/state acceptance suite.
 
 - Opening the surface shows cached in-memory data immediately, then refreshes without
   blocking interaction.
-- With Tokdash stopped, the icon remains responsive and the flyout explains how to start
+- With TokenDashboard stopped, the icon remains responsive and the flyout explains how to start
   or configure it.
 - No provider credentials, logs, SQLite files, or browser cookies are read by the
   companion.
 - No telemetry or third-party network requests exist.
 - The resident app consumes effectively zero CPU when idle; memory is measured and kept
   within a platform-appropriate budget.
-- The app never starts multiple overlapping heavy Tokdash computations.
+- The app never starts multiple overlapping heavy TokenDashboard computations.
 - Both apps support keyboard open, keyboard navigation, Escape dismissal, screen-reader
   labels, high contrast, and reduced transparency.
 - The macOS build passes unit tests and `xcodebuild` on the MacBook.
@@ -325,7 +325,7 @@ Exit: both platforms meet the same data/state acceptance suite.
 2. What should the initial low-quota notification threshold be? Recommendation: opt-in,
    default 20% remaining, one notification per provider/bucket/reset epoch.
 3. Separate repository or this repository? Recommendation: one separate
-   `tokdash-companion` repository containing both native clients.
+   `token-dashboard-companion` repository containing both native clients.
 
 ## 10. Confirmed product choices
 

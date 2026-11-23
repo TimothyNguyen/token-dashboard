@@ -70,7 +70,7 @@ const document = {
     throw new Error(`unexpected selector ${selector}`);
   },
 };
-// No TokDashAnimations: the switch takes its synchronous branch.
+// No TokenDashboardAnimations: the switch takes its synchronous branch.
 const window = {};
 let currentDashboardTab = 'overview';
 let preserveStatsNavigationOnNextActivation = false;

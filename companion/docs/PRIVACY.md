@@ -1,27 +1,27 @@
-# Tokdash Companion privacy policy
+# TokenDashboard Companion privacy policy
 
 Partner Center accepts either a privacy policy URL or policy text entered directly into
 the submission. A hosted URL is the more durable option and is what this text is written
-for; GitHub Pages on the Tokdash repository is the least-effort route. Note that a raw
+for; GitHub Pages on the TokenDashboard repository is the least-effort route. Note that a raw
 GitHub Markdown file renders as source rather than a policy page, so publish it as a
 page rather than linking the .md directly.
 
-Published at <https://tokdash.github.io/privacy/>.
+Published at <https://token-dashboard.github.io/privacy/>.
 
 Last updated: 2026-08-18.
 
 ---
 
-## What Tokdash Companion is
+## What TokenDashboard Companion is
 
-Tokdash Companion is a notification-area (system tray) client for Tokdash, a service you
+TokenDashboard Companion is a notification-area (system tray) client for TokenDashboard, a service you
 run on your own machine or on a machine you control. The companion displays usage and
-quota figures that the Tokdash service reports. It is a viewer; it does not itself gather
+quota figures that the TokenDashboard service reports. It is a viewer; it does not itself gather
 usage data.
 
 ## Data collected
 
-None. Tokdash Companion collects no personal information, sends no analytics or telemetry,
+None. TokenDashboard Companion collects no personal information, sends no analytics or telemetry,
 and has no server component operated by the developer.
 
 ## Data stored on your device
@@ -36,9 +36,9 @@ disk.
 
 ## Network connections
 
-Tokdash Companion connects only to:
+TokenDashboard Companion connects only to:
 
-1. **The Tokdash server addresses you configure.** The default is `http://127.0.0.1:55423`
+1. **The TokenDashboard server addresses you configure.** The default is `http://127.0.0.1:55423`
    on your own machine. If you add another address, the companion connects to that one
    too. It connects to nothing you have not entered.
 2. **GitHub's public releases API**, only in the portable (non-Store) build, and only if
@@ -62,7 +62,7 @@ out of scope.
 
 ## Website analytics
 
-This section is about the tokdash.github.io **website**, not the app.
+This section is about the token_dashboard.github.io **website**, not the app.
 
 The website uses Google Analytics, which sets cookies and collects standard usage data
 such as pages visited, approximate location, browser, and device. That is a property of
@@ -83,4 +83,4 @@ Material changes to this policy will be published at this URL with an updated da
 
 ## Contact
 
-Open an issue at <https://github.com/JingbiaoMei/Tokdash/issues>.
+Open an issue at <https://github.com/TimothyNguyen/token-dashboard/issues>.

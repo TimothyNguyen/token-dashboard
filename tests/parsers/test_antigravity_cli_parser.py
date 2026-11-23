@@ -8,12 +8,12 @@ from types import SimpleNamespace
 
 import pytest
 
-from tokdash import clientpaths
-from tokdash.compute import _collect_parser_file, _sync_usage_store
-from tokdash.pricing import PricingDatabase
-from tokdash.sources import coding_tools
-from tokdash.sources.coding_tools import BaseParser, _sig_cache
-from tokdash.usage_store import UsageEntryStore
+from token_dashboard import clientpaths
+from token_dashboard.compute import _collect_parser_file, _sync_usage_store
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources import coding_tools
+from token_dashboard.sources.coding_tools import BaseParser, _sig_cache
+from token_dashboard.usage_store import UsageEntryStore
 
 
 AntigravityCLIParser = getattr(coding_tools, "AntigravityCLIParser", None)

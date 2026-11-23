@@ -1,10 +1,10 @@
-"""Tests for `tokdash serve` browser auto-open behavior and the --no-open flag."""
+"""Tests for `token_dashboard serve` browser auto-open behavior and the --no-open flag."""
 import sys
 
 import pytest
 
-import tokdash.cli as cli
-from tokdash.onboard import engine
+import token_dashboard.cli as cli
+from token_dashboard.onboard import engine
 
 
 @pytest.fixture(autouse=True)
@@ -23,52 +23,52 @@ def no_real_daemons(monkeypatch):
 
 
 def test_no_open_flag_defaults_false():
-    args = cli.build_parser("tokdash").parse_args(["serve"])
+    args = cli.build_parser("token_dashboard").parse_args(["serve"])
     assert args.no_open is False
 
 
 def test_no_open_flag_sets_true():
-    args = cli.build_parser("tokdash").parse_args(["serve", "--no-open"])
+    args = cli.build_parser("token_dashboard").parse_args(["serve", "--no-open"])
     assert args.no_open is True
 
 
 def test_db_command_defaults_to_status():
-    args = cli.build_parser("tokdash").parse_args(["db"])
+    args = cli.build_parser("token_dashboard").parse_args(["db"])
     assert args.command == "db"
     assert args.db_action == "status"
 
 
 def test_db_verify_period_arg():
-    args = cli.build_parser("tokdash").parse_args(["db", "verify", "--verify-period", "week"])
+    args = cli.build_parser("token_dashboard").parse_args(["db", "verify", "--verify-period", "week"])
     assert args.command == "db"
     assert args.db_action == "verify"
     assert args.verify_period == "week"
 
 
 def test_db_repair_dry_run_arg():
-    args = cli.build_parser("tokdash").parse_args(["db", "repair", "--dry-run"])
+    args = cli.build_parser("token_dashboard").parse_args(["db", "repair", "--dry-run"])
     assert args.command == "db"
     assert args.db_action == "repair"
     assert args.dry_run is True
 
 
 def test_db_watch_arg():
-    args = cli.build_parser("tokdash").parse_args(["db", "watch"])
+    args = cli.build_parser("token_dashboard").parse_args(["db", "watch"])
     assert args.command == "db"
     assert args.db_action == "watch"
 
 
 def test_quota_command_parses_actions():
-    args = cli.build_parser("tokdash").parse_args(["quota", "poll"])
+    args = cli.build_parser("token_dashboard").parse_args(["quota", "poll"])
     assert args.command == "quota"
     assert args.quota_action == "poll"
 
-    args = cli.build_parser("tokdash").parse_args(["quota", "consent", "--codex-api", "on"])
+    args = cli.build_parser("token_dashboard").parse_args(["quota", "consent", "--codex-api", "on"])
     assert args.command == "quota"
     assert args.quota_action == "consent"
     assert args.codex_api == "on"
 
-    args = cli.build_parser("tokdash").parse_args(
+    args = cli.build_parser("token_dashboard").parse_args(
         ["quota", "consent", "--credential-scan", "on", "--minimax-api", "on", "--kimi-api", "on", "--grok-api", "off", "--zai-api", "on"]
     )
     assert args.credential_scan == "on"
@@ -77,17 +77,17 @@ def test_quota_command_parses_actions():
     assert args.grok_api == "off"
     assert args.zai_api == "on"
 
-    args = cli.build_parser("tokdash").parse_args(["quota", "consent", "--opencode-go-api", "on"])
+    args = cli.build_parser("token_dashboard").parse_args(["quota", "consent", "--opencode-go-api", "on"])
     assert args.opencode_go_api == "on"
 
-    args = cli.build_parser("tokdash").parse_args(["quota", "consent", "--commandcode-api", "on"])
+    args = cli.build_parser("token_dashboard").parse_args(["quota", "consent", "--commandcode-api", "on"])
     assert args.commandcode_api == "on"
 
 
 def test_quota_consent_cli_updates_config():
     assert cli.cli(["quota", "consent", "--codex-api", "on", "--claude-api", "off", "--json"]) == 0
 
-    from tokdash.sources.quota.config import read_quota_config
+    from token_dashboard.sources.quota.config import read_quota_config
 
     assert read_quota_config() == {
         "credential_scan": False,
@@ -110,16 +110,16 @@ def test_quota_poll_cli_uses_collector(monkeypatch):
 
 
 def test_quota_poll_interval_has_floor_and_jitter(monkeypatch):
-    monkeypatch.setenv("TOKDASH_QUOTA_POLL_INTERVAL", "120")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_POLL_INTERVAL", "120")
     assert cli._quota_poll_interval() == 300
-    monkeypatch.setenv("TOKDASH_QUOTA_POLL_INTERVAL", "1000")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_POLL_INTERVAL", "1000")
     monkeypatch.setattr(cli.random, "uniform", lambda a, b: b)
     assert cli._quota_jittered_interval() == 1050
 
 
 def test_export_include_quota_flag(monkeypatch, capsys):
     monkeypatch.setattr(cli, "compute_usage", lambda period: {"period": period, "total_tokens": 1})
-    monkeypatch.setattr("tokdash.sources.quota.quota_state", lambda: {"providers": {"codex": {"buckets": []}}})
+    monkeypatch.setattr("token_dashboard.sources.quota.quota_state", lambda: {"providers": {"codex": {"buckets": []}}})
 
     assert cli.cli(["export", "--include-quota"]) == 0
 
@@ -264,8 +264,8 @@ def test_serve_passes_backpressure_knobs_to_uvicorn(monkeypatch):
     captured: dict[str, object] = {}
     monkeypatch.setattr(cli.uvicorn, "run", lambda *a, **k: captured.update(k))
     monkeypatch.setattr(cli, "_has_display", lambda: False)
-    monkeypatch.setenv("TOKDASH_LIMIT_CONCURRENCY", "99")
-    monkeypatch.setenv("TOKDASH_KEEPALIVE", "7")
+    monkeypatch.setenv("TOKEN_DASHBOARD_LIMIT_CONCURRENCY", "99")
+    monkeypatch.setenv("TOKEN_DASHBOARD_KEEPALIVE", "7")
     cli.serve("127.0.0.1", 55423, "info", open_browser=False)
     assert captured["limit_concurrency"] == 99
     assert captured["timeout_keep_alive"] == 7
@@ -276,8 +276,8 @@ def test_serve_starts_usage_db_watch_when_enabled(monkeypatch):
     monkeypatch.setattr(cli, "_DB_WATCH_THREAD_STARTED", False)
     monkeypatch.setattr(cli.uvicorn, "run", lambda *a, **k: None)
     monkeypatch.setattr(cli, "_has_display", lambda: False)
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
-    monkeypatch.setenv("TOKDASH_USAGE_DB_WATCH", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_WATCH", "1")
 
     class FakeThread:
         def __init__(self, target, name, daemon):
@@ -290,14 +290,14 @@ def test_serve_starts_usage_db_watch_when_enabled(monkeypatch):
 
     monkeypatch.setattr(cli.threading, "Thread", FakeThread)
     cli.serve("127.0.0.1", 55423, "info", open_browser=False)
-    assert started == ["tokdash-usage-db-watch"]
+    assert started == ["token-dashboard-usage-db-watch"]
 
 
 def test_serve_starts_quota_poll_thread_before_network_consent(monkeypatch):
     started: list[str] = []
     monkeypatch.setattr(cli, "_QUOTA_POLL_THREAD_STARTED", False)
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
-    monkeypatch.setenv("TOKDASH_USAGE_DB_WATCH", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_WATCH", "0")
     monkeypatch.setattr(cli, "_quota_network_enabled", lambda: False)
 
     class FakeThread:
@@ -313,7 +313,7 @@ def test_serve_starts_quota_poll_thread_before_network_consent(monkeypatch):
 
     cli._start_quota_poll_daemon()
 
-    assert started == ["tokdash-quota-poll"]
+    assert started == ["token-dashboard-quota-poll"]
 
 # --- Windows stdio hardening (serve under pythonw / cp1252 consoles) ---------------
 
@@ -349,12 +349,12 @@ def test_harden_stdio_tolerates_unencodable_chars_on_windows(monkeypatch, capsys
     monkeypatch.setattr(sys, "stderr", buf)
     cli._harden_windows_stdio()
     try:
-        print("\U0001f680 Starting Tokdash on http://127.0.0.1:55423")
+        print("\U0001f680 Starting TokenDashboard on http://127.0.0.1:55423")
         buf.flush()
     finally:
         pass
     out = buf.buffer.getvalue().decode("cp1252", errors="replace")
-    assert "Starting Tokdash" in out
+    assert "Starting TokenDashboard" in out
     assert "\U0001f680" not in out  # degraded to '?' on the cp1252 pipe
 
 

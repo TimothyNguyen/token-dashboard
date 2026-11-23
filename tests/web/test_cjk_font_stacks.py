@@ -23,17 +23,17 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-import tokdash  # type: ignore[import-untyped]
-import tokdash.api as api
-from tokdash import assets
+import token_dashboard  # type: ignore[import-untyped]
+import token_dashboard.api as api
+from token_dashboard import assets
 
 from support.frontend import needs_node, run_node
 
-STATIC = Path(tokdash.__file__).parent / "static"
+STATIC = Path(token_dashboard.__file__).parent / "static"
 INDEX_HTML = STATIC / "index.html"
 THEMES_CSS = STATIC / "themes.css"
 NOTICE = STATIC / "vendor" / "NOTICE.txt"
-REPO_ROOT = Path(tokdash.__file__).resolve().parents[2]
+REPO_ROOT = Path(token_dashboard.__file__).resolve().parents[2]
 VENDOR_SCRIPT = REPO_ROOT / "scripts" / "vendor_cjk_fonts.sh"
 
 # The face each platform already ships, plus the names a Linux distribution uses.
@@ -306,7 +306,7 @@ def _font_head_script(page: str) -> str:
 def _served_page(static_dir: Path, monkeypatch) -> str:
     _clear_font_cache()
     monkeypatch.setattr(assets, "STATIC_DIR", static_dir)
-    monkeypatch.delenv("TOKDASH_PUBLIC_BASE_PATH", raising=False)
+    monkeypatch.delenv("TOKEN_DASHBOARD_PUBLIC_BASE_PATH", raising=False)
     page = TestClient(api.app).get("/").text
     assert assets.CJK_FONT_CSS_PLACEHOLDER not in page
     return page
@@ -342,7 +342,7 @@ def test_the_page_links_a_vendored_face_only_when_the_server_offers_one(tmp_path
     bare = _font_head_script(_served_page(tmp_path / "without", monkeypatch))
     cases = {
         "vendored": {"script": vendored, "pathname": "/"},
-        "vendoredUnderPrefix": {"script": vendored, "pathname": "/tokdash/"},
+        "vendoredUnderPrefix": {"script": vendored, "pathname": "/token-dashboard/"},
         "noFace": {"script": bare, "pathname": "/"},
         "unsubstituted": {"script": _font_head_script(_source()), "pathname": "/"},
     }
@@ -351,7 +351,7 @@ def test_the_page_links_a_vendored_face_only_when_the_server_offers_one(tmp_path
     links = json.loads(run_node(harness))
     assert links == {
         "vendored": ['<link rel="stylesheet" href="/static/' + face + '" />'],
-        "vendoredUnderPrefix": ['<link rel="stylesheet" href="/tokdash/static/' + face + '" />'],
+        "vendoredUnderPrefix": ['<link rel="stylesheet" href="/token-dashboard/static/' + face + '" />'],
         "noFace": [],
         "unsubstituted": [],
     }

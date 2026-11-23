@@ -17,9 +17,9 @@ import json
 import os
 from pathlib import Path
 
-from tokdash.sources.quota import config, quota_state
-from tokdash.sources.quota.types import QuotaSnapshot
-from tokdash.usage_store import UsageEntryStore
+from token_dashboard.sources.quota import config, quota_state
+from token_dashboard.sources.quota.types import QuotaSnapshot
+from token_dashboard.usage_store import UsageEntryStore
 
 FIXTURE = (
     Path(__file__).resolve().parents[2]
@@ -63,7 +63,7 @@ def _scenario(monkeypatch, tmp_path) -> list[QuotaSnapshot]:
     home = tmp_path / "home"
     home.mkdir()
     monkeypatch.setattr(Path, "home", lambda: home)
-    for name in ("CLAUDE_CONFIG_DIR", "TOKDASH_CLAUDE_PROFILES", "CLAUDE_CODE_OAUTH_TOKEN"):
+    for name in ("CLAUDE_CONFIG_DIR", "TOKEN_DASHBOARD_CLAUDE_PROFILES", "CLAUDE_CODE_OAUTH_TOKEN"):
         monkeypatch.delenv(name, raising=False)
     _install(home, ".claude", tier="default_claude_max_20x", subscription="max")
     _install(home, ".claude-academic", tier="default_claude_pro", subscription="pro")
@@ -99,7 +99,7 @@ def test_the_fixture_is_what_the_server_actually_sends(monkeypatch, tmp_path):
     dropped from both sides because it is an absolute path on the machine that generated
     it; every other field, including the whole `accounts` list, has to match exactly.
 
-    Set ``TOKDASH_REWRITE_FIXTURES=1`` to write the regenerated payload back instead of
+    Set ``TOKEN_DASHBOARD_REWRITE_FIXTURES=1`` to write the regenerated payload back instead of
     asserting, which is how the fixture is refreshed when the payload gains a field on
     purpose. Review that diff -- it is the contract changing.
     """
@@ -111,7 +111,7 @@ def test_the_fixture_is_what_the_server_actually_sends(monkeypatch, tmp_path):
     for entry in provider.get("accounts", []):
         entry.pop("credential_path", None)
 
-    if os.environ.get("TOKDASH_REWRITE_FIXTURES") == "1":
+    if os.environ.get("TOKEN_DASHBOARD_REWRITE_FIXTURES") == "1":
         FIXTURE.write_text(
             json.dumps(
                 {

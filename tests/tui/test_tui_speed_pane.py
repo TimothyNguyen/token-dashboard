@@ -20,8 +20,8 @@ textual = pytest.importorskip("textual", reason="the TUI tests need textual")
 
 from textual.widgets import Button, DataTable, Static  # noqa: E402
 
-from tokdash.compute import resolve_period  # noqa: E402
-from tokdash.tui.app import TokdashApp  # noqa: E402
+from token_dashboard.compute import resolve_period  # noqa: E402
+from token_dashboard.tui.app import TokenDashboardApp  # noqa: E402
 from support.tui import (  # noqa: E402
     SHARED_MODEL,
     api,  # noqa: F401  (the fixture these tests ask pytest for)
@@ -168,7 +168,7 @@ def test_the_hour_detail_is_measured_again_once_the_strip_above_has_grown(api):
 
 
 def test_all_time_speed_asks_the_endpoint_for_all_time():
-    date_from, date_to = TokdashApp(initial_period="all")._speed_dates()
+    date_from, date_to = TokenDashboardApp(initial_period="all")._speed_dates()
     expected = resolve_period("all")
     assert (date_from, date_to) == (expected["from"], expected["to"])
 
@@ -324,7 +324,7 @@ def test_the_timing_set_control_reveals_the_measurements_it_promises(api):
     }
 
     def timing_set(*_args, **kwargs):
-        from tokdash.tui.data import FetchOutcome
+        from token_dashboard.tui.data import FetchOutcome
 
         payload = copy.deepcopy(
             widened if kwargs.get("include_request_windows") else hidden_only

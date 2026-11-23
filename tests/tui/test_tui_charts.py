@@ -1,4 +1,4 @@
-"""Tests for tokdash/tui/charts.py — the pure period-visual renderers.
+"""Tests for token_dashboard/tui/charts.py — the pure period-visual renderers.
 
 Pure-python (no textual, no rich, no DB, no sockets), with one exception: the
 quota_detail_rows cases borrow the pilot suite's quota payload from support.tui,
@@ -17,7 +17,7 @@ import datetime as dt
 
 import pytest
 
-from tokdash.tui.charts import (
+from token_dashboard.tui.charts import (
     column_chart,
     column_chart_needs,
     day_bars,
@@ -28,7 +28,7 @@ from tokdash.tui.charts import (
     tool_model_detail,
     year_heatmap,
 )
-from tokdash.tui.formatting import EM_DASH, Run, heat_glyph, tool_label
+from token_dashboard.tui.formatting import EM_DASH, Run, heat_glyph, tool_label
 
 
 def text(line: list[Run]) -> str:
@@ -898,7 +898,7 @@ class TestQuotaTable:
     def test_banner_disabled_guidance(self):
         banner, _, note, _ = self.render(_quota_state(enabled=False))
         assert "disabled" in text(banner[0])
-        assert "tokdash quota consent --enabled on" in note
+        assert "token_dashboard quota consent --enabled on" in note
 
     def test_consent_guidance_when_no_network_consent(self):
         _, _, note, _ = self.render(_quota_state(consent={"codex_api": False}))
@@ -953,7 +953,7 @@ def test_a_squeezed_chart_still_names_the_ends_of_its_axis():
     a shape the reader cannot place in time. The first and last key get the whole
     row instead.
     """
-    from tokdash.tui.charts import column_chart
+    from token_dashboard.tui.charts import column_chart
 
     entries = [{"label": f"{h:02d}:00", "value": float(h % 5 + 1), "text": ""}
                for h in range(24)]

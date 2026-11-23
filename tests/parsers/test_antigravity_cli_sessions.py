@@ -18,11 +18,11 @@ import pytest
 
 from test_antigravity_cli_parser import _create_antigravity_db, _encode_gen_metadata_blob
 
-from tokdash import clientpaths
-from tokdash import sessions
-from tokdash.onboard import paths
-from tokdash.pricing import PricingDatabase
-from tokdash.sessions import (
+from token_dashboard import clientpaths
+from token_dashboard import sessions
+from token_dashboard.onboard import paths
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sessions import (
     SESSION_TOOLS,
     _antigravity_db_signatures,
     _antigravity_sessions,
@@ -30,8 +30,8 @@ from tokdash.sessions import (
     get_sessions_data,
     reload_pricing_db,
 )
-from tokdash.sources import coding_tools
-from tokdash.sources.coding_tools import BaseParser, _sig_cache
+from token_dashboard.sources import coding_tools
+from token_dashboard.sources.coding_tools import BaseParser, _sig_cache
 
 AntigravityCLIParser = coding_tools.AntigravityCLIParser
 
@@ -308,7 +308,7 @@ def test_windowing(monkeypatch, tmp_path):
 
 
 def test_repricing_applies_without_rereading(monkeypatch, tmp_path):
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(tmp_path / "data"))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path / "data"))
     conv_dir, summaries = _patch_antigravity(monkeypatch, tmp_path)
     _build_tree(conv_dir, summaries)
     reload_pricing_db()

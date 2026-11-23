@@ -1,7 +1,7 @@
-"""A cost the provider itself reported wins over Tokdash's estimate.
+"""A cost the provider itself reported wins over TokenDashboard's estimate.
 
 OpenCode and Mimo record what a message actually billed. That number is the
-provider's own, computed from rates Tokdash may not carry, so it must survive
+provider's own, computed from rates TokenDashboard may not carry, so it must survive
 into the session payload instead of being recomputed from token counts. Both
 OpenCode loaders are covered: SQLite without JSON1 falls back to reading the
 message blob in Python, and the two have to agree.
@@ -14,9 +14,9 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import sessions
-from tokdash.pricing import PricingDatabase
-from tokdash.sessions import reload_pricing_db
+from token_dashboard import sessions
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sessions import reload_pricing_db
 
 MODEL = "glm-5.2"
 PROVIDER = "zai"

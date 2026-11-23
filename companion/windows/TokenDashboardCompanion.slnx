@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="TokenDashboardCompanion.Tests/TokenDashboardCompanion.Tests.csproj" />
+  <Project Path="TokenDashboardCompanion/TokenDashboardCompanion.csproj" />
+</Solution>

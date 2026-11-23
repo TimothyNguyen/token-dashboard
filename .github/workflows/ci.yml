@@ -53,7 +53,7 @@ jobs:
           python -m pip install pytest
 
       - name: Compile
-        run: python -m compileall -q src/tokdash main.py docs/guides/agents/openclaw_reporting/openclaw_cron_job.py
+        run: python -m compileall -q src/token_dashboard main.py docs/guides/agents/openclaw_reporting/openclaw_cron_job.py
 
       - name: Test
         # One worker per core. loadgroup keeps each xdist_group on one worker:
@@ -63,7 +63,7 @@ jobs:
         run: python -m pytest -n auto --dist loadgroup -vv --durations=20 --timeout=180 --timeout-method=thread
 
       # Every winsched unit test fakes `schtasks`; this is the only place the rendered
-      # task XML meets the real Task Scheduler. Added after `tokdash setup` failed on a
+      # task XML meets the real Task Scheduler. Added after `token-dashboard setup` failed on a
       # native-Windows host: the file was written UTF-8, and `schtasks /Create /XML`
       # (MSXML) refuses a UTF-8 declaration it is handed as UTF-16 — a green pytest run
       # could never have caught that. Both rendered variants are registered: the
@@ -74,10 +74,10 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $tmp = Join-Path $env:RUNNER_TEMP "tokdash-schtasks-check"
+          $tmp = Join-Path $env:RUNNER_TEMP "token-dashboard-schtasks-check"
           $py = @'
           import pathlib, sys
-          from tokdash.onboard import winsched, paths
+          from token_dashboard.onboard import winsched, paths
           tmp = pathlib.Path(sys.argv[1])
           variant = sys.argv[2]
           tmp.mkdir(parents=True, exist_ok=True)
@@ -87,7 +87,7 @@ jobs:
           if variant == "env":
               kwargs["env_data_dir"] = str(tmp / "custom-dd")
           winsched.write_task(winsched.render_task(
-              [sys.executable, "-m", "tokdash"], "127.0.0.1", 55423,
+              [sys.executable, "-m", "token-dashboard"], "127.0.0.1", 55423,
               marker_id="ci-encoding-check", **kwargs))
           print(str(out))
           '@
@@ -99,8 +99,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             throw "rendering the env_data_dir task variant failed with exit $LASTEXITCODE (check the python output above)"
           }
-          $task = "Tokdash-CI-XML-Check"
-          $taskEnv = "Tokdash-CI-XML-Check-Env"
+          $task = "TokenDashboard-CI-XML-Check"
+          $taskEnv = "TokenDashboard-CI-XML-Check-Env"
           try {
             schtasks.exe /Create /TN $task /XML $xml /F
             if ($LASTEXITCODE -ne 0) {

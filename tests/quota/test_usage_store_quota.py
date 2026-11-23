@@ -10,8 +10,8 @@ import sqlite3
 
 import pytest
 
-from tokdash.sources.quota.types import QuotaSnapshot
-from tokdash.usage_store import (
+from token_dashboard.sources.quota.types import QuotaSnapshot
+from token_dashboard.usage_store import (
     _CODEX_PERCENT_SCALE_REPAIR_META_KEY,
     SCHEMA_VERSION,
     UsageEntryStore,
@@ -545,7 +545,7 @@ def test_quota_history_skips_status_and_reset_credit_rows(tmp_path):
 
 
 def test_quota_retention_prunes_old_snapshots(tmp_path, monkeypatch):
-    monkeypatch.setenv("TOKDASH_QUOTA_RETENTION_DAYS", "365")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_RETENTION_DAYS", "365")
     store = UsageEntryStore(tmp_path / "usage.sqlite3")
 
     store.insert_quota_snapshots(
@@ -560,7 +560,7 @@ def test_quota_retention_prunes_old_snapshots(tmp_path, monkeypatch):
 
 
 def test_quota_retention_disabled_by_default(tmp_path, monkeypatch):
-    monkeypatch.delenv("TOKDASH_QUOTA_RETENTION_DAYS", raising=False)
+    monkeypatch.delenv("TOKEN_DASHBOARD_QUOTA_RETENTION_DAYS", raising=False)
     store = UsageEntryStore(tmp_path / "usage.sqlite3")
 
     store.insert_quota_snapshots(

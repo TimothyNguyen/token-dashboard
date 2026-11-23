@@ -1,11 +1,11 @@
-"""Import discipline for the TUI feature (spec §10): `tokdash report` never pulls in Textual.
+"""Import discipline for the TUI feature (spec §10): `token_dashboard report` never pulls in Textual.
 
 Headless safety is the contract — ``data.py``, ``formatting.py``, ``report.py`` and
 the round-2 ``charts.py``/``remote.py`` stay free of textual/rich so the one-shot report works on installs where Textual is
 absent (a pipx runtime predating the release, a stripped venv, a broken wheel).
 A ``sys.meta_path`` finder models that absence; because ``sys.modules`` caches would
 make importing an already-imported module a no-op, the fixture also evicts the
-``tokdash.tui`` submodules (and any pre-imported ``textual``) for the duration of
+``token_dashboard.tui`` submodules (and any pre-imported ``textual``) for the duration of
 the test, so a green run proves a real import happened under the block.
 """
 
@@ -18,15 +18,15 @@ import sys
 
 import pytest
 
-# Pure modules that must import with textual/rich absent. ``tokdash.tui.charts``
-# (round-2 pure chart renderers) and ``tokdash.tui.remote`` (round-2 read-only
+# Pure modules that must import with textual/rich absent. ``token_dashboard.tui.charts``
+# (round-2 pure chart renderers) and ``token_dashboard.tui.remote`` (round-2 read-only
 # HTTP delegation, pure stdlib) are both part of the set.
 PURE_TUI_MODULES = (
-    "tokdash.tui.data",
-    "tokdash.tui.formatting",
-    "tokdash.tui.charts",
-    "tokdash.tui.remote",
-    "tokdash.tui.report",
+    "token_dashboard.tui.data",
+    "token_dashboard.tui.formatting",
+    "token_dashboard.tui.charts",
+    "token_dashboard.tui.remote",
+    "token_dashboard.tui.report",
 )
 
 
@@ -52,7 +52,7 @@ class _BlockTextualFinder:
 
 
 def _evict_textual_and_tui_modules() -> dict:
-    """Drop cached textual/rich + tokdash.tui modules; return them for restore.
+    """Drop cached textual/rich + token_dashboard.tui modules; return them for restore.
 
     The rich eviction is what makes the block real rather than decorative:
     pytest itself may have pulled rich into sys.modules, and an in-cache
@@ -67,8 +67,8 @@ def _evict_textual_and_tui_modules() -> dict:
             or name.startswith("textual.")
             or name == "rich"
             or name.startswith("rich.")
-            or name == "tokdash.tui"
-            or name.startswith("tokdash.tui.")
+            or name == "token_dashboard.tui"
+            or name.startswith("token_dashboard.tui.")
         ):
             evicted[name] = sys.modules.pop(name)
     return evicted
@@ -86,7 +86,7 @@ def block_textual():
         # Remove the modules the test imported under the block, then restore
         # whatever was cached beforehand, so neither state leaks to other tests.
         for name in list(sys.modules):
-            if name == "tokdash.tui" or name.startswith("tokdash.tui."):
+            if name == "token_dashboard.tui" or name.startswith("token_dashboard.tui."):
                 del sys.modules[name]
         sys.modules.update(evicted)
 
@@ -202,7 +202,7 @@ INSIGHTS_PAYLOAD = {
     },
     "projects": {
         "projects": [
-            {"project": "tokdash", "tokens": 9_000_000, "cost": 100.5, "messages": 3_400}
+            {"project": "token_dashboard", "tokens": 9_000_000, "cost": 100.5, "messages": 3_400}
         ],
         "unattributed": 3_000_000,
         "attributed_project_count": 1,
@@ -238,21 +238,21 @@ ACTIVE_TIME_PAYLOAD = {
 
 def test_report_path_works_with_textual_absent(block_textual, monkeypatch, capsys):
     """The whole report path — imports included — must survive without textual."""
-    # TOKDASH_USAGE_DB=0 keeps the run off the filesystem: ensure_usage_db_compatible
+    # TOKEN_DASHBOARD_USAGE_DB=0 keeps the run off the filesystem: ensure_usage_db_compatible
     # no-ops and db_summary prints the disabled line without constructing the store.
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
 
-    import tokdash.tui.data as tui_data
-    import tokdash.tui.formatting as tui_formatting  # noqa: F401 — the import IS the assertion
+    import token_dashboard.tui.data as tui_data
+    import token_dashboard.tui.formatting as tui_formatting  # noqa: F401 — the import IS the assertion
     # charts.py is round-2's pure renderer lane: segments out, no widgets in;
     # remote.py is round-2's stdlib-only HTTP delegation: GETs, no widgets,
     # and the report path may import it (data.py does, at module level).
-    import tokdash.tui.charts as tui_charts  # noqa: F401 — the import IS the assertion
-    import tokdash.tui.remote as tui_remote  # noqa: F401 — the import IS the assertion
-    import tokdash.tui.report as tui_report
+    import token_dashboard.tui.charts as tui_charts  # noqa: F401 — the import IS the assertion
+    import token_dashboard.tui.remote as tui_remote  # noqa: F401 — the import IS the assertion
+    import token_dashboard.tui.report as tui_report
 
-    assert "tokdash.tui.charts" in sys.modules
-    assert "tokdash.tui.remote" in sys.modules
+    assert "token_dashboard.tui.charts" in sys.modules
+    assert "token_dashboard.tui.remote" in sys.modules
 
     def _outcome(payload):
         return tui_data.FetchOutcome(value=payload, status="hit", age_seconds=0.0)
@@ -279,7 +279,7 @@ def test_report_path_works_with_textual_absent(block_textual, monkeypatch, capsy
     assert tui_report.run_report(args) == 0
 
     out = capsys.readouterr().out
-    assert "Tokdash report" in out          # the header line rendered
+    assert "TokenDashboard report" in out          # the header line rendered
     assert "usage db disabled" in out       # db footer took the disabled branch
     assert "textual" not in sys.modules
     assert "rich" not in sys.modules        # §8: rich is textual-transitive only
@@ -288,9 +288,9 @@ def test_report_path_works_with_textual_absent(block_textual, monkeypatch, capsy
 def test_app_module_imports_after_the_block(monkeypatch):
     """With no finder installed, the Textual app module imports normally.
 
-    ``tokdash.tui.app`` is the ONLY tokdash module allowed to import textual; skip
+    ``token_dashboard.tui.app`` is the ONLY token_dashboard module allowed to import textual; skip
     (not fail) when textual or the tui lane is absent so stripped envs stay green.
     """
     pytest.importorskip("textual", reason="textual not installed in this environment")
-    app = pytest.importorskip("tokdash.tui.app", reason="tui lane has not landed yet")
+    app = pytest.importorskip("token_dashboard.tui.app", reason="tui lane has not landed yet")
     assert callable(app.run_tui)

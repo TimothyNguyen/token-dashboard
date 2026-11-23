@@ -1,7 +1,7 @@
-recursive-include src/tokdash/static *
+recursive-include src/token_dashboard/static *
 
 # Optional local CJK fonts are installed separately, never bundled in releases.
-prune src/tokdash/static/vendor/fonts
+prune src/token_dashboard/static/vendor/fonts
 
 # The companion/ tree (native macOS/Windows apps) is not part of the Python
 # package and must never enter the wheel or sdist.

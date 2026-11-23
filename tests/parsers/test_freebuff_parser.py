@@ -22,16 +22,16 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import clientpaths
-from tokdash.pricing import PricingDatabase
-from tokdash.sources import coding_tools as ct
-from tokdash.sources.coding_tools import (
+from token_dashboard import clientpaths
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources import coding_tools as ct
+from token_dashboard.sources.coding_tools import (
     BaseParser,
     CodingToolsUsageTracker,
     FreebuffParser,
     _sig_cache,
 )
-from tokdash.usage_store import (
+from token_dashboard.usage_store import (
     UsageEntryStore,
     UsageFileUnreadable,
     UsageFileVanished,
@@ -851,7 +851,7 @@ def test_has_table_detects_presence_and_absence(monkeypatch, tmp_path):
 
 def test_claude_code_and_codex_harnesses_are_skipped(monkeypatch, tmp_path):
     """Turns running under claude-code or codex harnesses spawn external CLIs
-    that log to ~/.claude and ~/.codex, which Tokdash parses separately.
+    that log to ~/.claude and ~/.codex, which TokenDashboard parses separately.
     Counting them in Freebuff would double-count."""
     _make_db(
         _projects(tmp_path) / "p1",
@@ -1207,7 +1207,7 @@ def test_state_json_context_invalidation_and_unrelated_write(monkeypatch, tmp_pa
 
 @pytest.mark.parametrize("captured_harness", ["codebuff", "codex"])
 def test_stored_sync_uses_captured_harness_when_state_changes(monkeypatch, tmp_path, captured_harness):
-    from tokdash.compute import _collect_parser_file
+    from token_dashboard.compute import _collect_parser_file
 
     state_file = tmp_path / ".config" / "freebuff-desktop" / "state.json"
     state_file.parent.mkdir(parents=True)

@@ -13,10 +13,10 @@ import threading
 import os
 from pathlib import Path
 
-from tokdash import clientpaths
-from tokdash.sources.quota import claude, config
-from tokdash.sources.quota.types import QuotaSnapshot
-from tokdash.usage_store import UsageEntryStore
+from token_dashboard import clientpaths
+from token_dashboard.sources.quota import claude, config
+from token_dashboard.sources.quota.types import QuotaSnapshot
+from token_dashboard.usage_store import UsageEntryStore
 
 
 class FakeResponse:
@@ -39,7 +39,7 @@ def _home(monkeypatch, tmp_path) -> Path:
     home.mkdir()
     monkeypatch.setattr(Path, "home", lambda: home)
     monkeypatch.delenv("CLAUDE_CONFIG_DIR", raising=False)
-    monkeypatch.delenv("TOKDASH_CLAUDE_PROFILES", raising=False)
+    monkeypatch.delenv("TOKEN_DASHBOARD_CLAUDE_PROFILES", raising=False)
     monkeypatch.delenv("CLAUDE_CODE_OAUTH_TOKEN", raising=False)
     return home
 
@@ -203,7 +203,7 @@ def test_explicit_profile_list_replaces_the_home_scan(monkeypatch, tmp_path):
         json.dumps({"claudeAiOauth": {"accessToken": "t"}}), encoding="utf-8"
     )
     monkeypatch.setenv(
-        "TOKDASH_CLAUDE_PROFILES", f"{outside}{os.pathsep}{home / '.claude'}{os.pathsep}{outside}"
+        "TOKEN_DASHBOARD_CLAUDE_PROFILES", f"{outside}{os.pathsep}{home / '.claude'}{os.pathsep}{outside}"
     )
 
     profiles = clientpaths.claude_profile_dirs()
@@ -220,7 +220,7 @@ def test_two_directories_never_share_one_account_id(monkeypatch, tmp_path):
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
     lookalike = _install(home, ".claude-default", token="tok-lookalike")
-    monkeypatch.setenv("TOKDASH_CLAUDE_PROFILES", f"{lookalike}{os.pathsep}{lookalike}")
+    monkeypatch.setenv("TOKEN_DASHBOARD_CLAUDE_PROFILES", f"{lookalike}{os.pathsep}{lookalike}")
 
     names = [name for name, _dir in clientpaths.claude_profile_dirs()]
 
@@ -543,7 +543,7 @@ def test_declining_credential_scan_never_lists_the_home_directory(monkeypatch, t
 
     assert [p.name for p in claude.discover_profiles()] == ["default"]
 
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     provider = quota_state()["providers"]["claude"]
 
@@ -584,7 +584,7 @@ def _snapshot(
 
 
 def test_quota_state_lists_each_install_with_its_own_plan(monkeypatch, tmp_path):
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base", tier="default_claude_max_5x")
@@ -627,7 +627,7 @@ def test_a_broken_sibling_warns_the_card_and_names_the_install_that_broke(monkey
     failure exists only for ``academic``. Card status therefore cannot be derived from
     "which accounts have an api row", the guard that made this fail before.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -665,7 +665,7 @@ def test_a_recovered_install_stops_reporting_its_old_failure(monkeypatch, tmp_pa
     successes are not written as ``api`` rows. Recovery has to come from the account's own
     later window rows, which is what ``ok_at`` tracks.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -694,7 +694,7 @@ def test_still_failing_install_keeps_reporting_its_error(monkeypatch, tmp_path):
     what it does NOT do is claim the whole provider went stale at the default install's
     fresher timestamp.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -724,7 +724,7 @@ def test_windows_of_a_removed_install_are_not_shown_as_current(monkeypatch, tmp_
     precisely because it cannot be confused by a file that will not open right now (see the
     tests below).
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -752,7 +752,7 @@ def test_a_removed_installs_expired_sign_in_stops_warning_the_card(monkeypatch, 
     retired rows are dropped before any view reads them, so the card, its `accounts` list
     and its `updated_at` all answer from the installs that are actually there.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -782,7 +782,7 @@ def test_a_signed_out_install_stops_quoting_its_last_known_windows(monkeypatch, 
     retires. It hides the stored rows rather than deleting them, so signing in again puts
     them back (see the test below).
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -818,7 +818,7 @@ def test_a_signed_out_install_that_signs_in_again_comes_back_with_its_windows(
     vanished from the card are still there when the credential returns. The reverse
     decision -- keep the rows of an install nothing polls -- has no equivalent correction.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -852,7 +852,7 @@ def test_an_install_whose_credential_will_not_open_keeps_its_windows(monkeypatch
     install's here on purpose: age is not part of the decision, so no amount of it retires an
     install that could still be polled again.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -887,7 +887,7 @@ def test_a_revoked_token_stays_and_a_removed_sign_in_does_not(monkeypatch, tmp_p
     being reported, because that is the one state that ends the polling and leaves the
     numbers with no way back.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -924,7 +924,7 @@ def test_an_install_with_no_credential_file_in_its_place_is_retired(monkeypatch,
     "present" and leave the frozen bars on the card for good, which is the exact state the
     sign-out rule exists to end.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -955,7 +955,7 @@ def test_a_signed_out_default_install_keeps_its_rows(monkeypatch, tmp_path):
     fixing that needs a state the card can print in their place, which no surface speaks
     yet.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     default = _install(home, ".claude", token="tok-base")
@@ -978,7 +978,7 @@ def test_a_home_that_cannot_be_listed_retires_nothing(monkeypatch, tmp_path):
     membership test alone would retire every install on the machine at once. Absence has to
     be OBSERVED, so a listing that could not be read means nothing may be concluded from it.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -997,19 +997,19 @@ def test_a_home_that_cannot_be_listed_retires_nothing(monkeypatch, tmp_path):
 
 
 def test_an_unmounted_explicit_profile_volume_retires_nothing(monkeypatch, tmp_path):
-    """`TOKDASH_CLAUDE_PROFILES` names the installs, so a missing path is an unmounted one.
+    """`TOKEN_DASHBOARD_CLAUDE_PROFILES` names the installs, so a missing path is an unmounted one.
 
     The variable is how installs outside the home directory are declared. One of them not
     being a directory right now is the unmounted-volume case, not a deletion -- the user did
     not stop declaring it -- so the whole answer is untrusted rather than that install being
     retired.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
     lab = _install(home, "lab", token="tok-lab")
-    monkeypatch.setenv("TOKDASH_CLAUDE_PROFILES", f"{lab}{os.pathsep}{tmp_path / 'volume' / 'work'}")
+    monkeypatch.setenv("TOKEN_DASHBOARD_CLAUDE_PROFILES", f"{lab}{os.pathsep}{tmp_path / 'volume' / 'work'}")
     config.set_quota_consent({"credential_scan": True, "claude_api": True})
     UsageEntryStore().insert_quota_snapshots(
         [
@@ -1025,7 +1025,7 @@ def test_an_unmounted_explicit_profile_volume_retires_nothing(monkeypatch, tmp_p
 
 def test_no_credential_scan_consent_retires_nothing(monkeypatch, tmp_path):
     """Without consent nothing was looked at, so nothing may be concluded gone."""
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -1051,7 +1051,7 @@ def test_a_row_stamped_in_the_future_drops_nothing(monkeypatch, tmp_path):
     long as the skew lasts. Nothing here compares one row's age against another's, so the
     skewed row is just a row.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -1078,7 +1078,7 @@ def test_a_card_with_only_a_sibling_speaks_for_that_sibling(monkeypatch, tmp_pat
     install is admitted on the same test for every install, so a phantom directory has no
     opinion to impose.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude-academic", token="tok-academic")
@@ -1103,7 +1103,7 @@ def test_an_install_with_no_rows_yet_reports_its_local_status(monkeypatch, tmp_p
     This is the documented answer for an install with no snapshot rows yet, and the reason
     a freshly set-up second install is not rendered as a subscription in trouble.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base", tier="default_claude_max_5x")
@@ -1124,10 +1124,10 @@ def test_revoking_credential_scan_stops_naming_the_installs(monkeypatch, tmp_pat
     """Which installs exist, and each one's plan, come off the filesystem.
 
     Consent withdrawn after the fact means the card stops shipping what a scan produced,
-    stored rows included. The rows are Tokdash's own data and keep rendering -- just
+    stored rows included. The rows are TokenDashboard's own data and keep rendering -- just
     without naming a second install the card is no longer allowed to have looked for.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -1149,7 +1149,7 @@ def test_revoking_credential_scan_stops_naming_the_installs(monkeypatch, tmp_pat
 
 def test_a_sibling_without_credentials_does_not_open_a_card(monkeypatch, tmp_path):
     """Detection and discovery must agree, or a dotfile backup grows a permanent card."""
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     (home / ".claude-backup").mkdir()  # restored dotfiles, never signed in
@@ -1190,7 +1190,7 @@ def test_minimax_region_failure_warns_the_card_and_names_the_region(monkeypatch,
     read the stale region's bar as current -- while the per-account list attributes it, so
     the card can print it under China and leave the global plan's numbers alone.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -1237,7 +1237,7 @@ def _row(provider: str, account: str, bucket: str, used, captured: int, status: 
 
 
 def test_a_minimax_credential_failure_keeps_the_regions_last_known_bars(monkeypatch, tmp_path):
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     _home(monkeypatch, tmp_path)
     config.set_quota_consent({"credential_scan": True, "minimax_api": True})
@@ -1261,7 +1261,7 @@ def test_a_minimax_credential_failure_keeps_the_regions_last_known_bars(monkeypa
 
 
 def test_an_antigravity_credential_failure_keeps_the_last_known_bars(monkeypatch, tmp_path):
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     _home(monkeypatch, tmp_path)
     config.set_quota_consent({"credential_scan": True, "antigravity_api": True})
@@ -1279,7 +1279,7 @@ def test_an_antigravity_credential_failure_keeps_the_last_known_bars(monkeypatch
 
 
 def test_a_grok_credential_failure_keeps_the_last_known_bars(monkeypatch, tmp_path):
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     _home(monkeypatch, tmp_path)
     config.set_quota_consent({"credential_scan": True, "grok_api": True})
@@ -1331,7 +1331,7 @@ def test_the_card_plan_is_the_default_installs_not_the_first_alphabetically(
     paper over this, which is why it only showed with `credential_scan` revoked after
     polling: the one state where nothing overwrites it.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -1350,7 +1350,7 @@ def test_the_card_plan_is_the_default_installs_not_the_first_alphabetically(
 
 def test_a_sibling_only_card_may_still_name_that_siblings_plan(monkeypatch, tmp_path):
     """No `~/.claude` behind the card at all: one account's plan may speak for it."""
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude-academic", token="tok-academic")
@@ -1375,7 +1375,7 @@ def test_a_deleted_default_install_is_retired_too(monkeypatch, tmp_path):
     `stale_token` warning there for good, which is the very thing retirement exists for.
     Presence has to be observed for the default install like any other.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude-work", token="tok-work")
@@ -1397,7 +1397,7 @@ def test_a_deleted_default_install_is_retired_too(monkeypatch, tmp_path):
 
 def test_a_default_install_behind_an_unlistable_parent_is_kept(monkeypatch, tmp_path):
     """`CLAUDE_CONFIG_DIR` on an unmounted volume is unobserved, not observably gone."""
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude-work", token="tok-work")
@@ -1426,7 +1426,7 @@ def test_redirecting_the_default_slot_does_not_retire_the_redirected_install(
     directory sitting right there in the listing. A directory is known under every name it
     could have been stored under.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -1459,7 +1459,7 @@ def test_signing_out_of_a_demoted_default_install_keeps_the_redirected_one(
     where it can only keep rows; here it deletes them from the card, so a name another
     pollable install answers to is not this one's to retire.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     (home / ".claude").mkdir()  # present, and signed out: no `.credentials.json`
@@ -1491,7 +1491,7 @@ def test_signing_out_of_one_of_two_installs_sharing_a_slug_keeps_the_other(
     slug stays `academic` -- the first one's account. Signing out of the copy must not retire
     the original's windows.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -1499,7 +1499,7 @@ def test_signing_out_of_one_of_two_installs_sharing_a_slug_keeps_the_other(
     elsewhere = tmp_path / "elsewhere" / ".claude-academic"
     elsewhere.mkdir(parents=True)  # same intrinsic slug, and signed out
     monkeypatch.setenv(
-        "TOKDASH_CLAUDE_PROFILES", os.pathsep.join([str(live), str(elsewhere)])
+        "TOKEN_DASHBOARD_CLAUDE_PROFILES", os.pathsep.join([str(live), str(elsewhere)])
     )
     config.set_quota_consent({"credential_scan": True, "claude_api": True})
     UsageEntryStore().insert_quota_snapshots(
@@ -1525,7 +1525,7 @@ def test_a_home_naming_no_install_at_all_retires_nothing(monkeypatch, tmp_path):
     machine at once, which is the transient-for-deleted confusion the redesign exists to
     stop; the listing being readable is necessary but not sufficient.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     (home / "Documents").mkdir()  # readable, non-empty, and names no Claude install
@@ -1554,7 +1554,7 @@ def test_a_credential_less_minimax_failure_names_no_account(monkeypatch, tmp_pat
     does not exist. The failure still has to reach the card, so it stays in the
     provider-wide status -- as an error no account claims, which is the honest shape.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     _home(monkeypatch, tmp_path)
     config.set_quota_consent({"credential_scan": True, "minimax_api": True})
@@ -1578,7 +1578,7 @@ def test_a_region_that_never_reported_a_window_keeps_its_account(monkeypatch, tm
     It measures nothing either, so the rule that drops the synthetic account has to be
     narrow enough to keep this one -- it is what lets the card put CN's error under CN.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     _home(monkeypatch, tmp_path)
     config.set_quota_consent({"credential_scan": True, "minimax_api": True})
@@ -1603,7 +1603,7 @@ def test_the_claude_default_install_keeps_its_account_with_nothing_measured(
     Its `unavailable` row with no windows behind it is what drives the consent and
     "not detected" card, so the synthetic-account rule must not reach it.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -1699,7 +1699,7 @@ def test_an_unreadable_credential_is_not_attributed_to_an_older_failure(
     finds CN's and reads the card as attributed, so a provider whose credentials cannot be
     read at all counts as working. The owner is a fact only the server has.
     """
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     _home(monkeypatch, tmp_path)
     config.set_quota_consent({"credential_scan": True, "minimax_api": True})
@@ -1727,7 +1727,7 @@ def test_an_unreadable_credential_is_not_attributed_to_an_older_failure(
 
 def test_a_cards_error_names_the_account_it_belongs_to(monkeypatch, tmp_path):
     """The attributed case: one broken sibling beside a working install."""
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -1749,7 +1749,7 @@ def test_a_cards_error_names_the_account_it_belongs_to(monkeypatch, tmp_path):
 
 def test_a_single_account_card_carries_no_status_account(monkeypatch, tmp_path):
     """`status_account` is only meaningful beside `accounts`, and ships with it."""
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -1802,7 +1802,7 @@ def _credits(label: str = "Opus launch reset", left: int = 1) -> dict:
 
 
 def test_a_single_install_card_carries_its_limit_resets(monkeypatch, tmp_path):
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -1821,7 +1821,7 @@ def test_a_single_install_card_carries_its_limit_resets(monkeypatch, tmp_path):
 
 
 def test_an_account_outside_the_reset_program_shows_no_reset_block(monkeypatch, tmp_path):
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -1834,7 +1834,7 @@ def test_an_account_outside_the_reset_program_shows_no_reset_block(monkeypatch, 
 
 
 def test_a_reset_that_expired_since_the_last_poll_is_not_offered(monkeypatch, tmp_path):
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -1852,7 +1852,7 @@ def test_a_reset_that_expired_since_the_last_poll_is_not_offered(monkeypatch, tm
 def test_a_newer_poll_without_the_reset_block_hides_the_old_count(monkeypatch, tmp_path):
     """The flag fell back to the plain URL, or Anthropic stopped honouring it: that poll wrote
     windows and no reset row, and the reset seen before it may since have been spent."""
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -1869,7 +1869,7 @@ def test_a_newer_poll_without_the_reset_block_hides_the_old_count(monkeypatch, t
 
 def test_a_siblings_resets_stay_under_that_install(monkeypatch, tmp_path):
     """A second subscription's reset must not read as the default install's."""
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -1894,7 +1894,7 @@ def test_a_siblings_resets_stay_under_that_install(monkeypatch, tmp_path):
 
 
 def test_the_default_installs_resets_are_also_the_cards_own(monkeypatch, tmp_path):
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude", token="tok-base")
@@ -1917,7 +1917,7 @@ def test_the_default_installs_resets_are_also_the_cards_own(monkeypatch, tmp_pat
 
 
 def test_a_sibling_only_card_carries_that_siblings_resets(monkeypatch, tmp_path):
-    from tokdash.sources.quota import quota_state
+    from token_dashboard.sources.quota import quota_state
 
     home = _home(monkeypatch, tmp_path)
     _install(home, ".claude-academic", token="tok-academic")

@@ -1,8 +1,8 @@
-# Tokdash Companion release guide
+# TokenDashboard Companion release guide
 
-Tokdash Companion is versioned independently from the Python package.
+TokenDashboard Companion is versioned independently from the Python package.
 `companion/VERSION` is the authority and release tags use
-`companion-vX.Y.Z`. The current release is `1.1.0` and requires Tokdash `1.5.2`
+`companion-vX.Y.Z`. The current release is `1.1.0` and requires TokenDashboard `1.5.2`
 or newer. Optional surfaces degrade gracefully against an older server, which
 hides them rather than showing a zero: the Activity glance needs `2.5.0`, where
 `/api/insights` first answers and `contributions[].intensity` first carries a
@@ -14,14 +14,14 @@ real value; per-account quota attribution needs `2.5.3`, where
 Publish one GitHub **release** with exactly these assets:
 
 ```text
-Tokdash-Companion-1.1.0-macos-universal-unsigned.dmg
-Tokdash-Companion-1.1.0-windows-x64-unsigned.zip
+TokenDashboard-Companion-1.1.0-macos-universal-unsigned.dmg
+TokenDashboard-Companion-1.1.0-windows-x64-unsigned.zip
 SHA256SUMS
 ```
 
 - The DMG contains one native `arm64 + x86_64` application.
 - The ZIP contains one self-contained, single-file Windows x64 executable,
-  the icon, Tokdash license, .NET third-party notices, and this guide.
+  the icon, TokenDashboard license, .NET third-party notices, and this guide.
 - Windows x86 is unsupported. Windows 11 on Arm may run the x64 build through
   emulation; native ARM64 is a later target.
 - MSIX is built by `companion/scripts/build_windows_msix.ps1` and published
@@ -33,7 +33,7 @@ SHA256SUMS
 
 The release workflow builds the Store MSIX on every `companion-v*` tag, in the
 same Windows job as the ZIP, and attaches it to the run as the
-`tokdash-companion-<version>-store-msix` artifact. Download it from the workflow
+`token-dashboard-companion-<version>-store-msix` artifact. Download it from the workflow
 run and upload it to Partner Center; nothing is built by hand.
 
 It is an artifact rather than a release asset on purpose. Partner Center signs
@@ -50,7 +50,7 @@ tag, so it reproduces the same package.
 1. Land the change on `main` and bump `companion/VERSION`.
 2. Run `python3 companion/scripts/check_release.py --tag companion-vX.Y.Z`.
 3. Tag that commit `companion-vX.Y.Z` and push. One tag builds all three packages.
-4. Download the `tokdash-companion-<version>-store-msix` artifact from the run.
+4. Download the `token-dashboard-companion-<version>-store-msix` artifact from the run.
 5. Partner Center > the product > Packages: upload the `.msix`. Identity is matched
    here, so a mismatch is rejected at upload rather than in certification.
 6. Update Store listings only if the copy changed. The current en-US and zh-Hans
@@ -94,7 +94,7 @@ release. Every user-facing surface must say that the binaries are unsigned:
   release, not a prerelease, but it must never take the repository's "Latest"
   pointer: this repo also publishes the Python package, and a companion tag
   newer than the newest `vX.Y.Z` would otherwise become what `/releases/latest`
-  resolves to for everyone installing Tokdash itself.
+  resolves to for everyone installing TokenDashboard itself.
 
 Checksums detect file changes but do not establish a trusted publisher.
 Developer ID/notarization and Windows Authenticode remain goals for a later
@@ -134,19 +134,19 @@ download path by design. Artifact and log retention is one day.
 ### macOS
 
 1. Verify the DMG against `SHA256SUMS`.
-2. Open the DMG and drag TokdashCompanion to Applications.
+2. Open the DMG and drag TokenDashboardCompanion to Applications.
 3. Because this build is unsigned, Control-click the app, choose **Open**,
    then confirm **Open** if you trust this repository and checksum.
-4. Start Tokdash, then open TokdashCompanion.
+4. Start TokenDashboard, then open TokenDashboardCompanion.
 5. To update, quit the companion and replace the application.
 6. To remove it, disable **Launch at Login**, quit, and delete the application.
 7. Optional settings cleanup: delete
-   `~/Library/Application Support/TokdashCompanion`.
+   `~/Library/Application Support/TokenDashboardCompanion`.
 
 ### Windows portable ZIP
 
 1. Verify the ZIP against `SHA256SUMS`, then extract it to a stable directory.
-2. Run `TokdashCompanion.exe`. SmartScreen may report an unknown publisher;
+2. Run `TokenDashboardCompanion.exe`. SmartScreen may report an unknown publisher;
    choose **More info** and **Run anyway** only if you trust this repository and
    checksum.
 3. Launch at login is opt-in. It uses only the named
@@ -157,7 +157,7 @@ download path by design. Artifact and log retention is one day.
 5. To update, disable launch at login, quit, replace the extracted directory,
    restart, and re-enable it.
 6. To remove it, disable launch at login, quit, and delete the directory.
-7. Optional settings cleanup: delete `%LOCALAPPDATA%\TokdashCompanion`.
+7. Optional settings cleanup: delete `%LOCALAPPDATA%\TokenDashboardCompanion`.
 
 Because the Windows build is self-contained, relevant .NET servicing updates
 require a new companion build.
@@ -182,7 +182,7 @@ Before tagging:
   Windows and macOS systems.
 - Verify the downloaded ZIP and DMG, not runner staging files.
 - Confirm the companion makes network requests only to the explicitly
-  configured Tokdash endpoint and, when the user requests or enables update
+  configured TokenDashboard endpoint and, when the user requests or enables update
   checks, GitHub's public releases API. It performs no telemetry, credential
   discovery, or port scanning.
 - Tag the current merged `main` commit only. Never replace assets under an

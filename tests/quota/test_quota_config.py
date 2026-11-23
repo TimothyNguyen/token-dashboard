@@ -8,7 +8,7 @@ import json
 
 import pytest
 
-from tokdash.sources.quota import config
+from token_dashboard.sources.quota import config
 
 
 def test_quota_network_consent_defaults_off_and_round_trips(tmp_path):
@@ -45,7 +45,7 @@ def test_quota_network_consent_defaults_off_and_round_trips(tmp_path):
 def test_quota_kill_switch_disables_network_even_with_saved_consent(monkeypatch):
     config.set_quota_consent({"codex_api": True, "claude_api": True, "antigravity_api": True})
 
-    monkeypatch.setenv("TOKDASH_QUOTA_POLL", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_POLL", "0")
 
     assert config.enabled_network_sources() == []
     assert config.network_enabled("codex_api") is False
@@ -86,13 +86,13 @@ def test_poll_interval_precedence_env_over_config_over_default(monkeypatch):
     assert config.read_poll_interval_minutes() == 60
 
     # Env override wins and is floored at 300 s.
-    monkeypatch.setenv("TOKDASH_QUOTA_POLL_INTERVAL", "100")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_POLL_INTERVAL", "100")
     assert config.effective_poll_interval() == (300, "env")
-    monkeypatch.setenv("TOKDASH_QUOTA_POLL_INTERVAL", "5400")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_POLL_INTERVAL", "5400")
     assert config.effective_poll_interval() == (5400, "env")
 
     # Malformed env falls through to the config value.
-    monkeypatch.setenv("TOKDASH_QUOTA_POLL_INTERVAL", "not-an-int")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_POLL_INTERVAL", "not-an-int")
     assert config.effective_poll_interval() == (3600, "config")
 
 
@@ -135,7 +135,7 @@ def test_local_credential_consent_is_required_for_network_polling():
 
 def test_kill_switch_overrides_config_enabled(monkeypatch):
     config.set_quota_enabled(True)
-    monkeypatch.setenv("TOKDASH_QUOTA_POLL", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_POLL", "0")
 
     assert config.quota_config_enabled() is True  # config preference unchanged
     assert config.quota_tracking_enabled() is False  # kill switch wins
@@ -162,19 +162,19 @@ def test_effective_boundary_config_defaults():
 
 
 def test_effective_boundary_config_kill_switches(monkeypatch):
-    monkeypatch.setenv("TOKDASH_QUOTA_BOUNDARY_POLL", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_BOUNDARY_POLL", "0")
     assert config.effective_boundary_config().enabled is False
 
-    monkeypatch.delenv("TOKDASH_QUOTA_BOUNDARY_POLL", raising=False)
-    monkeypatch.setenv("TOKDASH_QUOTA_BOUNDARY_POST", "off")
+    monkeypatch.delenv("TOKEN_DASHBOARD_QUOTA_BOUNDARY_POLL", raising=False)
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_BOUNDARY_POST", "off")
     cfg = config.effective_boundary_config()
     assert cfg.enabled is True  # narrower switch only disables the post-reset half
     assert cfg.post_reset_enabled is False
 
 
 def test_effective_boundary_config_seconds_env_overrides(monkeypatch):
-    monkeypatch.setenv("TOKDASH_QUOTA_BOUNDARY_PRE_SECONDS", "45")
-    monkeypatch.setenv("TOKDASH_QUOTA_BOUNDARY_POST_SECONDS", "90")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_BOUNDARY_PRE_SECONDS", "45")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_BOUNDARY_POST_SECONDS", "90")
 
     cfg = config.effective_boundary_config()
 
@@ -183,8 +183,8 @@ def test_effective_boundary_config_seconds_env_overrides(monkeypatch):
 
 
 def test_effective_boundary_config_ignores_malformed_seconds_env(monkeypatch):
-    monkeypatch.setenv("TOKDASH_QUOTA_BOUNDARY_PRE_SECONDS", "not-an-int")
-    monkeypatch.setenv("TOKDASH_QUOTA_BOUNDARY_POST_SECONDS", "-10")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_BOUNDARY_PRE_SECONDS", "not-an-int")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_BOUNDARY_POST_SECONDS", "-10")
 
     cfg = config.effective_boundary_config()
 

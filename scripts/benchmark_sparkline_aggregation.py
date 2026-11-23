@@ -48,11 +48,11 @@ def common_windows(today):
 
 def worker(args):
     sys.path.insert(0, str(Path(args.repo).resolve() / "src"))
-    from tokdash import compute
-    from tokdash import sessions
-    from tokdash.dateutil import parse_date_range
-    from tokdash.sources import openclaw
-    from tokdash.usage_store import UsageEntryStore, build_source_signature
+    from token_dashboard import compute
+    from token_dashboard import sessions
+    from token_dashboard.dateutil import parse_date_range
+    from token_dashboard.sources import openclaw
+    from token_dashboard.usage_store import UsageEntryStore, build_source_signature
 
     today = datetime.now().date()
     cases = common_windows(today)
@@ -137,7 +137,7 @@ def worker(args):
         else:
             options = {}
             if args.label == "candidate":
-                from tokdash.usage_buckets import bucket_granularity
+                from token_dashboard.usage_buckets import bucket_granularity
                 options["granularity"] = bucket_granularity(since, until)
             data = compute.parse_entries_json({"entries": native_entries}, **options)
             fields = ("total_tokens", "total_cost", "total_messages", "cache_hit_rate")
@@ -198,7 +198,7 @@ def main():
                for label in ("baseline", "candidate")}
     processes = {}
     logs = []
-    temporary = tempfile.TemporaryDirectory(prefix="tokdash-sparkline-bench-")
+    temporary = tempfile.TemporaryDirectory(prefix="token-dashboard-sparkline-bench-")
     database_dir = Path(args.database_dir or temporary.name).resolve()
     database_dir.mkdir(parents=True, exist_ok=True)
     try:
@@ -208,7 +208,7 @@ def main():
                    "--gc-mode", args.gc_mode]
             if args.corpus_days:
                 cmd.extend(["--corpus-days", str(args.corpus_days)])
-            env = dict(os.environ, TOKDASH_DATA_DIR=str(Path(args.output).resolve()/label), PYTHONPATH=str(Path(repo).resolve()/"src"))
+            env = dict(os.environ, TOKEN_DASHBOARD_DATA_DIR=str(Path(args.output).resolve()/label), PYTHONPATH=str(Path(repo).resolve()/"src"))
             log = (Path(args.output)/f"{label}-benchmark.log").open("w")
             logs.append(log)
             proc = subprocess.Popen(cmd, env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE,

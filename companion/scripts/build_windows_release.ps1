@@ -19,9 +19,9 @@ if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
 $outputRoot = [System.IO.Path]::GetFullPath($OutputDirectory)
 New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
 
-$project = Join-Path $companionRoot "windows\TokdashCompanion\TokdashCompanion.csproj"
-$solution = Join-Path $companionRoot "windows\TokdashCompanion.slnx"
-$workRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("tokdash-companion-" + [guid]::NewGuid())
+$project = Join-Path $companionRoot "windows\TokenDashboardCompanion\TokenDashboardCompanion.csproj"
+$solution = Join-Path $companionRoot "windows\TokenDashboardCompanion.slnx"
+$workRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("token-dashboard-companion-" + [guid]::NewGuid())
 $portableStage = Join-Path $workRoot "portable"
 
 function Invoke-Checked {
@@ -63,7 +63,7 @@ try {
     $runtimeAssets = Join-Path $portableStage "Assets"
     New-Item -ItemType Directory -Path $runtimeAssets -Force | Out-Null
     Copy-Item `
-        (Join-Path $companionRoot "windows\TokdashCompanion\Assets\tray.ico") `
+        (Join-Path $companionRoot "windows\TokenDashboardCompanion\Assets\tray.ico") `
         (Join-Path $runtimeAssets "tray.ico") `
         -Force
     Copy-Item (Join-Path $repoRoot "LICENSE") (Join-Path $portableStage "LICENSE.txt")
@@ -74,12 +74,12 @@ try {
     }
     Copy-Item $dotnetNotices (Join-Path $portableStage "THIRD-PARTY-NOTICES.txt")
 
-    $exePath = Join-Path $portableStage "TokdashCompanion.exe"
+    $exePath = Join-Path $portableStage "TokenDashboardCompanion.exe"
     if (-not (Test-Path $exePath)) {
         throw "Self-contained executable was not produced at $exePath"
     }
 
-    $zipPath = Join-Path $outputRoot "Tokdash-Companion-$version-windows-x64-unsigned.zip"
+    $zipPath = Join-Path $outputRoot "TokenDashboard-Companion-$version-windows-x64-unsigned.zip"
     if (Test-Path $zipPath) {
         Remove-Item $zipPath -Force
     }

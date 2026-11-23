@@ -18,12 +18,12 @@ pytest.importorskip("fastapi")
 
 from fastapi.testclient import TestClient
 
-import tokdash.api as api
+import token_dashboard.api as api
 
 
 @pytest.fixture(autouse=True)
 def _reset_cache(monkeypatch):
-    monkeypatch.setenv("TOKDASH_WARM_ON_START", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_WARM_ON_START", "0")
     api._clear_cache()
     yield
     api._clear_cache()

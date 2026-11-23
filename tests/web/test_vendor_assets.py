@@ -1,7 +1,7 @@
 """Dashboard libraries must be local, packaged, and cached for offline use.
 
 The service worker that caches them must also leave every other origin alone:
-the multi-server client fetches added Tokdash servers directly from the page.
+the multi-server client fetches added TokenDashboard servers directly from the page.
 """
 import json
 import re
@@ -9,12 +9,12 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-import tokdash
-import tokdash.api as api
+import token_dashboard
+import token_dashboard.api as api
 
 from support.frontend import needs_node, run_node
 
-STATIC = Path(tokdash.__file__).parent / "static"
+STATIC = Path(token_dashboard.__file__).parent / "static"
 VENDOR_PATHS = [
     "/static/vendor/tailwindcss-3.4.17.js",
     "/static/vendor/chart-4.4.0.umd.min.js",
@@ -28,7 +28,7 @@ def test_dashboard_loads_packaged_vendor_assets_in_order():
     source = (STATIC / "index.html").read_text(encoding="utf-8")
     assert "cdn.jsdelivr.net" not in source
     assert "cdn.tailwindcss.com" not in source
-    paths = re.findall(r"window\.tokdashPath\('(/static/vendor/[^']+)'\)", source)
+    paths = re.findall(r"window\.tokenDashboardPath\('(/static/vendor/[^']+)'\)", source)
     assert paths == VENDOR_PATHS
     assert re.findall(r"/static/vendor/[^\"\'\s)]+", source) == paths
     for path in paths:
@@ -36,7 +36,7 @@ def test_dashboard_loads_packaged_vendor_assets_in_order():
     tailwind = source.index(VENDOR_PATHS[0])
     config = source.index("if (window.tailwind) tailwind.config")
     assert tailwind < config < source.index(VENDOR_PATHS[1])
-    assert 'onload="window.__tokdashFlatpickrCssLoaded = true"' in source
+    assert 'onload="window.__tokenDashboardFlatpickrCssLoaded = true"' in source
     assert "https://fonts.googleapis.com" in source
 
 

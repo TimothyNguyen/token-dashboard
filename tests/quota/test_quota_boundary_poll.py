@@ -3,10 +3,10 @@ reset so `usage_store.quota_history`'s running-high consumption model gets a sam
 true peak/baseline (see the module docstring on `_flush` in usage_store.py)."""
 from __future__ import annotations
 
-import tokdash.cli as cli
-import tokdash.sources.quota as quota
-from tokdash.sources.quota import config
-from tokdash.sources.quota import next_boundary_poll_at, next_boundary_poll_target_with_kind, plan_boundary_poll
+import token_dashboard.cli as cli
+import token_dashboard.sources.quota as quota
+from token_dashboard.sources.quota import config
+from token_dashboard.sources.quota import next_boundary_poll_at, next_boundary_poll_target_with_kind, plan_boundary_poll
 
 _CFG = config.BoundaryPollConfig(enabled=True, pre_seconds=120, post_reset_enabled=True, post_seconds=120)
 
@@ -124,16 +124,16 @@ def test_next_boundary_poll_target_with_kind_reports_pre_and_post():
 
 
 def test_next_poll_sleep_seconds_uses_regular_interval_when_no_boundary_near(monkeypatch):
-    monkeypatch.setenv("TOKDASH_QUOTA_POLL_INTERVAL", "1000")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_POLL_INTERVAL", "1000")
     monkeypatch.setattr(cli.random, "uniform", lambda a, b: 0)
 
     assert cli._next_poll_sleep_seconds(10_000, []) == 1000
 
 
 def test_next_poll_sleep_seconds_delays_imminent_boundary_to_call_floor(monkeypatch):
-    monkeypatch.setenv("TOKDASH_QUOTA_POLL_INTERVAL", "1000")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_POLL_INTERVAL", "1000")
     monkeypatch.setattr(cli.random, "uniform", lambda a, b: 0)
-    monkeypatch.setenv("TOKDASH_QUOTA_BOUNDARY_PRE_SECONDS", "50")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_BOUNDARY_PRE_SECONDS", "50")
     now = 10_000
     rows = [{"provider": "claude", "bucket": "5h", "resets_at": now + 100}]  # pre target: now + 50
 
@@ -143,9 +143,9 @@ def test_next_poll_sleep_seconds_delays_imminent_boundary_to_call_floor(monkeypa
 def test_next_poll_sleep_seconds_ignores_within_jitter_boundary(monkeypatch):
     """A boundary inside the jitter horizon is the one we just fired, not a new one, so the
     daemon falls back to the regular interval rather than firing a duplicate poll."""
-    monkeypatch.setenv("TOKDASH_QUOTA_POLL_INTERVAL", "1000")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_POLL_INTERVAL", "1000")
     monkeypatch.setattr(cli.random, "uniform", lambda a, b: 0)
-    monkeypatch.setenv("TOKDASH_QUOTA_BOUNDARY_POST_SECONDS", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_BOUNDARY_POST_SECONDS", "1")
     now = 10_000
     rows = [{"provider": "claude", "bucket": "5h", "resets_at": now}]  # post target: now + 1
 
@@ -153,9 +153,9 @@ def test_next_poll_sleep_seconds_ignores_within_jitter_boundary(monkeypatch):
 
 
 def test_next_poll_sleep_seconds_applies_call_floor_beyond_jitter(monkeypatch):
-    monkeypatch.setenv("TOKDASH_QUOTA_POLL_INTERVAL", "1000")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_POLL_INTERVAL", "1000")
     monkeypatch.setattr(cli.random, "uniform", lambda a, b: 0)
-    monkeypatch.setenv("TOKDASH_QUOTA_BOUNDARY_POST_SECONDS", "6")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_BOUNDARY_POST_SECONDS", "6")
     now = 10_000
     rows = [{"provider": "claude", "bucket": "5h", "resets_at": now}]  # post target: now + 6
 
@@ -163,9 +163,9 @@ def test_next_poll_sleep_seconds_applies_call_floor_beyond_jitter(monkeypatch):
 
 
 def test_next_poll_sleep_seconds_ignores_boundary_when_disabled(monkeypatch):
-    monkeypatch.setenv("TOKDASH_QUOTA_POLL_INTERVAL", "1000")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_POLL_INTERVAL", "1000")
     monkeypatch.setattr(cli.random, "uniform", lambda a, b: 0)
-    monkeypatch.setenv("TOKDASH_QUOTA_BOUNDARY_POLL", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_BOUNDARY_POLL", "0")
     now = 10_000
     rows = [{"provider": "claude", "bucket": "5h", "resets_at": now + 1}]
 
@@ -188,7 +188,7 @@ def test_boundary_plan_coalesces_providers_due_inside_call_floor():
 
 
 def test_boundary_plan_falls_back_to_regular_interval_on_planning_error(monkeypatch):
-    monkeypatch.setenv("TOKDASH_QUOTA_POLL_INTERVAL", "1000")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_POLL_INTERVAL", "1000")
     monkeypatch.setattr(cli.random, "uniform", lambda a, b: 0)
     monkeypatch.setattr(quota, "plan_boundary_poll", lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError()))
 
@@ -199,7 +199,7 @@ def test_boundary_plan_falls_back_to_regular_interval_on_planning_error(monkeypa
 
 
 def test_reset_advance_anchors_post_to_previous_epoch(monkeypatch):
-    monkeypatch.setenv("TOKDASH_QUOTA_BOUNDARY_POST_SECONDS", "120")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_BOUNDARY_POST_SECONDS", "120")
     old_reset = 10_000
     before = [{"provider": "claude", "account": "a", "bucket": "5h", "resets_at": old_reset}]
     after = [{"provider": "claude", "account": "a", "bucket": "5h", "resets_at": old_reset + 18_000}]
@@ -273,7 +273,7 @@ def test_commandcode_fixed_epoch_window_is_a_boundary_target():
 
 
 def test_record_boundary_poll_metric_increments_quota_meta():
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.usage_store import UsageEntryStore
 
     cli._record_boundary_poll_metric("pre")
     cli._record_boundary_poll_metric("pre")
@@ -285,6 +285,6 @@ def test_record_boundary_poll_metric_increments_quota_meta():
 
 
 def test_record_boundary_poll_metric_is_best_effort_when_persistence_disabled(monkeypatch):
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
 
     cli._record_boundary_poll_metric("pre")  # must not raise

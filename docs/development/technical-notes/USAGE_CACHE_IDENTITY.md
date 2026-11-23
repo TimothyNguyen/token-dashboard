@@ -1,10 +1,10 @@
 # Usage-cache identity: parse, billing, pricing
 
-How Tokdash decides whether a cached usage row is still valid, and what a
+How TokenDashboard decides whether a cached usage row is still valid, and what a
 pricing change does instead of invalidating it.
 
-Applies to `usage_entries` in `~/.tokdash/usage.sqlite3` — the persistent cache
-behind Overview, Stats, `/api/usage`, `/api/tools` and `tokdash export`. Session
+Applies to `usage_entries` in `~/.token-dashboard/usage.sqlite3` — the persistent cache
+behind Overview, Stats, `/api/usage`, `/api/tools` and `token-dashboard export`. Session
 records are a separate cache with its own contract (`sessions.py`).
 
 ## Cross-file ownership
@@ -69,7 +69,7 @@ Each persistently stored parser declares an integer
 
 ```python
 {
-    "object": "tokdash.sources.coding_tools.CodexParser",
+    "object": "token_dashboard.sources.coding_tools.CodexParser",
     "version": 1,
     "entry_format": 1,
 }
@@ -132,7 +132,7 @@ A stored row carries the inputs it was billed on, in its own `billing_json`
 column. Two kinds:
 
 ```python
-# Tokdash priced it. Candidates are tried in order; first non-zero wins.
+# TokenDashboard priced it. Candidates are tried in order; first non-zero wins.
 {"kind": "pricing", "models": ["acme/m1", "m1"],
  "input": 1000, "output": 100, "cache_read": 2000, "cache_write": 0}
 
@@ -157,7 +157,7 @@ Rules that keep this faithful:
   anywhere labels its rows `unknown` and hard-codes cost 0; storing no
   candidates reproduces that under any future pricing file, exactly as a
   reparse would.
-- **`fallback` covers "our price, else theirs".** OpenClaw prefers Tokdash
+- **`fallback` covers "our price, else theirs".** OpenClaw prefers TokenDashboard
   pricing and falls back to its own recorded cost when the model resolves to
   nothing.
 

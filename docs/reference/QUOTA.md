@@ -7,23 +7,23 @@ and the per-provider credential and accounting notes.
 ## Consent commands
 
 ```bash
-tokdash quota consent --codex-api on --claude-api on --antigravity-api on
-tokdash quota consent --minimax-api on --kimi-api on --grok-api on --zai-api on
-tokdash quota consent --opencode-go-api on
-tokdash quota consent --commandcode-api on
-tokdash quota consent --credential-scan on   # allow the disclosed local credential readers
-tokdash quota consent --poll-interval 30      # background poll cadence: 15, 30, 60 or 120 min
-tokdash quota consent --enabled off           # master switch: turn ALL quota tracking off
-tokdash quota poll
-tokdash quota show
+token-dashboard quota consent --codex-api on --claude-api on --antigravity-api on
+token-dashboard quota consent --minimax-api on --kimi-api on --grok-api on --zai-api on
+token-dashboard quota consent --opencode-go-api on
+token-dashboard quota consent --commandcode-api on
+token-dashboard quota consent --credential-scan on   # allow the disclosed local credential readers
+token-dashboard quota consent --poll-interval 30      # background poll cadence: 15, 30, 60 or 120 min
+token-dashboard quota consent --enabled off           # master switch: turn ALL quota tracking off
+token-dashboard quota poll
+token-dashboard quota show
 ```
 
 ## Master switch
 
 `quota.enabled` (default on) turns *all* quota work on or off — session
 scanning, network polling, and snapshot writes. Toggle it from the Quota tab or
-with `tokdash quota consent --enabled on|off`. When it is off (or the
-`TOKDASH_QUOTA_POLL=0` kill switch is set), the background poller idles
+with `token-dashboard quota consent --enabled on|off`. When it is off (or the
+`TOKEN_DASHBOARD_QUOTA_POLL=0` kill switch is set), the background poller idles
 completely, `GET /api/quota/refresh` returns a "quota tracking disabled" error,
 and the tab shows an *enable quota tracking* card instead of data. Per-provider
 consent keys keep their narrower network-only meaning.
@@ -31,10 +31,10 @@ consent keys keep their narrower network-only meaning.
 ## Poll interval
 
 The background poller snapshots every **30 minutes** by default. Choose
-15/30/60/120 minutes from the Quota tab, during `tokdash setup`, or with
-`tokdash quota consent --poll-interval N`; it is saved as
+15/30/60/120 minutes from the Quota tab, during `token-dashboard setup`, or with
+`token-dashboard quota consent --poll-interval N`; it is saved as
 `quota.poll_interval_minutes` in `config.json`. The
-`TOKDASH_QUOTA_POLL_INTERVAL` env var (seconds, floor 300) overrides the saved
+`TOKEN_DASHBOARD_QUOTA_POLL_INTERVAL` env var (seconds, floor 300) overrides the saved
 value, and the tab shows which source is active. Interval changes apply on the
 next poll cycle without restarting the server. Codex session ingestion is
 incremental — after a one-time backfill of your history, each cycle only
@@ -47,10 +47,10 @@ For fixed-reset quota windows, the poller also samples near the reset boundary
 so history captures the pre-reset high and post-reset baseline. Boundary
 sampling is enabled by default, calls only the provider whose window triggered
 it, coalesces nearby provider boundaries, and keeps at least 300 seconds between
-daemon poll cycles. Set `TOKDASH_QUOTA_BOUNDARY_POLL=0` to disable it,
-`TOKDASH_QUOTA_BOUNDARY_POST=0` to disable only post-reset samples, or adjust
-the default 120-second leads with `TOKDASH_QUOTA_BOUNDARY_PRE_SECONDS` and
-`TOKDASH_QUOTA_BOUNDARY_POST_SECONDS`.
+daemon poll cycles. Set `TOKEN_DASHBOARD_QUOTA_BOUNDARY_POLL=0` to disable it,
+`TOKEN_DASHBOARD_QUOTA_BOUNDARY_POST=0` to disable only post-reset samples, or adjust
+the default 120-second leads with `TOKEN_DASHBOARD_QUOTA_BOUNDARY_PRE_SECONDS` and
+`TOKEN_DASHBOARD_QUOTA_BOUNDARY_POST_SECONDS`.
 
 ## Background poll and reset-boundary sequence
 
@@ -99,18 +99,18 @@ sequenceDiagram
 
 Live polling requires two separate decisions: `quota.credential_scan` permits
 read-only access to the disclosed local credential stores, then each
-`<provider>_api` key permits that provider's network request. Tokdash reads
+`<provider>_api` key permits that provider's network request. TokenDashboard reads
 native CLI auth/config files, OpenCode's `auth.json` plus global provider
 config, active Claude settings, and CC Switch's `providers` table through a
 read-only SQLite connection. It never scans provider logs, shell profiles, or
 arbitrary `{file:...}` references. On macOS, Claude Code may require a one-time
-read-only Keychain approval. Tokdash never refreshes or writes provider
-credentials. `TOKDASH_QUOTA_POLL=0` is a hard kill switch for all quota
-tracking. `tokdash export` excludes quota data by default; use
+read-only Keychain approval. TokenDashboard never refreshes or writes provider
+credentials. `TOKEN_DASHBOARD_QUOTA_POLL=0` is a hard kill switch for all quota
+tracking. `token-dashboard export` excludes quota data by default; use
 `--include-quota` only when you intentionally want it in the JSON.
 
-`tokdash setup` offers an optional quota step (per-provider network consent,
-default No, plus the poll interval), and `tokdash doctor` reports the quota
+`token-dashboard setup` offers an optional quota step (per-provider network consent,
+default No, plus the poll interval), and `token-dashboard doctor` reports the quota
 state: master switch, per-provider consent, kill switch, effective interval and
 its source, last poll time, and the stored snapshot count.
 
@@ -118,14 +118,14 @@ its source, last poll time, and the stored snapshot count.
 
 Claude Code keeps one subscription per config directory, so a second sign-in you
 run as `CLAUDE_CONFIG_DIR=~/.claude-academic claude` is a second subscription
-with its own windows. With credential scanning consented, Tokdash reads
+with its own windows. With credential scanning consented, TokenDashboard reads
 `$CLAUDE_CONFIG_DIR` plus every `~/.claude*` directory that has its own
 `.credentials.json`, polls each one separately, and groups them inside the
 Claude Code card under the profile name the directory was set up with
 (`academic`). History keeps them apart too: `Claude-academic 5-hour` is its own
 series beside `Claude 5-hour`. An install with an expired sign-in shows its own
 notice instead of hiding a working install's numbers, and two directories
-holding the same sign-in count once. Set `TOKDASH_CLAUDE_PROFILES` to a
+holding the same sign-in count once. Set `TOKEN_DASHBOARD_CLAUDE_PROFILES` to a
 path-separated list of directories for installs that live outside your home
 directory. Usage totals needed nothing: session logs under every `~/.claude*`
 install have been counted for some time.
@@ -138,7 +138,7 @@ Credits** block the Codex card uses, with each reset's expiry, under the install
 that holds it. They arrive in the same usage request, with `?cedar_ember=1`
 added. Anthropic only lists them for Claude Code's own surface, so that
 request's User-Agent starts with Claude Code's `claude-cli/…` and then names
-`tokdash/<version>`. Tokdash only reads resets; spending one still happens in
+`token-dashboard/<version>`. TokenDashboard only reads resets; spending one still happens in
 Claude Code.
 
 ## Per-provider credential sources
@@ -173,8 +173,8 @@ Claude Code.
 
 Quota snapshots and their history live in the local usage database
 (`usage.sqlite3`, enabled by default) and are **kept indefinitely by default** —
-set `TOKDASH_QUOTA_RETENTION_DAYS` to a positive number of days to prune older
-snapshots. If you opt out of local persistence with `TOKDASH_USAGE_DB=0`, the
+set `TOKEN_DASHBOARD_QUOTA_RETENTION_DAYS` to a positive number of days to prune older
+snapshots. If you opt out of local persistence with `TOKEN_DASHBOARD_USAGE_DB=0`, the
 Quota tab loses its main data path: no snapshot history is kept, the background
 poller does not run, and the tab only shows in-memory results from a manual
 **Refresh** (network providers with consent) for the lifetime of the current

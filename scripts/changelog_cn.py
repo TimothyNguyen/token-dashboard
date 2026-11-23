@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Regenerate ``docs/development/CHANGELOG_CN.md`` from the shipped Chinese release notes.
 
-One Chinese source of truth: ``src/tokdash/static/release-notes.zh.json`` holds the
+One Chinese source of truth: ``src/token_dashboard/static/release-notes.zh.json`` holds the
 translated What's new entries, and this script writes the GitHub-rendered record that a
 release body can link to. Nothing is retyped, so the in-app view and the docs page cannot
 drift apart.
@@ -30,8 +30,8 @@ from pathlib import Path
 
 from collections import OrderedDict
 
-RELEASE_NOTES_ZH = Path("src/tokdash/static/release-notes.zh.json")
-RELEASE_NOTES_EN = Path("src/tokdash/static/release-notes.json")
+RELEASE_NOTES_ZH = Path("src/token_dashboard/static/release-notes.zh.json")
+RELEASE_NOTES_EN = Path("src/token_dashboard/static/release-notes.json")
 CHANGELOG_EN = Path("docs/development/CHANGELOG.md")
 CHANGELOG_CN = Path("docs/development/CHANGELOG_CN.md")
 
@@ -45,13 +45,13 @@ HEADING_PATTERN = re.compile(r"^## (\d+\.\d+\.\d+) - (\d{4}-\d{2}-\d{2})\s*$")
 REF_GROUP = re.compile(r"\(([^()]*(?:#\d+)[^()]*)\)\s*$")
 NON_PR_KEYWORD = re.compile(r"^(?:closes?|fix(?:e[sd])?|resolve[sd]?|reported|via|see)\b", re.IGNORECASE)
 BARE_REF = re.compile(r"^#(\d+)$")
-ENGLISH_LINK = "https://github.com/JingbiaoMei/Tokdash/blob/main/docs/development/CHANGELOG.md"
+ENGLISH_LINK = "https://github.com/TimothyNguyen/token-dashboard/blob/main/docs/development/CHANGELOG.md"
 
 HEADER = """\
 # 更新日志（简体中文）
 
 本页面由 `scripts/changelog_cn.py` 生成，内容来自应用内“更新日志”所用的
-`src/tokdash/static/release-notes.zh.json`，请勿手工编辑。
+`src/token_dashboard/static/release-notes.zh.json`，请勿手工编辑。
 
 - 中文条目面向使用者；每一条改动背后的完整实现推理仍记录在英文
   [CHANGELOG.md]({english_link})，本页面在每节末尾附上对应的 PR。

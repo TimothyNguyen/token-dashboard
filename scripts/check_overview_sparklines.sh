@@ -4,14 +4,14 @@ set -uo pipefail
 
 baseline=${1:?Usage: scripts/check_overview_sparklines.sh BASELINE_CHECKOUT [OUTPUT_DIR]}
 output_dir=${2:-output/sparkline-validation/year-full}
-backend_repeats=${TOKDASH_BENCH_REPEATS:-96}
-browser_repeats=${TOKDASH_BROWSER_BENCH_REPEATS:-32}
-regular_rows=${TOKDASH_BENCH_REGULAR_ROWS:-300}
-dense_rows=${TOKDASH_BENCH_DENSE_ROWS:-1500}
-python_bin=${TOKDASH_BENCH_PYTHON:-python3}
-browser_python=${TOKDASH_BROWSER_PYTHON:-/home/howard/anaconda3/envs/webapptest/bin/python}
+backend_repeats=${TOKEN_DASHBOARD_BENCH_REPEATS:-96}
+browser_repeats=${TOKEN_DASHBOARD_BROWSER_BENCH_REPEATS:-32}
+regular_rows=${TOKEN_DASHBOARD_BENCH_REGULAR_ROWS:-300}
+dense_rows=${TOKEN_DASHBOARD_BENCH_DENSE_ROWS:-1500}
+python_bin=${TOKEN_DASHBOARD_BENCH_PYTHON:-python3}
+browser_python=${TOKEN_DASHBOARD_BROWSER_PYTHON:-/home/howard/anaconda3/envs/webapptest/bin/python}
 cpu_args=()
-if [[ -n ${TOKDASH_BENCH_CPU:-} ]]; then cpu_args=(--cpu "$TOKDASH_BENCH_CPU"); fi
+if [[ -n ${TOKEN_DASHBOARD_BENCH_CPU:-} ]]; then cpu_args=(--cpu "$TOKEN_DASHBOARD_BENCH_CPU"); fi
 
 mkdir -p "$output_dir"
 printf 'Running complete tests before timing either version.\n'

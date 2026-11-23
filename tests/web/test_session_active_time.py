@@ -3,8 +3,8 @@ from datetime import datetime, timezone
 
 import pytest
 
-from tokdash import sessions
-from tokdash.sessions import (
+from token_dashboard import sessions
+from token_dashboard.sessions import (
     ACTIVE_GAP_CAP_MS_DEFAULT,
     _active_intervals,
     _measured_intervals,
@@ -129,7 +129,7 @@ def test_summarize_session_window_clips_active_time():
 
 
 def test_active_gap_cap_env_override(monkeypatch):
-    monkeypatch.setenv("TOKDASH_ACTIVE_GAP_CAP_SECONDS", "60")
+    monkeypatch.setenv("TOKEN_DASHBOARD_ACTIVE_GAP_CAP_SECONDS", "60")
     assert active_gap_cap_ms() == MINUTE
 
     summary = _summarize_session(_raw("s1", [0, 3 * HOUR]))
@@ -143,14 +143,14 @@ def test_active_gap_cap_env_override(monkeypatch):
     ["", "0", "-5", "not-a-number", "nan", "NaN", "inf", "-inf", "Infinity"],
 )
 def test_active_gap_cap_env_falls_back_on_bad_values(monkeypatch, value):
-    monkeypatch.setenv("TOKDASH_ACTIVE_GAP_CAP_SECONDS", value)
+    monkeypatch.setenv("TOKEN_DASHBOARD_ACTIVE_GAP_CAP_SECONDS", value)
     assert active_gap_cap_ms() == ACTIVE_GAP_CAP_MS_DEFAULT
 
 
 @pytest.mark.parametrize("value", ["nan", "inf"])
 def test_non_finite_gap_cap_still_serves_sessions(monkeypatch, value):
     """A bad env value must not break the response it feeds."""
-    monkeypatch.setenv("TOKDASH_ACTIVE_GAP_CAP_SECONDS", value)
+    monkeypatch.setenv("TOKEN_DASHBOARD_ACTIVE_GAP_CAP_SECONDS", value)
     monkeypatch.setattr(sessions, "_raw_sessions_for_tool", lambda *a, **k: {"a": _raw("a", [0, MINUTE])})
 
     data = get_sessions_data("codex", "all")
@@ -159,7 +159,7 @@ def test_non_finite_gap_cap_still_serves_sessions(monkeypatch, value):
 
 
 def test_active_gap_cap_env_is_clamped(monkeypatch):
-    monkeypatch.setenv("TOKDASH_ACTIVE_GAP_CAP_SECONDS", "999999")
+    monkeypatch.setenv("TOKEN_DASHBOARD_ACTIVE_GAP_CAP_SECONDS", "999999")
     assert active_gap_cap_ms() == 6 * 60 * 60 * 1000
 
 
@@ -297,7 +297,7 @@ def test_prior_event_seeds_the_first_in_window_interval():
 
 def test_summary_reports_the_estimate_contract():
     monkeypatched = {"a": _raw("a", [0, MINUTE])}
-    import tokdash.sessions as sessions_module
+    import token_dashboard.sessions as sessions_module
 
     original = sessions_module._raw_sessions_for_tool
     sessions_module._raw_sessions_for_tool = lambda *a, **k: monkeypatched
@@ -317,11 +317,11 @@ import json  # noqa: E402
 import re  # noqa: E402
 from pathlib import Path  # noqa: E402
 
-import tokdash  # noqa: E402
+import token_dashboard  # noqa: E402
 
 from support.frontend import extract_js_function, index_source, needs_node, run_node  # noqa: E402
 
-INDEX_HTML = Path(tokdash.__file__).parent / "static" / "index.html"
+INDEX_HTML = Path(token_dashboard.__file__).parent / "static" / "index.html"
 SESSION_PANELS = (*sessions.SESSION_TOOLS, "combined")
 
 

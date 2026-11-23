@@ -1,18 +1,18 @@
 <!--
-Archived README (中文) — Tokdash v0.6.2.
+Archived README (中文) — TokenDashboard v0.6.2.
 Preserved verbatim before the v1.0.0 documentation rewrite (Python-native onboarding).
 For current usage see the top-level README_CN.md; for the rewrite plan see
 docs/local/20260620_python_onboard/PYTHON_ONBOARD_PLAN.md.
 -->
 
-> **存档快照 — Tokdash v0.6.2。** 在 v1.0.0 README 重写之前保留以供参考。
+> **存档快照 — TokenDashboard v0.6.2。** 在 v1.0.0 README 重写之前保留以供参考。
 
 <p align="center">
   <a href="README.md">English</a> &nbsp;|&nbsp; <a href="README_CN.md">中文</a>
 </p>
 
 <p align="center">
-  <a href="https://tokdash.github.io/"><img src="https://raw.githubusercontent.com/JingbiaoMei/tokdash/main/docs/assets/tokdash_logo_full.png" alt="Tokdash" width="420" /></a>
+  <a href="https://token-dashboard.github.io/"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/token-dashboard_logo_full.png" alt="TokenDashboard" width="420" /></a>
 </p>
 
 <p align="center">
@@ -20,27 +20,27 @@ docs/local/20260620_python_onboard/PYTHON_ONBOARD_PLAN.md.
 </p>
 
 <p align="center">
-  <a href="https://opencode.ai/" title="OpenCode"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/opencode.png" alt="OpenCode" height="34"></a>
-  <a href="https://openai.com/codex/" title="Codex"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/codex.png" alt="Codex" height="34"></a>
-  <a href="https://www.claude.com/product/claude-code" title="Claude Code"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/claude.png" alt="Claude Code" height="34"></a>
-  <a href="https://github.com/google-gemini/gemini-cli" title="Gemini CLI"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/gemini.png" alt="Gemini CLI" height="34"></a>
-  <a href="https://openclaw.ai/" title="OpenClaw"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/openclaw.png" alt="OpenClaw" height="34"></a>
-  <a href="https://github.com/MoonshotAI/kimi-cli" title="Kimi CLI"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/kimi.png" alt="Kimi CLI" height="34"></a>
-  <a href="https://pi.dev/" title="Pi"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/pi.png" alt="Pi" height="34"></a>
-  <a href="https://github.com/features/copilot" title="GitHub Copilot CLI"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/copilot.png" alt="GitHub Copilot CLI" height="34"></a>
-  <a href="https://hermes-agent.nousresearch.com/" title="Hermes"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/hermes.png" alt="Hermes" height="34"></a>
+  <a href="https://opencode.ai/" title="OpenCode"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/opencode.png" alt="OpenCode" height="34"></a>
+  <a href="https://openai.com/codex/" title="Codex"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/codex.png" alt="Codex" height="34"></a>
+  <a href="https://www.claude.com/product/claude-code" title="Claude Code"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/claude.png" alt="Claude Code" height="34"></a>
+  <a href="https://github.com/google-gemini/gemini-cli" title="Gemini CLI"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/gemini.png" alt="Gemini CLI" height="34"></a>
+  <a href="https://openclaw.ai/" title="OpenClaw"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/openclaw.png" alt="OpenClaw" height="34"></a>
+  <a href="https://github.com/MoonshotAI/kimi-cli" title="Kimi CLI"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/kimi.png" alt="Kimi CLI" height="34"></a>
+  <a href="https://pi.dev/" title="Pi"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/pi.png" alt="Pi" height="34"></a>
+  <a href="https://github.com/features/copilot" title="GitHub Copilot CLI"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/copilot.png" alt="GitHub Copilot CLI" height="34"></a>
+  <a href="https://hermes-agent.nousresearch.com/" title="Hermes"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/hermes.png" alt="Hermes" height="34"></a>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white" alt="FastAPI" />
   <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white" alt="Python" />
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat" alt="License" />
-  <a href="https://tokdash.github.io/"><img src="https://img.shields.io/badge/%E5%AE%98%E7%BD%91-tokdash.github.io-1E40AF?style=flat&logo=githubpages&logoColor=white" alt="官网" /></a>
-  <a href="https://tokdash.github.io/demo/"><img src="https://img.shields.io/badge/%E5%9C%A8%E7%BA%BF%E4%BD%93%E9%AA%8C-tokdash.github.io%2Fdemo-F59E0B?style=flat&logo=githubpages&logoColor=white" alt="在线体验" /></a>
+  <a href="https://token-dashboard.github.io/"><img src="https://img.shields.io/badge/%E5%AE%98%E7%BD%91-token-dashboard.github.io-1E40AF?style=flat&logo=githubpages&logoColor=white" alt="官网" /></a>
+  <a href="https://token-dashboard.github.io/demo/"><img src="https://img.shields.io/badge/%E5%9C%A8%E7%BA%BF%E4%BD%93%E9%AA%8C-token-dashboard.github.io%2Fdemo-F59E0B?style=flat&logo=githubpages&logoColor=white" alt="在线体验" /></a>
 </p>
 
 <p align="center">
-  <b>无需安装即可体验 → <a href="https://tokdash.github.io/demo/">tokdash.github.io/demo</a></b>
+  <b>无需安装即可体验 → <a href="https://token-dashboard.github.io/demo/">token_dashboard.github.io/demo</a></b>
 </p>
 
 <p align="center">
@@ -48,7 +48,7 @@ docs/local/20260620_python_onboard/PYTHON_ONBOARD_PLAN.md.
 </p>
 
 > [!IMPORTANT]
-> **保留你的历史：** Claude Code 与 Gemini CLI 默认会删除超过约 30 天的本地会话，因此 Tokdash 早期月份的统计可能会悄悄变少——每个客户端改一行配置即可避免（[历史数据保留](#历史数据保留)）。
+> **保留你的历史：** Claude Code 与 Gemini CLI 默认会删除超过约 30 天的本地会话，因此 TokenDashboard 早期月份的统计可能会悄悄变少——每个客户端改一行配置即可避免（[历史数据保留](#历史数据保留)）。
 
 ## 目录
 
@@ -79,22 +79,22 @@ docs/local/20260620_python_onboard/PYTHON_ONBOARD_PLAN.md.
 - **PWA 支持**：可作为渐进式 Web 应用安装
 
 <p align="center">
-  <a href="https://tokdash.github.io/demo/">
-    <img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/demo.png" alt="Tokdash 仪表盘 — 点击体验在线 Demo" width="900" />
+  <a href="https://token-dashboard.github.io/demo/">
+    <img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/demo.png" alt="TokenDashboard 仪表盘 — 点击体验在线 Demo" width="900" />
   </a>
 </p>
 <p align="center">
-  <a href="https://tokdash.github.io/demo/">
-    <img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/demo-stats.png" alt="Tokdash 统计与热力图 — 点击体验在线 Demo" width="900" />
+  <a href="https://token-dashboard.github.io/demo/">
+    <img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/demo-stats.png" alt="TokenDashboard 统计与热力图 — 点击体验在线 Demo" width="900" />
   </a>
 </p>
 
 ## 在线 Demo
 
-仪表盘的静态在线版本：**[tokdash.github.io/demo](https://tokdash.github.io/demo/)**，
-无需安装即可体验。（项目官网为 **[tokdash.github.io](https://tokdash.github.io/)**。）
+仪表盘的静态在线版本：**[token_dashboard.github.io/demo](https://token-dashboard.github.io/demo/)**，
+无需安装即可体验。（项目官网为 **[token_dashboard.github.io](https://token-dashboard.github.io/)**。）
 
-Demo 使用未经修改的 Tokdash 前端，配合浏览器内的 Mock 层返回确定性的合成数据。
+Demo 使用未经修改的 TokenDashboard 前端，配合浏览器内的 Mock 层返回确定性的合成数据。
 你可以：
 
 - 切换 Overview / Sessions / Stats / Pricing 各页签，
@@ -103,7 +103,7 @@ Demo 使用未经修改的 Tokdash 前端，配合浏览器内的 Mock 层返回
 - 进入 Codex / Claude Code / OpenCode 的合成会话查看明细，
 - 浏览只读的定价数据库。
 
-Demo 源码：[tokdash/tokdash.github.io](https://github.com/tokdash/tokdash.github.io)。
+Demo 源码：[token-dashboard/token-dashboard.github.io](https://github.com/token-dashboard/token-dashboard.github.io)。
 不会上传任何数据，也不会读取你本地的任何文件。
 
 ## 平台支持
@@ -121,16 +121,16 @@ Demo 源码：[tokdash/tokdash.github.io](https://github.com/tokdash/tokdash.git
 ### 安装（pip）
 
 ```bash
-pip install tokdash
-tokdash serve
+pip install token-dashboard
+token-dashboard serve
 ```
 
 打开：`http://localhost:55423`
 
 如果端口冲突：
-- `tokdash serve --port <port>`
+- `token-dashboard serve --port <port>`
 
-如果你想从其他设备访问 Tokdash（推荐）：
+如果你想从其他设备访问 TokenDashboard（推荐）：
 - Tailscale Serve（仅对你的 tailnet 可见）：`tailscale serve 55423`
 - SSH 端口转发：`ssh -L 55423:127.0.0.1:55423 <user>@<host>`
 
@@ -148,8 +148,8 @@ tokdash serve
 把下面这段提示词复制给你的 LLM 代理（Claude Code、AmpCode、Cursor 等）：
 
 ```text
-Install and configure Tokdash to run in the background by following the instructions here:
-https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/agents/systemd/AGENTS.md
+Install and configure TokenDashboard to run in the background by following the instructions here:
+https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/agents/systemd/AGENTS.md
 
 Or read the Background Run guide, but seriously, let an agent do it.
 ```
@@ -159,24 +159,24 @@ Or read the Background Run guide, but seriously, let an agent do it.
 拉取安装指南并按照其说明执行：
 
 ```bash
-curl -s https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/agents/systemd/AGENTS.md
+curl -s https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/agents/systemd/AGENTS.md
 ```
 
-### 更新 Tokdash
+### 更新 TokenDashboard
 
-如果你是通过 pip 安装 Tokdash，并通过 systemd 运行它：
+如果你是通过 pip 安装 TokenDashboard，并通过 systemd 运行它：
 
 ```bash
 # 1. 升级包
-pip install --upgrade tokdash
+pip install --upgrade token-dashboard
 
 # 2. 重启 systemd 服务以加载新版本
 systemctl --user daemon-reload
-systemctl --user restart tokdash
+systemctl --user restart token-dashboard
 
 # 3. 验证新版本
-pip show tokdash | grep Version
-systemctl --user status tokdash --no-pager
+pip show token-dashboard | grep Version
+systemctl --user status token-dashboard --no-pager
 
 # 4. 测试 API 是否正常响应
 curl 'http://127.0.0.1:55423/api/usage?period=today'
@@ -185,20 +185,20 @@ curl 'http://127.0.0.1:55423/api/usage?period=today'
 如需查看日志：
 
 ```bash
-journalctl --user -u tokdash -f
+journalctl --user -u token-dashboard -f
 ```
 
 ### OpenClaw 摘要（定时报表）
 
-Tokdash 可以通过定时查询本地 API，生成 OpenClaw 的日报 / 周报 / 月报。
+TokenDashboard 可以通过定时查询本地 API，生成 OpenClaw 的日报 / 周报 / 月报。
 
 #### 面向人类用户
 
 把下面这段提示词复制给你的 LLM 代理（Claude Code、AmpCode、Cursor 等）：
 
 ```text
-Install and configure scheduled Tokdash usage reports for OpenClaw by following the instructions here:
-https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/agents/openclaw_reporting/AGENTS.md
+Install and configure scheduled TokenDashboard usage reports for OpenClaw by following the instructions here:
+https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/agents/openclaw_reporting/AGENTS.md
 
 Or read the guide yourself, but seriously, let an agent do it.
 ```
@@ -208,75 +208,75 @@ Or read the guide yourself, but seriously, let an agent do it.
 拉取安装指南并按照其说明执行：
 
 ```bash
-curl -s https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/agents/openclaw_reporting/AGENTS.md
+curl -s https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/agents/openclaw_reporting/AGENTS.md
 ```
 
 ### 状态栏集成（Statusline integration）
 
 本地 API 可为编程 Agent（如 Claude Code）提供实时 token/费用状态栏。把下面这段提示词发给你的 Agent：
 
-> *"I would like to add a statusline item from the tokdash endpoint's API; it should show the total tokens used today."*
+> *"I would like to add a statusline item from the token-dashboard endpoint's API; it should show the total tokens used today."*
 
 再把 [`docs/API.md`](docs/API.md) 作为参考一起给它，剩下的让 Agent 自行接入即可。
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/demo-statusline.png" alt="Tokdash 状态栏集成示例" width="900" />
+  <img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/demo-statusline.png" alt="TokenDashboard 状态栏集成示例" width="900" />
 </p>
 
 ## 配置
 
-Tokdash 默认**只监听 localhost**。
+TokenDashboard 默认**只监听 localhost**。
 
-- `TOKDASH_HOST`（默认：`127.0.0.1`）
-- `TOKDASH_PORT`（默认：`55423`）
-- `TOKDASH_CACHE_TTL`（默认：`120` 秒）
-- `TOKDASH_COMPUTE_CONCURRENCY`（默认：`2`）——同时进行的重型历史重解析数量上限；超出的冷请求会立即返回 `503`，而不是在高负载下耗尽服务线程
-- `TOKDASH_LIMIT_CONCURRENCY`（默认：`64`）——uvicorn 接受的最大并发连接数（背压）
-- `TOKDASH_KEEPALIVE`（默认：`5` 秒）——uvicorn keep-alive 超时
-- `TOKDASH_ALLOW_ORIGINS`（逗号分隔，默认：空）
-- `TOKDASH_ALLOW_ORIGIN_REGEX`（默认仅允许 localhost/127.0.0.1）
-- `TOKDASH_NO_RETENTION_NOTICE`（设为 `1` 可静默 `tokdash serve` 启动时打印的历史保留提醒）
+- `TOKEN_DASHBOARD_HOST`（默认：`127.0.0.1`）
+- `TOKEN_DASHBOARD_PORT`（默认：`55423`）
+- `TOKEN_DASHBOARD_CACHE_TTL`（默认：`120` 秒）
+- `TOKEN_DASHBOARD_COMPUTE_CONCURRENCY`（默认：`2`）——同时进行的重型历史重解析数量上限；超出的冷请求会立即返回 `503`，而不是在高负载下耗尽服务线程
+- `TOKEN_DASHBOARD_LIMIT_CONCURRENCY`（默认：`64`）——uvicorn 接受的最大并发连接数（背压）
+- `TOKEN_DASHBOARD_KEEPALIVE`（默认：`5` 秒）——uvicorn keep-alive 超时
+- `TOKEN_DASHBOARD_ALLOW_ORIGINS`（逗号分隔，默认：空）
+- `TOKEN_DASHBOARD_ALLOW_ORIGIN_REGEX`（默认仅允许 localhost/127.0.0.1）
+- `TOKEN_DASHBOARD_NO_RETENTION_NOTICE`（设为 `1` 可静默 `token-dashboard serve` 启动时打印的历史保留提醒）
 
 持久化使用量数据库（默认开启）：
 
-Tokdash 默认会在 `~/.tokdash/usage.sqlite3` 维护一个本地 SQLite 索引。它保存解析后的 token 行以及 Codex/Claude 会话摘要，让仪表盘和 API 的重复读取可以走索引 SQL，而不是每次重新解析所有源日志。源日志仍然是事实来源；这个 DB 是本地性能索引，禁用或不可用时 Tokdash 会回退到实时解析。
+TokenDashboard 默认会在 `~/.token-dashboard/usage.sqlite3` 维护一个本地 SQLite 索引。它保存解析后的 token 行以及 Codex/Claude 会话摘要，让仪表盘和 API 的重复读取可以走索引 SQL，而不是每次重新解析所有源日志。源日志仍然是事实来源；这个 DB 是本地性能索引，禁用或不可用时 TokenDashboard 会回退到实时解析。
 
-- `TOKDASH_USAGE_DB`（默认：`1`）——设为 `0`、`false`、`no` 或 `off` 可禁用持久化使用量 DB
-- `TOKDASH_DATA_DIR`（默认：`~/.tokdash`）——Tokdash 本地状态目录
-- `TOKDASH_USAGE_DB_PATH`（默认：`$TOKDASH_DATA_DIR/usage.sqlite3`）——显式指定 SQLite 文件路径
-- `TOKDASH_USAGE_DB_DURABLE`（默认：`1`）——当源文件临时消失或解析器返回空结果时保留已索引行；设为 `0` 则严格按源文件替换
-- `TOKDASH_USAGE_DB_WATCH`（默认：`0`）——设为 `1` 后，`tokdash serve` 内部会启动后台同步循环
-- `TOKDASH_USAGE_DB_WATCH_INTERVAL`（默认：`30` 秒）——`tokdash db watch` 和 serve-time watch 循环的同步间隔
+- `TOKEN_DASHBOARD_USAGE_DB`（默认：`1`）——设为 `0`、`false`、`no` 或 `off` 可禁用持久化使用量 DB
+- `TOKEN_DASHBOARD_DATA_DIR`（默认：`~/.token-dashboard`）——TokenDashboard 本地状态目录
+- `TOKEN_DASHBOARD_USAGE_DB_PATH`（默认：`$TOKEN_DASHBOARD_DATA_DIR/usage.sqlite3`）——显式指定 SQLite 文件路径
+- `TOKEN_DASHBOARD_USAGE_DB_DURABLE`（默认：`1`）——当源文件临时消失或解析器返回空结果时保留已索引行；设为 `0` 则严格按源文件替换
+- `TOKEN_DASHBOARD_USAGE_DB_WATCH`（默认：`0`）——设为 `1` 后，`token-dashboard serve` 内部会启动后台同步循环
+- `TOKEN_DASHBOARD_USAGE_DB_WATCH_INTERVAL`（默认：`30` 秒）——`token-dashboard db watch` 和 serve-time watch 循环的同步间隔
 
 DB 维护命令：
 
 ```bash
-tokdash db status --pretty
-tokdash db sync --pretty
-tokdash db verify --verify-period today --pretty
-tokdash db repair --dry-run --pretty
-tokdash db resync --pretty
-tokdash db watch --pretty
+token-dashboard db status --pretty
+token-dashboard db sync --pretty
+token-dashboard db verify --verify-period today --pretty
+token-dashboard db repair --dry-run --pretty
+token-dashboard db resync --pretty
+token-dashboard db watch --pretty
 ```
 
 示例（通过 Tailscale Serve 远程访问，推荐）：
 
 ```bash
-tokdash serve --bind 127.0.0.1 --port 55423
+token-dashboard serve --bind 127.0.0.1 --port 55423
 tailscale serve --bg 55423
 ```
 
-默认情况下，`tokdash serve` 会在启动时自动在浏览器中打开仪表盘一次。使用 `--no-open` 可禁用此行为（在无界面/SSH 环境以及后台服务模板中也会自动跳过）。
+默认情况下，`token-dashboard serve` 会在启动时自动在浏览器中打开仪表盘一次。使用 `--no-open` 可禁用此行为（在无界面/SSH 环境以及后台服务模板中也会自动跳过）。
 
 ## 隐私与安全
 
-- **无遥测**：Tokdash 不会主动把你的数据发送到任何地方。
+- **无遥测**：TokenDashboard 不会主动把你的数据发送到任何地方。
 - **本地解析**：使用量由本机会话文件计算得出（见[支持的客户端](docs/SUPPORTED_CLIENTS.md)）。
-- **服务暴露**：Tokdash 默认绑定 `127.0.0.1`。如需远程访问，优先使用 Tailscale Serve 或 SSH 隧道；除非你明确知道风险并配置好了防火墙/认证，否则不要使用 `--bind 0.0.0.0`。
+- **服务暴露**：TokenDashboard 默认绑定 `127.0.0.1`。如需远程访问，优先使用 Tailscale Serve 或 SSH 隧道；除非你明确知道风险并配置好了防火墙/认证，否则不要使用 `--bind 0.0.0.0`。
 
 ## API（本地）
 
-Tokdash 是一个本地 HTTP 服务。常用接口：
+TokenDashboard 是一个本地 HTTP 服务。常用接口：
 
 - `GET /api/usage?period=today|week|month|N`
 - `GET /api/usage?date_from=YYYY-MM-DD&date_to=YYYY-MM-DD`
@@ -295,11 +295,11 @@ curl 'http://127.0.0.1:55423/api/usage?period=today'
 
 ## 费用精度说明
 
-Token 统计依赖各客户端本地记录的内容。费用由 `src/tokdash/pricing_db.json` 计算，可能滞后于真实服务商价格。如金额敏感，请以你的账单来源为准。
+Token 统计依赖各客户端本地记录的内容。费用由 `src/token_dashboard/pricing_db.json` 计算，可能滞后于真实服务商价格。如金额敏感，请以你的账单来源为准。
 
 ## 历史数据保留
 
-Tokdash 通过读取各客户端的**本地**会话日志来统计用量，同时也维护一个本地 SQLite 性能索引。这个索引可以保留 Tokdash 已经见过的行，但无法恢复在索引前就被删除的日志，也不能替代原始客户端历史。如果客户端在 Tokdash 同步前删除了旧日志，过去某个月的统计仍然**可能比你最初记录时更低**。只有两个受支持的客户端会默认这样做，且都只需改一行配置：
+TokenDashboard 通过读取各客户端的**本地**会话日志来统计用量，同时也维护一个本地 SQLite 性能索引。这个索引可以保留 TokenDashboard 已经见过的行，但无法恢复在索引前就被删除的日志，也不能替代原始客户端历史。如果客户端在 TokenDashboard 同步前删除了旧日志，过去某个月的统计仍然**可能比你最初记录时更低**。只有两个受支持的客户端会默认这样做，且都只需改一行配置：
 
 - **Claude Code** 会在启动时删除超过 `cleanupPeriodDays`（**默认 30 天**）的会话。请把这个键添加到你现有的 `~/.claude/settings.json`（以及任何其他 `CLAUDE_CONFIG_DIR`）：
   ```json
@@ -324,11 +324,11 @@ Tokdash 通过读取各客户端的**本地**会话日志来统计用量，同�
 ## 项目结构
 
 ```text
-tokdash/
+token-dashboard/
 ├── main.py                 # 源码入口（python3 main.py）
-├── tokdash                 # CLI 包装器（./tokdash serve）
+├── token-dashboard                 # CLI 包装器（./token-dashboard serve）
 ├── src/
-│   └── tokdash/
+│   └── token-dashboard/
 │       ├── cli.py
 │       ├── api.py                # FastAPI 路由 / 应用
 │       ├── compute.py            # 聚合 / 合并逻辑

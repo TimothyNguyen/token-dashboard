@@ -30,14 +30,14 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-from tokdash import compute, sessions, store_logging
-from tokdash.api import app
-from tokdash.sources import coding_tools, openclaw
-from tokdash.usage_store import SCHEMA_VERSION, UsageDatabaseSchemaTooNewError, UsageEntryStore
+from token_dashboard import compute, sessions, store_logging
+from token_dashboard.api import app
+from token_dashboard.sources import coding_tools, openclaw
+from token_dashboard.usage_store import SCHEMA_VERSION, UsageDatabaseSchemaTooNewError, UsageEntryStore
 
-WARNING_TEXT = "tokdash persistent usage cache failed"
-OPENCLAW_WARNING_TEXT = "tokdash persistent openclaw cache failed"
-SESSION_WARNING_TEXT = "tokdash persistent session cache failed"
+WARNING_TEXT = "token_dashboard persistent usage cache failed"
+OPENCLAW_WARNING_TEXT = "token_dashboard persistent openclaw cache failed"
+SESSION_WARNING_TEXT = "token_dashboard persistent session cache failed"
 
 
 @pytest.fixture(autouse=True)
@@ -95,26 +95,26 @@ def _write_claude_session(home: Path, stem: str = "s1") -> Path:
 
 @pytest.fixture
 def corrupt_db_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    data_dir = tmp_path / "tokdash_data"
+    data_dir = tmp_path / "token_dashboard_data"
     data_dir.mkdir(parents=True, exist_ok=True)
     db_file = data_dir / "usage.sqlite3"
     db_file.write_bytes(b"not a valid sqlite database header\n" * 20)
 
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(data_dir))
-    monkeypatch.setenv("TOKDASH_USAGE_DB_PATH", str(db_file))
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_PATH", str(db_file))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     return db_file
 
 
 @pytest.fixture
 def healthy_db_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    data_dir = tmp_path / "tokdash_data"
+    data_dir = tmp_path / "token_dashboard_data"
     data_dir.mkdir(parents=True, exist_ok=True)
     db_file = data_dir / "usage.sqlite3"
 
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(data_dir))
-    monkeypatch.setenv("TOKDASH_USAGE_DB_PATH", str(db_file))
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_PATH", str(db_file))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
 
     store = UsageEntryStore(db_file)
     store.status()
@@ -138,7 +138,7 @@ def test_a_fallback_response_is_shaped_like_a_healthy_one(
     -- "no usage-db in source_errors" on its own would still pass if the
     fallback had quietly dropped every other field too.
     """
-    data_dir = tmp_path / "tokdash_data"
+    data_dir = tmp_path / "token_dashboard_data"
     data_dir.mkdir(parents=True, exist_ok=True)
     corrupt = data_dir / "corrupt.sqlite3"
     corrupt.write_bytes(b"not a valid sqlite database header\n" * 20)
@@ -150,14 +150,14 @@ def test_a_fallback_response_is_shaped_like_a_healthy_one(
     # whether the machine running the suite has any usage history.
     _write_claude_session(Path.home())
 
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(data_dir))
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
 
-    monkeypatch.setenv("TOKDASH_USAGE_DB_PATH", str(corrupt))
-    with caplog.at_level(logging.WARNING, logger="tokdash.compute"):
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_PATH", str(corrupt))
+    with caplog.at_level(logging.WARNING, logger="token_dashboard.compute"):
         fallback = compute.get_tools_data_for_range(None, None)
 
-    monkeypatch.setenv("TOKDASH_USAGE_DB_PATH", str(healthy))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_PATH", str(healthy))
     healthy_payload = compute.get_tools_data_for_range(None, None)
 
     assert set(fallback) == set(healthy_payload)
@@ -229,7 +229,7 @@ def test_run_local_coding_tools_json_keeps_its_return_shape(healthy_db_env: Path
 def test_a_broken_store_is_warned_about_once_across_repeated_requests(
     corrupt_db_env: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
-    with caplog.at_level(logging.DEBUG, logger="tokdash.compute"):
+    with caplog.at_level(logging.DEBUG, logger="token_dashboard.compute"):
         for _ in range(3):
             compute.get_tools_data_for_range(None, None)
 
@@ -250,14 +250,14 @@ def test_each_kind_of_failure_is_reported_separately(
         raise sqlite3.OperationalError("database is locked")
 
     monkeypatch.setattr(compute, "_sync_usage_store", _locked)
-    with caplog.at_level(logging.WARNING, logger="tokdash.compute"):
+    with caplog.at_level(logging.WARNING, logger="token_dashboard.compute"):
         compute.get_tools_data_for_range(None, None)
 
     def _overflow(*args: Any, **kwargs: Any) -> Any:
         raise OverflowError("Python int too large to convert to SQLite INTEGER")
 
     monkeypatch.setattr(compute, "_sync_usage_store", _overflow)
-    with caplog.at_level(logging.WARNING, logger="tokdash.compute"):
+    with caplog.at_level(logging.WARNING, logger="token_dashboard.compute"):
         compute.get_tools_data_for_range(None, None)
 
     messages = [r.getMessage() for r in _warnings(caplog)]
@@ -266,7 +266,7 @@ def test_each_kind_of_failure_is_reported_separately(
 
 
 def test_a_healthy_store_logs_nothing(healthy_db_env: Path, caplog: pytest.LogCaptureFixture) -> None:
-    with caplog.at_level(logging.DEBUG, logger="tokdash.compute"):
+    with caplog.at_level(logging.DEBUG, logger="token_dashboard.compute"):
         compute.get_tools_data_for_range(None, None)
         compute.run_local_coding_tools_json(["--today"])
         compute.get_tools_contributions_for_range(None, None)
@@ -277,10 +277,10 @@ def test_a_healthy_store_logs_nothing(healthy_db_env: Path, caplog: pytest.LogCa
 def test_a_disabled_store_logs_nothing(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
 ) -> None:
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path))
 
-    with caplog.at_level(logging.DEBUG, logger="tokdash.compute"):
+    with caplog.at_level(logging.DEBUG, logger="token_dashboard.compute"):
         compute.get_tools_data_for_range(None, None)
 
     assert WARNING_TEXT not in caplog.text
@@ -289,10 +289,10 @@ def test_a_disabled_store_logs_nothing(
 def test_openclaw_logs_the_failure_and_falls_back(
     corrupt_db_env: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
-    with caplog.at_level(logging.WARNING, logger="tokdash.sources.openclaw"):
+    with caplog.at_level(logging.WARNING, logger="token_dashboard.sources.openclaw"):
         usage = openclaw.get_usage_for_range(None, None)
 
-    assert "tokdash persistent openclaw cache failed; falling back to session logs" in caplog.text
+    assert "token_dashboard persistent openclaw cache failed; falling back to session logs" in caplog.text
     assert "total_tokens" in usage
     assert "models" in usage
 
@@ -300,10 +300,10 @@ def test_openclaw_logs_the_failure_and_falls_back(
 def test_contributions_log_the_failure_and_fall_back(
     corrupt_db_env: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
-    with caplog.at_level(logging.WARNING, logger="tokdash.compute"):
+    with caplog.at_level(logging.WARNING, logger="token_dashboard.compute"):
         contributions = compute.get_tools_contributions_for_range(None, None)
 
-    assert "tokdash persistent usage cache failed for contributions" in caplog.text
+    assert "token_dashboard persistent usage cache failed for contributions" in caplog.text
     assert isinstance(contributions, list)
 
 
@@ -316,7 +316,7 @@ def test_schema_too_new_still_raises_terminal_error(
     """A newer database is not a sick cache: it never heals, so it must not be
     swallowed into the live fallback -- for the same reason it is not in the
     once-per-process report."""
-    data_dir = tmp_path / "tokdash_data"
+    data_dir = tmp_path / "token_dashboard_data"
     data_dir.mkdir(parents=True, exist_ok=True)
     db_file = data_dir / "usage.sqlite3"
 
@@ -326,9 +326,9 @@ def test_schema_too_new_still_raises_terminal_error(
     conn.commit()
     conn.close()
 
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(data_dir))
-    monkeypatch.setenv("TOKDASH_USAGE_DB_PATH", str(db_file))
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_PATH", str(db_file))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
 
     with pytest.raises(UsageDatabaseSchemaTooNewError):
         compute.get_tools_data_for_range(None, None)
@@ -351,7 +351,7 @@ def test_the_session_cache_stops_repeating_itself_on_every_request(
     database put 45 of them in the journal per refresh -- the flood the
     once-per-process rule exists to prevent.
     """
-    with caplog.at_level(logging.DEBUG, logger="tokdash.sessions"):
+    with caplog.at_level(logging.DEBUG, logger="token_dashboard.sessions"):
         for _ in range(3):
             sessions._raw_sessions_for_tool("codex")
 
@@ -372,7 +372,7 @@ def test_each_unreadable_tool_is_reported_separately(
     into whichever tool happened to fail first; deduplicating on the site alone
     would lose that.
     """
-    with caplog.at_level(logging.WARNING, logger="tokdash.sessions"):
+    with caplog.at_level(logging.WARNING, logger="token_dashboard.sessions"):
         for tool in ("codex", "claude"):
             sessions._raw_sessions_for_tool(tool)
 
@@ -423,12 +423,12 @@ def test_a_caller_that_varies_its_message_still_logs_once(
     silently, because the per-tool test would still pass. Only ``site`` and the
     exception type decide what has already been reported.
     """
-    logger = logging.getLogger("tokdash.probe")
+    logger = logging.getLogger("token_dashboard.probe")
     messages = [
-        f"store read failed at /var/lib/tokdash/usage-{n}.sqlite3 after {n} rows"
+        f"store read failed at /var/lib/token-dashboard/usage-{n}.sqlite3 after {n} rows"
         for n in range(3)
     ]
-    with caplog.at_level(logging.DEBUG, logger="tokdash.probe"):
+    with caplog.at_level(logging.DEBUG, logger="token_dashboard.probe"):
         for message in messages:
             store_logging.log_store_failure(
                 logger, message, sqlite3.DatabaseError(messages[0]), site="probe.read"
@@ -446,8 +446,8 @@ def test_one_site_reporting_two_kinds_of_failure_still_says_both(
 ) -> None:
     """Granularity comes from ``site``, so a caller that needs two lines
     passes two sites -- the session cache does this per tool."""
-    logger = logging.getLogger("tokdash.probe")
-    with caplog.at_level(logging.WARNING, logger="tokdash.probe"):
+    logger = logging.getLogger("token_dashboard.probe")
+    with caplog.at_level(logging.WARNING, logger="token_dashboard.probe"):
         store_logging.log_store_failure(
             logger, "read failed", sqlite3.DatabaseError("x"), site="probe:codex"
         )

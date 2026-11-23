@@ -1,15 +1,15 @@
 # Remote access
 
-Tokdash binds to `127.0.0.1:55423` by default and authenticates nothing: anyone who can
+TokenDashboard binds to `127.0.0.1:55423` by default and authenticates nothing: anyone who can
 reach the HTTP port can read every dashboard and API response — session names, project
-info, usage, costs, and quota. Tokdash never checks who is asking — the access method you
+info, usage, costs, and quota. TokenDashboard never checks who is asking — the access method you
 choose **is** the security decision. Pick a category whose access control you trust, and do
-not expose Tokdash to the public internet without authentication (see
+not expose TokenDashboard to the public internet without authentication (see
 [`SECURITY.md`](../SECURITY.md)).
 
 Browser access through an external hostname is **read-only as long as the proxy preserves
 the browser's external `Host`/`Origin`/`Referer` headers** — every recipe in this guide
-does. Tokdash's write gate requires a loopback bind, a loopback `Host`, a loopback HTTP
+does. TokenDashboard's write gate requires a loopback bind, a loopback `Host`, a loopback HTTP
 `Origin`/`Referer` (or none at all), and a per-process token. A browser on an external
 HTTPS origin sends that external `Origin`, which fails the gate. A proxy that rewrites
 `Host` to a loopback address **and** also rewrites `Origin`/`Referer` to loopback values —
@@ -35,48 +35,48 @@ A private network limits readers to devices you have enrolled. Tailscale Serve r
 persistent background rule on the Tailscale service and requires a Tailscale account; every
 device needs Tailscale installed and signed in. A self-hosted VPN (WireGuard,
 ZeroTier-style) is an equivalent private transport — the same header-preservation caveat
-above applies to whatever fronts Tokdash on it.
+above applies to whatever fronts TokenDashboard on it.
 
-Keep Tokdash bound to loopback and let Tailscale expose it only to authenticated devices on
+Keep TokenDashboard bound to loopback and let Tailscale expose it only to authenticated devices on
 your tailnet.
 
 Tailscale Serve is integrated into interactive onboarding:
 
 ```bash
-tokdash setup
+token-dashboard setup
 ```
 
-When Tokdash detects Tailscale, the setup wizard offers to configure Serve. The prompt
-defaults to **No**; `tokdash setup --auto` and `--yes` never configure it. If you confirm,
+When TokenDashboard detects Tailscale, the setup wizard offers to configure Serve. The prompt
+defaults to **No**; `token-dashboard setup --auto` and `--yes` never configure it. If you confirm,
 onboarding applies a background configuration equivalent to:
 
 ```bash
-tailscale serve --bg --https=443 --set-path=/tokdash \
+tailscale serve --bg --https=443 --set-path=/token-dashboard \
   http://127.0.0.1:55423
 ```
 
 The wizard prints the resulting URL, which resembles:
 
 ```text
-https://<machine-name>.<tailnet-name>.ts.net/tokdash
+https://<machine-name>.<tailnet-name>.ts.net/token-dashboard
 ```
 
-Open that URL from Windows or any other device signed in to the same tailnet. Tokdash
+Open that URL from Windows or any other device signed in to the same tailnet. TokenDashboard
 remains bound to `127.0.0.1`; Tailscale supplies the private HTTPS transport. `--set-path`
-is a Tailscale CLI option that strips the `/tokdash` prefix before proxying; it is not a
-Tokdash option.
+is a Tailscale CLI option that strips the `/token-dashboard` prefix before proxying; it is not a
+TokenDashboard option.
 
 Tailscale Serve is read-only for state-changing API actions. Serve preserves the tailnet
-hostname as `Host` and the browser sends an HTTPS origin, both of which fail Tokdash's
+hostname as `Host` and the browser sends an HTTPS origin, both of which fail TokenDashboard's
 loopback write gate. The Quota tab's "Refresh now" button (`GET /api/quota/refresh`) still
 works over Serve — it only polls providers' read-only usage endpoints, so it is a `GET` and
 is exempt from the write gate like any other read. The one opt-in exception is dashboard
-click-to-update: if you pin this Serve hostname in `TOKDASH_UPDATE_ORIGIN`, a browser
-enrolled with a `tokdash update-enroll` pairing code can start an update. See
+click-to-update: if you pin this Serve hostname in `TOKEN_DASHBOARD_UPDATE_ORIGIN`, a browser
+enrolled with a `token-dashboard update-enroll` pairing code can start an update. See
 [`docs/SECURITY.md`](../SECURITY.md) ("The one authenticated-write exception").
 
 If onboarding creates the Serve rule, it records the matching teardown command in
-`install.json`; `tokdash uninstall` removes that specific `/tokdash` rule without resetting
+`install.json`; `token-dashboard uninstall` removes that specific `/token-dashboard` rule without resetting
 unrelated Tailscale configuration.
 
 If Tailscale rejects the Serve configuration because your user lacks permission, the wizard
@@ -88,11 +88,11 @@ sudo tailscale set --operator=$USER
 
 ## Authenticated forwarding: SSH local forwarding
 
-Keep Tokdash bound to loopback, then forward a local port through SSH. From Windows or
+Keep TokenDashboard bound to loopback, then forward a local port through SSH. From Windows or
 another client:
 
 ```bash
-ssh -N -L 55423:127.0.0.1:55423 <user>@<tokdash-host>
+ssh -N -L 55423:127.0.0.1:55423 <user>@<token-dashboard-host>
 ```
 
 Open:
@@ -101,11 +101,11 @@ Open:
 http://127.0.0.1:55423
 ```
 
-The browser continues to use a loopback URL and Host header, so Tokdash permits writes. SSH
-provides authentication and encryption. The Tokdash host must run an SSH server that the
+The browser continues to use a loopback URL and Host header, so TokenDashboard permits writes. SSH
+provides authentication and encryption. The TokenDashboard host must run an SSH server that the
 client can reach.
 
-For WSL2, `<tokdash-host>` can be the current WSL address when Windows can reach it. Find
+For WSL2, `<token-dashboard-host>` can be the current WSL address when Windows can reach it. Find
 the address inside WSL with:
 
 ```bash
@@ -120,7 +120,7 @@ access — is gone.
 ## Authenticated web gateway
 
 A web gateway terminates TLS on a public hostname and requires login before any request
-reaches Tokdash. Supported only with all four of: gateway-level authentication, TLS,
+reaches TokenDashboard. Supported only with all four of: gateway-level authentication, TLS,
 network controls (firewall or bind rules that keep the gateway as the only way in), and
 header preservation — the gateway must pass the browser's external `Host`/`Origin`/`Referer`
 through unchanged (the recipes below do), never rewrite them to loopback values or strip
@@ -131,16 +131,16 @@ Access, or your own domain, TLS certificates, and Caddy/nginx.
 directly in a browser. They do **not** work as additional servers in another dashboard's
 Settings (cross-origin `fetch()` does not carry the gateway's credentials) or as server
 URLs for the native companion apps (no Cloudflare Access, Basic Auth, or custom-header
-support). See [Combine several Tokdash servers](#combine-several-tokdash-servers).
+support). See [Combine several TokenDashboard servers](#combine-several-token-dashboard-servers).
 
-Proxy at `/`; Tokdash has no path-prefix configuration for arbitrary subpaths (see
+Proxy at `/`; TokenDashboard has no path-prefix configuration for arbitrary subpaths (see
 [Subpath deployment](#subpath-deployment-optional) for the one supported exception).
 
 ### Cloudflare Tunnel + Access
 
 This recipe targets Linux; adjust paths and service steps for other platforms. A **named**
-Cloudflare Tunnel fronts Tokdash with Cloudflare's network, and a Cloudflare Access
-application in front of the hostname supplies the authentication Tokdash lacks. **Keep the
+Cloudflare Tunnel fronts TokenDashboard with Cloudflare's network, and a Cloudflare Access
+application in front of the hostname supplies the authentication TokenDashboard lacks. **Keep the
 tunnel stopped until Access is configured and verified — a running tunnel without Access is
 a public, unauthenticated endpoint** (see
 [Public tunnels](#public-tunnels-unsafe-without-authentication)).
@@ -149,8 +149,8 @@ Create the tunnel, route a hostname to it, and write the ingress config:
 
 ```bash
 cloudflared tunnel login
-cloudflared tunnel create tokdash
-cloudflared tunnel route dns tokdash dash.example.com
+cloudflared tunnel create token-dashboard
+cloudflared tunnel route dns token-dashboard dash.example.com
 ```
 
 `~/.cloudflared/config.yml` (a per-user Linux path):
@@ -176,15 +176,15 @@ evaluates the way you expect.
 Only then start the tunnel, in the foreground:
 
 ```bash
-cloudflared tunnel run tokdash
+cloudflared tunnel run token-dashboard
 ```
 
 The dashboard opens at `https://dash.example.com`. Access enforces login before any request
-reaches Tokdash; reads then work normally, and browser writes return `403` because
+reaches TokenDashboard; reads then work normally, and browser writes return `403` because
 cloudflared preserves the external `Host` and HTTPS `Origin`.
 
 Verify end to end once the tunnel is running. What matters is that an Access challenge
-comes **before** Tokdash — not necessarily Cloudflare's own login page: with instant
+comes **before** TokenDashboard — not necessarily Cloudflare's own login page: with instant
 authentication, Cloudflare redirects straight to your identity provider, so a protected
 deployment may never show it. Open `https://dash.example.com` in a private browser window
 (no cached Cloudflare session) and confirm you hit an Access login page or an IdP redirect
@@ -209,7 +209,7 @@ server in a dashboard's Settings, and not as a companion-app server URL.
 
 To tear it down: stop the foreground tunnel with Ctrl-C (or remove the service per the
 service documentation), delete the DNS route's CNAME record, run
-`cloudflared tunnel delete tokdash`, and remove the Access application in the Zero Trust
+`cloudflared tunnel delete token-dashboard`, and remove the Access application in the Zero Trust
 dashboard.
 
 ### Caddy or nginx reverse proxy
@@ -239,8 +239,8 @@ server {
     ssl_certificate     /etc/letsencrypt/live/dash.example.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/dash.example.com/privkey.pem;
 
-    auth_basic "Tokdash";
-    auth_basic_user_file /etc/nginx/.htpasswd_tokdash;
+    auth_basic "TokenDashboard";
+    auth_basic_user_file /etc/nginx/.htpasswd_token-dashboard;
 
     location / {
         proxy_pass http://127.0.0.1:55423;
@@ -250,11 +250,11 @@ server {
 }
 ```
 
-Create the password file with `htpasswd -c /etc/nginx/.htpasswd_tokdash <user>`. The
+Create the password file with `htpasswd -c /etc/nginx/.htpasswd_token-dashboard <user>`. The
 `proxy_set_header Host $host` line keeps the external hostname in `Host`; keep it, and do
 not strip `Origin`/`Referer`.
 
-Keep Tokdash bound to `127.0.0.1` so the proxy is the only entry point. Basic auth over TLS
+Keep TokenDashboard bound to `127.0.0.1` so the proxy is the only entry point. Basic auth over TLS
 is the minimum; an SSO-aware proxy (oauth2-proxy, Authelia, forward auth) is stronger. With
 the external headers preserved as above, browser writes return `403` through the proxy.
 
@@ -263,67 +263,67 @@ auth). Not as an additional server in a dashboard's Settings, and not as a compa
 server URL.
 
 To remove the exposure, delete the site block or server config and reload the proxy
-(`systemctl reload caddy` or `systemctl reload nginx`). Tokdash never left loopback, so the
+(`systemctl reload caddy` or `systemctl reload nginx`). TokenDashboard never left loopback, so the
 proxy is the only thing to clean up.
 
 ### Subpath deployment (optional)
 
-Tokdash's generated URLs support exactly one path prefix, `/tokdash` — the same support
+TokenDashboard's generated URLs support exactly one path prefix, `/token-dashboard` — the same support
 Tailscale Serve uses. The proxy can strip the prefix before forwarding, as the snippets
-below do, or forward it intact: Tokdash answers under `/tokdash` for the HTML shell,
-`/tokdash/api/*`, `/tokdash/sw.js`, `/tokdash/manifest.webmanifest` and `/tokdash/static/*`
+below do, or forward it intact: TokenDashboard answers under `/token-dashboard` for the HTML shell,
+`/token-dashboard/api/*`, `/token-dashboard/sw.js`, `/token-dashboard/manifest.webmanifest` and `/token-dashboard/static/*`
 alike. The proxy must also pass `X-Forwarded-Prefix` so generated manifest and
-service-worker URLs keep the prefix. The dashboard also detects `/tokdash` in
+service-worker URLs keep the prefix. The dashboard also detects `/token-dashboard` in
 `window.location` for page and API URLs.
 
 These snippets belong **inside** the authenticated TLS site config from the parent section
 — they are location blocks, not standalone sites.
 
-Caddy (`handle_path` strips the prefix but does not match bare `/tokdash`, so redirect it):
+Caddy (`handle_path` strips the prefix but does not match bare `/token-dashboard`, so redirect it):
 
 ```caddyfile
-redir /tokdash /tokdash/ 308
-handle_path /tokdash/* {
+redir /token-dashboard /token-dashboard/ 308
+handle_path /token-dashboard/* {
     reverse_proxy 127.0.0.1:55423 {
-        header_up X-Forwarded-Prefix /tokdash
+        header_up X-Forwarded-Prefix /token-dashboard
     }
 }
 ```
 
 nginx (`location` with a trailing slash and a trailing-slash `proxy_pass` strips the
-prefix; it likewise does not match bare `/tokdash`, so add an exact-match redirect). The
-`/tokdash/` location must set `Host` itself — nginx does not inherit `proxy_set_header`
+prefix; it likewise does not match bare `/token-dashboard`, so add an exact-match redirect). The
+`/token-dashboard/` location must set `Host` itself — nginx does not inherit `proxy_set_header`
 from the sibling `/` location, and the default would send the loopback backend address as
 `Host`, which breaks the header-preservation rule:
 
 ```nginx
-location = /tokdash {
-    return 308 /tokdash/;
+location = /token-dashboard {
+    return 308 /token-dashboard/;
 }
-location /tokdash/ {
+location /token-dashboard/ {
     proxy_pass http://127.0.0.1:55423/;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Prefix /tokdash;
+    proxy_set_header X-Forwarded-Prefix /token-dashboard;
 }
 ```
 
-Proxying at `/` is simpler and recommended; use the subpath only when you need Tokdash to
+Proxying at `/` is simpler and recommended; use the subpath only when you need TokenDashboard to
 share a hostname with other applications.
 
 ## Direct LAN exposure: wildcard bind
 
-On a trusted private network, you can expose Tokdash directly:
+On a trusted private network, you can expose TokenDashboard directly:
 
 ```bash
-tokdash serve --bind 0.0.0.0
+token-dashboard serve --bind 0.0.0.0
 ```
 
 To persist the same bind through the onboarding-managed background service, run interactive
 setup:
 
 ```bash
-tokdash setup --bind 0.0.0.0
+token-dashboard setup --bind 0.0.0.0
 ```
 
 Then open:
@@ -342,21 +342,21 @@ mirrored, and other interfaces. Use this option only when all of the following a
 - firewall rules restrict access to intended clients;
 - you accept that read endpoints have no authentication.
 
-Because the configured bind is non-loopback, Tokdash disables state-changing endpoints and
+Because the configured bind is non-loopback, TokenDashboard disables state-changing endpoints and
 `GET /api/csrf-token`. Remote clients receive `403` for writes.
 
-`tokdash setup --auto` refuses non-loopback binds. Use interactive setup so the exposure is
+`token-dashboard setup --auto` refuses non-loopback binds. Use interactive setup so the exposure is
 visible and explicitly confirmed.
 
-To return to the default, restart with a loopback bind (`tokdash serve` with no `--bind`),
-or re-run interactive `tokdash setup` without `--bind 0.0.0.0` and remove the firewall rule
+To return to the default, restart with a loopback bind (`token-dashboard serve` with no `--bind`),
+or re-run interactive `token-dashboard setup` without `--bind 0.0.0.0` and remove the firewall rule
 you added.
 
 ## Public tunnels: unsafe without authentication
 
-These methods put Tokdash on the public internet with nothing authenticating readers. They
+These methods put TokenDashboard on the public internet with nothing authenticating readers. They
 run only while the tunnel process is up and need at most a tunnel account — that is the
-problem. Because Tokdash has no read authentication and
+problem. Because TokenDashboard has no read authentication and
 [`SECURITY.md`](../SECURITY.md) prohibits public exposure, do not use them as sharing
 options:
 
@@ -377,14 +377,14 @@ authentication, TLS, network controls, and header preservation.
 ## Why browser writes fail through proxies
 
 Every state-changing request (`POST`/`PUT`/`PATCH`/`DELETE`) must clear all four checks of
-Tokdash's write gate:
+TokenDashboard's write gate:
 
 1. the server is bound to loopback;
 2. the `Host` header is a recognized loopback address;
 3. any `Origin`/`Referer`, if present, is a loopback HTTP origin (an absent
    `Origin`/`Referer` does not fail this check — the token below is what stops
    header-less cross-site form posts);
-4. the request carries the valid per-process `X-Tokdash-Token`.
+4. the request carries the valid per-process `X-TokenDashboard-Token`.
 
 With the header-preserving configurations in this guide, a browser on any external
 hostname — Cloudflare, Caddy, nginx, ngrok, Funnel, LocalTunnel, Tailscale Serve — sends
@@ -403,9 +403,9 @@ is the one write-capable method by design — the forward preserves a genuine lo
 `Host`, and SSH itself is the authentication layer. See
 [`SECURITY.md`](../SECURITY.md) for the complete write-protection model.
 
-## Combine several Tokdash servers
+## Combine several TokenDashboard servers
 
-The dashboard and companion apps can read several Tokdash instances at once. In dashboard
+The dashboard and companion apps can read several TokenDashboard instances at once. In dashboard
 Settings, add each server URL and choose All or a custom subset. Overview, Sessions, and
 Stats combine reachable servers; Quota stays grouped by server. An unreachable server drops
 out until a later refresh succeeds.
@@ -413,7 +413,7 @@ out until a later refresh succeeds.
 ### Several addresses for one server
 
 One machine often has more than one way to reach it: a Tailscale Serve name, an
-`ssh -L` forward, a LAN address, and the loopback address it listens on. Every Tokdash
+`ssh -L` forward, a LAN address, and the loopback address it listens on. Every TokenDashboard
 answers `GET /health` with an `instance_id`, so adding a second address for a server that
 is already in the list joins it to that server instead of creating a second row. The
 combined figures count the machine once, and Settings shows the server with one row per
@@ -434,26 +434,26 @@ before the numbers look wrong:
   not a slow route but an unreadable one; the dashboard marks it **Blocked from this page**
   with the rule that blocks it and a remove button, and never merges it.
 - An address added to a server that is already listed is proved first. One that does not
-  answer, that answers as a different Tokdash, or that cannot say which Tokdash it is, is
+  answer, that answers as a different TokenDashboard, or that cannot say which TokenDashboard it is, is
   refused where you typed it, naming the machine that owns that address; an address whose
   owner cannot be established would only sit on the row and carry nothing. Adding a whole new
   server stays advisory: registering a machine that is offline right now is legitimate, so it
   is stored and marked unreachable until it answers.
 
 If a second address does land in two separate rows, they are two daemons even when one
-machine runs both, which is what two `TOKDASH_DATA_DIR`s give you, and their tokens really
+machine runs both, which is what two `TOKEN_DASHBOARD_DATA_DIR`s give you, and their tokens really
 are counted twice.
 
-CORS only matters when **one dashboard page connects to additional Tokdash servers at
+CORS only matters when **one dashboard page connects to additional TokenDashboard servers at
 different origins**. A dashboard and its API served through the same proxy origin — one
 Cloudflare Tunnel hostname, one reverse-proxy vhost, one Serve URL — need no CORS entry at
 all. When you do add remote servers: by default, a dashboard opened on loopback can read
-remote servers, and Tailscale Serve dashboards can read Tokdash servers under the same
+remote servers, and Tailscale Serve dashboards can read TokenDashboard servers under the same
 `<tailnet-name>.ts.net` suffix. Other remote origins must be added to every server with
-`TOKDASH_ALLOW_ORIGINS=https://<dashboard-host>`.
+`TOKEN_DASHBOARD_ALLOW_ORIGINS=https://<dashboard-host>`.
 
 **An explicit CORS setting replaces the default policy, it does not extend it.** Setting
-`TOKDASH_ALLOW_ORIGINS` or `TOKDASH_ALLOW_ORIGIN_REGEX` on a server switches off both the
+`TOKEN_DASHBOARD_ALLOW_ORIGINS` or `TOKEN_DASHBOARD_ALLOW_ORIGIN_REGEX` on a server switches off both the
 loopback rule and the same-tailnet rule, so admitting one origin there silently takes away
 the ability of a loopback dashboard to read that server, and the Serve page you were
 looking at keeps working, which is what makes the mistake easy to ship. Include every
@@ -470,7 +470,7 @@ browser-compatible choice. Wildcard-bound `http://` URLs work only from a loopba
 dashboard or a native companion — an HTTPS dashboard (Serve or proxy) cannot fetch them.
 
 CORS configuration can permit cross-origin **reads**; it never grants write access. The
-loopback write gate applies regardless of `TOKDASH_ALLOW_ORIGINS`.
+loopback write gate applies regardless of `TOKEN_DASHBOARD_ALLOW_ORIGINS`.
 
 Reads follow the exposure model above. Per-server writes still pass through the existing
 loopback write gate: SSH-forwarded loopback URLs can write, while header-preserving
@@ -479,5 +479,5 @@ external-hostname methods remain read-only.
 ## Security model
 
 WSL detection, a private IP address, and network reachability are not authentication
-signals. Tokdash therefore does not treat WSL or `0.0.0.0` as trusted for writes. See
+signals. TokenDashboard therefore does not treat WSL or `0.0.0.0` as trusted for writes. See
 [`SECURITY.md`](../SECURITY.md) for the complete write-protection model.

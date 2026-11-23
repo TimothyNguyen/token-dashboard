@@ -13,14 +13,14 @@ from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
 
-import tokdash.sessions as sessions_module
-import tokdash.usage_store as usage_store_module
-from tokdash.activity_insights import (
+import token_dashboard.sessions as sessions_module
+import token_dashboard.usage_store as usage_store_module
+from token_dashboard.activity_insights import (
     new_activity_record,
     record_structured_tool_call,
 )
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import (
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import (
     AmpParser,
     BaseParser,
     CodexParser,
@@ -34,7 +34,7 @@ from tokdash.sources.coding_tools import (
     ReasonixParser,
     _sig_cache,
 )
-from tokdash.usage_store import (
+from token_dashboard.usage_store import (
     UsageEntryStore,
     UsageFileUnreadable,
     UsageFileVanished,
@@ -259,7 +259,7 @@ def test_usage_store_recompute_fallback_for_mixed_zero_and_priced_rows(tmp_path)
     sum masked the free rows and the zero-cost rows stayed $0. The store path must
     agree with parse_entries_json, which recomputes each zero-cost row.
     """
-    from tokdash.compute import parse_entries_json
+    from token_dashboard.compute import parse_entries_json
 
     store = UsageEntryStore(tmp_path / "usage.sqlite3")
     # grok-4.5 is $2 input / $6 output per 1M in the packaged pricing DB.
@@ -836,7 +836,7 @@ def test_usage_store_session_records_are_synced_and_retained(tmp_path):
         parse_file_session=lambda _file_sig: {
             "tool": "codex",
             "session_id": "s1",
-            "project": "tokdash",
+            "project": "token_dashboard",
             "turns": [{"turn_index": 1, "timestamp_ms": 1_700_000_000_000, "tokens": 10}],
         },
     ) is True
@@ -901,7 +901,7 @@ def test_persistent_session_failure_is_logged_before_source_fallback(monkeypatch
     )
     monkeypatch.setattr(sessions_module, "_claude_sessions", lambda: {"fallback": {}})
 
-    with caplog.at_level(logging.WARNING, logger="tokdash.sessions"):
+    with caplog.at_level(logging.WARNING, logger="token_dashboard.sessions"):
         result = sessions_module._raw_sessions_for_tool("claude", since_ms=100, until_ms=200)
 
     assert result == {"fallback": {}}
@@ -1152,7 +1152,7 @@ def test_coding_tool_parsers_declare_sync_capabilities():
     assert tracker.parsers["opencode"].sync_capability.session_store is False
     # Muse is registered with an explicit Meta cache policy. Stable record ids
     # use the same cross-file winner rule in both database modes.
-    from tokdash.sources import coding_tools as coding_tools_module
+    from token_dashboard.sources import coding_tools as coding_tools_module
 
     assert modes["muse"] == "file_replace"
     assert isinstance(tracker.parsers["muse"], MuseParser)
@@ -1206,12 +1206,12 @@ def test_session_file_parser_signatures_are_explicit_and_v159_compatible(monkeyp
     # replay turns are keyed to the parent session and raws carry
     # _subagent_parent_id). Their old rows must be reparsed, not reused.
     assert codex == {
-        "object": "tokdash.sessions._parse_codex_session_file",
+        "object": "token_dashboard.sessions._parse_codex_session_file",
         "version": sessions_module._SESSION_FILE_PARSER_VERSIONS["_parse_codex_session_file"],
     }
     assert codex["version"] > 1
     assert claude == {
-        "object": "tokdash.sessions._parse_claude_session_file",
+        "object": "token_dashboard.sessions._parse_claude_session_file",
         "version": sessions_module._SESSION_FILE_PARSER_VERSIONS["_parse_claude_session_file"],
     }
     assert claude["version"] > 1
@@ -1258,7 +1258,7 @@ def test_v159_session_signature_upgrade_resigns_without_reparse(tmp_path):
     # mtime even when the pricing bytes and parsed session output are identical.
     legacy_pricing = (
         (
-            "/old/site-packages/tokdash/pricing_db.json",
+            "/old/site-packages/token-dashboard/pricing_db.json",
             111,
             sessions_module._V159_BASELINE_PRICING_RAW_SIZE,
         ),
@@ -1476,7 +1476,7 @@ def test_v159_rows_are_not_reused_once_the_packaged_pricing_changes(tmp_path):
     files = ((session_path, 123, 456),)
     legacy_pricing = (
         (
-            "/old/site-packages/tokdash/pricing_db.json",
+            "/old/site-packages/token-dashboard/pricing_db.json",
             111,
             sessions_module._V159_BASELINE_PRICING_RAW_SIZE,
         ),
@@ -1575,7 +1575,7 @@ def _codex_session_rows(
             "type": "session_meta",
             "payload": {
                 "id": session_id,
-                "cwd": "/work/tokdash",
+                "cwd": "/work/token-dashboard",
                 "source": source,
                 "model_provider": "openai",
             },
@@ -1583,7 +1583,7 @@ def _codex_session_rows(
         {
             "timestamp": "2026-06-19T10:00:01.000Z",
             "type": "turn_context",
-            "payload": {"model": "gpt-5.3-codex", "cwd": "/work/tokdash"},
+            "payload": {"model": "gpt-5.3-codex", "cwd": "/work/token-dashboard"},
         },
     ]
     if thread_name:
@@ -1625,7 +1625,7 @@ def _codex_session_rows(
 def test_codex_guardian_sessions_are_hidden_from_session_view_only(monkeypatch, tmp_path):
     monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
-    monkeypatch.delenv("TOKDASH_INCLUDE_CODEX_GUARDIAN", raising=False)
+    monkeypatch.delenv("TOKEN_DASHBOARD_INCLUDE_CODEX_GUARDIAN", raising=False)
     _clear_parser_caches()
     codex_dir = tmp_path / ".codex" / "sessions" / "2026" / "06" / "19"
     _write_jsonl(codex_dir / "normal.jsonl", _codex_session_rows("normal-session"))
@@ -1725,12 +1725,12 @@ def test_codex_subagent_thread_spawn_replay_is_skipped(monkeypatch, tmp_path):
         {
             "timestamp": "2026-07-11T14:40:04.000Z",
             "type": "session_meta",
-            "payload": {"id": parent_id, "cwd": "/work/tokdash", "source": "vscode", "model_provider": "openai"},
+            "payload": {"id": parent_id, "cwd": "/work/token-dashboard", "source": "vscode", "model_provider": "openai"},
         },
         {
             "timestamp": "2026-07-11T14:40:05.000Z",
             "type": "turn_context",
-            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/tokdash"},
+            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/token-dashboard"},
         },
         _codex_token_count_row("2026-07-11T14:40:10.000Z", 100, 10, 20, 5),
         _codex_token_count_row("2026-07-11T14:41:10.000Z", 101, 10, 20, 5),
@@ -1747,7 +1747,7 @@ def test_codex_subagent_thread_spawn_replay_is_skipped(monkeypatch, tmp_path):
             "type": "session_meta",
             "payload": {
                 "id": sub_id,
-                "cwd": "/work/tokdash",
+                "cwd": "/work/token-dashboard",
                 "source": {
                     "subagent": {
                         "thread_spawn": {
@@ -1766,12 +1766,12 @@ def test_codex_subagent_thread_spawn_replay_is_skipped(monkeypatch, tmp_path):
         {
             "timestamp": "2026-07-11T18:50:07.000Z",
             "type": "session_meta",
-            "payload": {"id": parent_id, "cwd": "/work/tokdash", "source": "vscode", "model_provider": "openai"},
+            "payload": {"id": parent_id, "cwd": "/work/token-dashboard", "source": "vscode", "model_provider": "openai"},
         },
         {
             "timestamp": "2026-07-11T18:50:08.000Z",
             "type": "turn_context",
-            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/tokdash"},
+            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/token-dashboard"},
         },
         # Replayed copies of the parent's token_count events (timestamp-shifted, same
         # fingerprints) attributed to the parent's session ID, not the subagent's own.
@@ -1820,12 +1820,12 @@ def test_codex_subagent_thread_spawn_replay_is_skipped(monkeypatch, tmp_path):
         {
             "timestamp": "2026-07-12T09:00:00.000Z",
             "type": "session_meta",
-            "payload": {"id": same_id, "cwd": "/work/tokdash", "source": "cli", "model_provider": "openai"},
+            "payload": {"id": same_id, "cwd": "/work/token-dashboard", "source": "cli", "model_provider": "openai"},
         },
         {
             "timestamp": "2026-07-12T09:00:01.000Z",
             "type": "turn_context",
-            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/tokdash"},
+            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/token-dashboard"},
         },
         _codex_token_count_row("2026-07-12T09:00:02.000Z", 50, 5, 10, 2),
         # A second session_meta line with the SAME id (e.g. resumed session), followed
@@ -1833,7 +1833,7 @@ def test_codex_subagent_thread_spawn_replay_is_skipped(monkeypatch, tmp_path):
         {
             "timestamp": "2026-07-12T09:05:00.000Z",
             "type": "session_meta",
-            "payload": {"id": same_id, "cwd": "/work/tokdash", "source": "cli", "model_provider": "openai"},
+            "payload": {"id": same_id, "cwd": "/work/token-dashboard", "source": "cli", "model_provider": "openai"},
         },
         _codex_token_count_row("2026-07-12T09:05:02.000Z", 60, 6, 12, 3),
     ]
@@ -1892,12 +1892,12 @@ def test_codex_subagent_single_meta_fork_replay_is_deduplicated(monkeypatch, tmp
         {
             "timestamp": "2026-07-20T16:28:24.000Z",
             "type": "session_meta",
-            "payload": {"id": parent_id, "cwd": "/work/tokdash", "source": "vscode", "model_provider": "openai"},
+            "payload": {"id": parent_id, "cwd": "/work/token-dashboard", "source": "vscode", "model_provider": "openai"},
         },
         {
             "timestamp": "2026-07-20T16:28:25.000Z",
             "type": "turn_context",
-            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/tokdash"},
+            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/token-dashboard"},
         },
         _codex_token_count_row_with_total("2026-07-20T16:30:10.000Z", **usage_1),
         _codex_token_count_row_with_total("2026-07-20T16:31:10.000Z", **usage_2),
@@ -1909,7 +1909,7 @@ def test_codex_subagent_single_meta_fork_replay_is_deduplicated(monkeypatch, tmp
             "type": "session_meta",
             "payload": {
                 "id": child_id,
-                "cwd": "/work/tokdash",
+                "cwd": "/work/token-dashboard",
                 "forked_from_id": parent_id,
                 "source": {
                     "subagent": {
@@ -1934,7 +1934,7 @@ def test_codex_subagent_single_meta_fork_replay_is_deduplicated(monkeypatch, tmp
         {
             "timestamp": "2026-07-20T18:58:33.000Z",
             "type": "turn_context",
-            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/tokdash"},
+            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/token-dashboard"},
         },
         _codex_token_count_row_with_total("2026-07-20T19:00:10.000Z", **own_1),
         _codex_token_count_row_with_total("2026-07-20T19:01:10.000Z", **own_2),
@@ -2004,7 +2004,7 @@ def test_codex_subagent_single_meta_fork_replay_survives_without_parent(monkeypa
             "type": "session_meta",
             "payload": {
                 "id": child_id,
-                "cwd": "/work/tokdash",
+                "cwd": "/work/token-dashboard",
                 "forked_from_id": parent_id,
                 "source": {"subagent": {"thread_spawn": {"parent_thread_id": parent_id, "depth": 1}}},
                 "model_provider": "openai",
@@ -2016,7 +2016,7 @@ def test_codex_subagent_single_meta_fork_replay_survives_without_parent(monkeypa
         {
             "timestamp": "2026-07-20T18:58:33.000Z",
             "type": "turn_context",
-            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/tokdash"},
+            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/token-dashboard"},
         },
         _codex_token_count_row_with_total("2026-07-20T19:00:10.000Z", **own_1),
         _codex_token_count_row_with_total("2026-07-20T19:01:10.000Z", **own_2),
@@ -2058,7 +2058,7 @@ def test_codex_explicit_default_model_selection_survives_backfill(monkeypatch, t
         {
             "timestamp": "2026-02-05T23:35:17.000Z",
             "type": "session_meta",
-            "payload": {"id": session_id, "cwd": "/work/tokdash", "model_provider": "openai"},
+            "payload": {"id": session_id, "cwd": "/work/token-dashboard", "model_provider": "openai"},
         },
         # No model signal yet: placeholder rows.
         _codex_token_count_row_with_total(
@@ -2069,7 +2069,7 @@ def test_codex_explicit_default_model_selection_survives_backfill(monkeypatch, t
         {
             "timestamp": "2026-02-05T23:36:00.000Z",
             "type": "turn_context",
-            "payload": {"model": "gpt-5.2-codex", "cwd": "/work/tokdash"},
+            "payload": {"model": "gpt-5.2-codex", "cwd": "/work/token-dashboard"},
         },
         _codex_token_count_row_with_total(
             "2026-02-05T23:36:10.000Z",
@@ -2080,7 +2080,7 @@ def test_codex_explicit_default_model_selection_survives_backfill(monkeypatch, t
         {
             "timestamp": "2026-02-05T23:40:00.000Z",
             "type": "turn_context",
-            "payload": {"model": "gpt-5.3-codex", "cwd": "/work/tokdash"},
+            "payload": {"model": "gpt-5.3-codex", "cwd": "/work/token-dashboard"},
         },
         _codex_token_count_row_with_total(
             "2026-02-05T23:40:10.000Z",
@@ -2122,12 +2122,12 @@ def test_codex_cross_file_replacement_still_backfills(monkeypatch, tmp_path):
         {
             "timestamp": "2026-01-02T00:00:00.000Z",
             "type": "session_meta",
-            "payload": {"id": "s1", "cwd": "/work/tokdash", "model_provider": "openai"},
+            "payload": {"id": "s1", "cwd": "/work/token-dashboard", "model_provider": "openai"},
         },
         {
             "timestamp": "2026-01-02T00:00:01.000Z",
             "type": "turn_context",
-            "payload": {"model": "gpt-5.5", "cwd": "/work/tokdash"},
+            "payload": {"model": "gpt-5.5", "cwd": "/work/token-dashboard"},
         },
         _codex_token_count_row_with_total("2026-01-02T00:00:10.000Z", **usage),
     ])
@@ -2138,13 +2138,13 @@ def test_codex_cross_file_replacement_still_backfills(monkeypatch, tmp_path):
         {
             "timestamp": "2026-01-01T00:00:00.000Z",
             "type": "session_meta",
-            "payload": {"id": "s1", "cwd": "/work/tokdash", "model_provider": "openai"},
+            "payload": {"id": "s1", "cwd": "/work/token-dashboard", "model_provider": "openai"},
         },
         _codex_token_count_row_with_total("2026-01-01T00:00:05.000Z", **usage),
         {
             "timestamp": "2026-01-01T00:01:00.000Z",
             "type": "turn_context",
-            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/tokdash"},
+            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/token-dashboard"},
         },
     ])
 
@@ -2170,7 +2170,7 @@ def test_codex_file_without_any_model_signal_is_unknown(monkeypatch, tmp_path):
         {
             "timestamp": "2026-01-03T00:00:00.000Z",
             "type": "session_meta",
-            "payload": {"id": "nosignal-1", "cwd": "/work/tokdash", "model_provider": "openai"},
+            "payload": {"id": "nosignal-1", "cwd": "/work/token-dashboard", "model_provider": "openai"},
         },
         _codex_token_count_row_with_total("2026-01-03T00:00:05.000Z", **usage),
     ])
@@ -2215,7 +2215,7 @@ def test_codex_orphan_sibling_forks_keep_one_replay_copy(monkeypatch, tmp_path):
                 "type": "session_meta",
                 "payload": {
                     "id": child_id,
-                    "cwd": "/work/tokdash",
+                    "cwd": "/work/token-dashboard",
                     "forked_from_id": parent_id,
                     "source": {"subagent": {"thread_spawn": {"parent_thread_id": parent_id, "depth": 1}}},
                     "model_provider": "openai",
@@ -2227,7 +2227,7 @@ def test_codex_orphan_sibling_forks_keep_one_replay_copy(monkeypatch, tmp_path):
             {
                 "timestamp": f"{fork_ts}.004Z",
                 "type": "turn_context",
-                "payload": {"model": "gpt-5.6-sol", "cwd": "/work/tokdash"},
+                "payload": {"model": "gpt-5.6-sol", "cwd": "/work/token-dashboard"},
             },
             _codex_token_count_row_with_total(f"{own_ts}.000Z", **own_1),
             _codex_token_count_row_with_total(f"{own_ts}.001Z", **own_2),
@@ -2271,12 +2271,12 @@ def test_codex_archived_sessions_root_is_scanned(monkeypatch, tmp_path):
         {
             "timestamp": "2026-07-01T08:00:00.000Z",
             "type": "session_meta",
-            "payload": {"id": "archived-only", "cwd": "/work/tokdash", "model_provider": "openai"},
+            "payload": {"id": "archived-only", "cwd": "/work/token-dashboard", "model_provider": "openai"},
         },
         {
             "timestamp": "2026-07-01T08:00:01.000Z",
             "type": "turn_context",
-            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/tokdash"},
+            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/token-dashboard"},
         },
         _codex_token_count_row_with_total("2026-07-01T08:00:10.000Z", **usage),
     ]
@@ -2345,7 +2345,7 @@ def test_codex_session_meta_provenance_model_is_an_early_model_source(monkeypatc
             "type": "session_meta",
             "payload": {
                 "id": "provenance-session",
-                "cwd": "/work/tokdash",
+                "cwd": "/work/token-dashboard",
                 "source": "cli",
                 "model_provider": "openai",
                 "base_instructions": {"text": "...", "provenance": {"model": "gpt-5.6-terra"}},
@@ -2387,12 +2387,12 @@ def test_codex_forked_from_id_only_file_gets_replay_dedup(monkeypatch, tmp_path)
         {
             "timestamp": "2026-07-21T08:00:00.000Z",
             "type": "session_meta",
-            "payload": {"id": parent_id, "cwd": "/work/tokdash", "source": "vscode", "model_provider": "openai"},
+            "payload": {"id": parent_id, "cwd": "/work/token-dashboard", "source": "vscode", "model_provider": "openai"},
         },
         {
             "timestamp": "2026-07-21T08:00:01.000Z",
             "type": "turn_context",
-            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/tokdash"},
+            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/token-dashboard"},
         },
         _codex_token_count_row_with_total("2026-07-21T08:01:10.000Z", **usage_1),
         _codex_token_count_row_with_total("2026-07-21T08:02:10.000Z", **usage_2),
@@ -2404,7 +2404,7 @@ def test_codex_forked_from_id_only_file_gets_replay_dedup(monkeypatch, tmp_path)
             "type": "session_meta",
             "payload": {
                 "id": child_id,
-                "cwd": "/work/tokdash",
+                "cwd": "/work/token-dashboard",
                 "forked_from_id": parent_id,
                 "source": "cli",
                 "model_provider": "openai",
@@ -2416,7 +2416,7 @@ def test_codex_forked_from_id_only_file_gets_replay_dedup(monkeypatch, tmp_path)
         {
             "timestamp": "2026-07-21T12:00:04.000Z",
             "type": "turn_context",
-            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/tokdash"},
+            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/token-dashboard"},
         },
         _codex_token_count_row_with_total("2026-07-21T12:10:10.000Z", **own_1),
         _codex_token_count_row_with_total("2026-07-21T12:11:10.000Z", **own_2),
@@ -2468,12 +2468,12 @@ def test_codex_subagent_replay_gate_keeps_own_turns_with_stable_keys(monkeypatch
         {
             "timestamp": "2026-07-20T16:28:24.000Z",
             "type": "session_meta",
-            "payload": {"id": parent_id, "cwd": "/work/tokdash", "source": "vscode", "model_provider": "openai"},
+            "payload": {"id": parent_id, "cwd": "/work/token-dashboard", "source": "vscode", "model_provider": "openai"},
         },
         {
             "timestamp": "2026-07-20T16:28:25.000Z",
             "type": "turn_context",
-            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/tokdash"},
+            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/token-dashboard"},
         },
         _codex_token_count_row_with_total("2026-07-20T16:30:10.000Z", **usage_1),
         _codex_token_count_row_with_total("2026-07-20T16:31:10.000Z", **usage_2),
@@ -2485,7 +2485,7 @@ def test_codex_subagent_replay_gate_keeps_own_turns_with_stable_keys(monkeypatch
             "type": "session_meta",
             "payload": {
                 "id": child_id,
-                "cwd": "/work/tokdash",
+                "cwd": "/work/token-dashboard",
                 "source": {"subagent": {"thread_spawn": {"parent_thread_id": parent_id, "depth": 1}}},
                 "model_provider": "openai",
             },
@@ -2494,12 +2494,12 @@ def test_codex_subagent_replay_gate_keeps_own_turns_with_stable_keys(monkeypatch
         {
             "timestamp": "2026-07-20T18:13:21.001Z",
             "type": "session_meta",
-            "payload": {"id": parent_id, "cwd": "/work/tokdash", "source": "vscode", "model_provider": "openai"},
+            "payload": {"id": parent_id, "cwd": "/work/token-dashboard", "source": "vscode", "model_provider": "openai"},
         },
         {
             "timestamp": "2026-07-20T18:13:21.002Z",
             "type": "turn_context",
-            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/tokdash"},
+            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/token-dashboard"},
         },
         _codex_token_count_row_with_total("2026-07-20T18:13:22.000Z", **usage_1),
         _codex_token_count_row_with_total("2026-07-20T18:13:22.001Z", **usage_2),
@@ -2558,12 +2558,12 @@ def test_codex_windowed_stored_read_dedupes_subagent_replay(monkeypatch, tmp_pat
         {
             "timestamp": "2026-07-20T16:28:24.000Z",
             "type": "session_meta",
-            "payload": {"id": parent_id, "cwd": "/work/tokdash", "source": "vscode", "model_provider": "openai"},
+            "payload": {"id": parent_id, "cwd": "/work/token-dashboard", "source": "vscode", "model_provider": "openai"},
         },
         {
             "timestamp": "2026-07-20T16:28:25.000Z",
             "type": "turn_context",
-            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/tokdash"},
+            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/token-dashboard"},
         },
         _codex_token_count_row_with_total("2026-07-20T16:30:10.000Z", **usage_1),
         _codex_token_count_row_with_total("2026-07-20T16:31:10.000Z", **usage_2),
@@ -2576,7 +2576,7 @@ def test_codex_windowed_stored_read_dedupes_subagent_replay(monkeypatch, tmp_pat
             "type": "session_meta",
             "payload": {
                 "id": child_id,
-                "cwd": "/work/tokdash",
+                "cwd": "/work/token-dashboard",
                 "forked_from_id": parent_id,
                 "source": {"subagent": {"thread_spawn": {"parent_thread_id": parent_id, "depth": 1}}},
                 "model_provider": "openai",
@@ -2588,7 +2588,7 @@ def test_codex_windowed_stored_read_dedupes_subagent_replay(monkeypatch, tmp_pat
         {
             "timestamp": "2026-07-21T09:00:04.000Z",
             "type": "turn_context",
-            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/tokdash"},
+            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/token-dashboard"},
         },
         _codex_token_count_row_with_total("2026-07-21T09:10:10.000Z", **own_1),
         _codex_token_count_row_with_total("2026-07-21T09:11:10.000Z", **own_2),
@@ -2639,7 +2639,7 @@ def test_codex_thread_settings_applied_is_an_early_model_source(monkeypatch, tmp
         {
             "timestamp": "2026-08-12T11:25:16.000Z",
             "type": "session_meta",
-            "payload": {"id": "settings-session", "cwd": "/work/tokdash", "source": "cli", "model_provider": "openai"},
+            "payload": {"id": "settings-session", "cwd": "/work/token-dashboard", "source": "cli", "model_provider": "openai"},
         },
         {
             "timestamp": "2026-08-12T11:25:16.100Z",
@@ -2913,12 +2913,12 @@ def test_codex_primary_session_id_change_is_not_skipped(monkeypatch, tmp_path):
         {
             "timestamp": "2026-07-13T09:00:00.000Z",
             "type": "session_meta",
-            "payload": {"id": id_a, "cwd": "/work/tokdash", "source": "vscode", "model_provider": "openai"},
+            "payload": {"id": id_a, "cwd": "/work/token-dashboard", "source": "vscode", "model_provider": "openai"},
         },
         {
             "timestamp": "2026-07-13T09:00:01.000Z",
             "type": "turn_context",
-            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/tokdash"},
+            "payload": {"model": "gpt-5.6-sol", "cwd": "/work/token-dashboard"},
         },
         _codex_token_count_row("2026-07-13T09:00:02.000Z", 50, 5, 10, 2),
         # session_meta.id CHANGES mid-file (e.g. compaction/fork) - no thread_spawn marker
@@ -2926,7 +2926,7 @@ def test_codex_primary_session_id_change_is_not_skipped(monkeypatch, tmp_path):
         {
             "timestamp": "2026-07-13T09:05:00.000Z",
             "type": "session_meta",
-            "payload": {"id": id_b, "cwd": "/work/tokdash", "source": "vscode", "model_provider": "openai"},
+            "payload": {"id": id_b, "cwd": "/work/token-dashboard", "source": "vscode", "model_provider": "openai"},
         },
         _codex_token_count_row("2026-07-13T09:05:02.000Z", 60, 6, 12, 3),
     ]
@@ -2953,7 +2953,7 @@ def test_codex_primary_session_id_change_is_not_skipped(monkeypatch, tmp_path):
 
 def test_codex_sessions_echo_effective_review_default(monkeypatch, tmp_path):
     """The response echoes the effective review-session default so the dashboard
-    toggle can adopt the server's TOKDASH_INCLUDE_CODEX_GUARDIAN default."""
+    toggle can adopt the server's TOKEN_DASHBOARD_INCLUDE_CODEX_GUARDIAN default."""
     monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
     codex_dir = tmp_path / ".codex" / "sessions" / "2026" / "06" / "19"
@@ -2961,9 +2961,9 @@ def test_codex_sessions_echo_effective_review_default(monkeypatch, tmp_path):
 
     def effective(env_value, param):
         if env_value is None:
-            monkeypatch.delenv("TOKDASH_INCLUDE_CODEX_GUARDIAN", raising=False)
+            monkeypatch.delenv("TOKEN_DASHBOARD_INCLUDE_CODEX_GUARDIAN", raising=False)
         else:
-            monkeypatch.setenv("TOKDASH_INCLUDE_CODEX_GUARDIAN", env_value)
+            monkeypatch.setenv("TOKEN_DASHBOARD_INCLUDE_CODEX_GUARDIAN", env_value)
         _clear_parser_caches()
         return sessions_module.get_sessions_data(
             "codex", "today", "2026-06-19", "2026-06-19", include_review_sessions=param
@@ -2999,7 +2999,7 @@ def test_session_display_name_fallbacks(monkeypatch, tmp_path):
     codex_context_raw = sessions_module._parse_codex_session_file(
         str(codex_context_file), stat.st_mtime_ns, stat.st_size, ()
     )
-    assert codex_context_raw["display_name"] == "tokdash"
+    assert codex_context_raw["display_name"] == "token-dashboard"
 
     claude_file = tmp_path / "claude.jsonl"
     _write_jsonl(
@@ -3010,7 +3010,7 @@ def test_session_display_name_fallbacks(monkeypatch, tmp_path):
             {
                 "type": "assistant",
                 "sessionId": "claude-session",
-                "cwd": "/work/tokdash",
+                "cwd": "/work/token-dashboard",
                 "timestamp": "2026-06-19T10:00:00.000Z",
                 "message": {
                     "role": "assistant",
@@ -3091,7 +3091,7 @@ def test_pi_agent_sessions_data_and_detail(monkeypatch, tmp_path):
     _write_jsonl(
         pi_root / "nested" / "2026-06-19T10-00-00-000Z_pi-named.jsonl",
         [
-            {"type": "session", "id": "pi-named", "cwd": "/work/tokdash", "timestamp": "2026-06-19T10:00:00.000Z"},
+            {"type": "session", "id": "pi-named", "cwd": "/work/token-dashboard", "timestamp": "2026-06-19T10:00:00.000Z"},
             {"type": "session_info", "name": "Plan Pi support"},
             {
                 "type": "message",
@@ -3166,7 +3166,7 @@ def test_claude_stored_session_records_merge_in_one_pass_matches_legacy_semantic
         {
             "tool": "claude",
             "session_id": "shared",
-            "project": "tokdash",
+            "project": "token_dashboard",
             "turns": [
                 {"turn_index": 1, "timestamp_ms": 1000, "model": "claude", "tokens_in": 1, "tokens_cache": 2, "tokens_out": 3, "tokens_reasoning": 0, "cost": 0.01},
                 {"turn_index": 2, "timestamp_ms": 2000, "model": "claude", "tokens_in": 4, "tokens_cache": 5, "tokens_out": 6, "tokens_reasoning": 0, "cost": 0.03},
@@ -3198,7 +3198,7 @@ def test_claude_stored_session_merge_documents_same_timestamp_tie_behavior():
         {
             "tool": "claude",
             "session_id": "shared",
-            "project": "tokdash",
+            "project": "token_dashboard",
             "turns": [
                 {"turn_index": 1, "timestamp_ms": 1000, "model": "claude", "tokens_in": 1, "tokens_cache": 0, "tokens_out": 0, "tokens_reasoning": 0, "cost": 0.01}
             ],
@@ -3215,7 +3215,7 @@ def test_claude_stored_session_merge_documents_same_timestamp_tie_behavior():
 
     result = sessions_module._session_records_to_raw_sessions("claude", records)["shared"]
 
-    assert result["project"] == "tokdash"
+    assert result["project"] == "token_dashboard"
     assert [turn["tokens_in"] for turn in result["turns"]] == [1, 2, 3]
     assert [turn["turn_index"] for turn in result["turns"]] == [1, 2, 3]
     assert sum(turn["tokens_in"] for turn in result["turns"]) == 6
@@ -3231,7 +3231,7 @@ def _create_opencode_session_db(db_path: Path) -> tuple[tuple[str, int, int], ..
             CREATE TABLE message(id TEXT PRIMARY KEY, session_id TEXT, time_created INTEGER, data TEXT);
             """
         )
-        conn.execute("INSERT INTO project(id, worktree) VALUES('p1', '/workspace/tokdash')")
+        conn.execute("INSERT INTO project(id, worktree) VALUES('p1', '/workspace/token-dashboard')")
         conn.execute("INSERT INTO project(id, worktree) VALUES('p2', '/workspace/other')")
         conn.execute("INSERT INTO session(id, project_id, directory, title, slug) VALUES('s1', 'p1', '/tmp/fallback', 'OpenCode title', 'open-slug')")
         conn.execute("INSERT INTO session(id, project_id, directory, title, slug) VALUES('s2', 'p2', '/tmp/other', '', 'other-slug')")
@@ -3371,7 +3371,7 @@ def test_opencode_session_loaders_read_every_row_and_match_the_raw_json_fallback
     assert set(scalar) == {"s1", "s2"}
     assert [turn["timestamp_ms"] for turn in scalar["s1"]["turns"]] == [900, 1000, 1500, 2000]
     turn = next(turn for turn in scalar["s1"]["turns"] if turn["timestamp_ms"] == 1500)
-    assert scalar["s1"]["project"] == "tokdash"
+    assert scalar["s1"]["project"] == "token-dashboard"
     assert scalar["s1"]["display_name"] == "OpenCode title"
     assert scalar["s2"]["project"] == "other"
     assert scalar["s2"]["display_name"] == "other-slug"
@@ -3427,7 +3427,7 @@ def _windowless_loader(tool, calls):
             "s1": {
                 "tool": tool,
                 "session_id": "s1",
-                "project": "tokdash",
+                "project": "token_dashboard",
                 "turns": [
                     sessions_module._build_turn(
                         turn_index=index,
@@ -3531,7 +3531,7 @@ def test_mimo_session_loader_reads_every_row_and_the_project_worktree(tmp_path):
 
     assert set(result) == {"s1", "s2"}
     assert [turn["timestamp_ms"] for turn in result["s1"]["turns"]] == [900, 1000, 1500, 2000]
-    assert result["s1"]["project"] == "tokdash"
+    assert result["s1"]["project"] == "token-dashboard"
     assert result["s1"]["display_name"] == "OpenCode title"
     assert result["s2"]["project"] == "other"
     assert result["s2"]["display_name"] == "other-slug"
@@ -3781,7 +3781,7 @@ def test_v9_migration_fixed_zero_rows_parity_across_read_paths(tmp_path):
     the column or parse_entries_json would reprice the free row from
     its token buckets (aggregate_entries vs query_entries divergence).
     """
-    from tokdash.compute import parse_entries_json
+    from token_dashboard.compute import parse_entries_json
 
     db_path = tmp_path / "usage.sqlite3"
     _v8_usage_db(db_path)
@@ -3997,7 +3997,7 @@ def test_aggregate_paths_keep_authoritative_free_rows_out_of_recompute(tmp_path)
 
 
 def test_parse_entries_json_accepts_authoritative_zero_cost():
-    from tokdash.compute import parse_entries_json
+    from token_dashboard.compute import parse_entries_json
 
     # grok-4.5 is $2 input per 1M in the packaged pricing DB: an unmarked
     # zero-cost row recomputes to $2, an authoritative one stays at 0.0.
@@ -4036,7 +4036,7 @@ def test_parse_entries_json_accepts_authoritative_zero_cost():
 def test_build_source_signature_extra_round_trip():
     files = (("/tmp/x.jsonl", 123, 456),)
     parser_sig = {
-        "object": "tokdash.sources.coding_tools.TestParser",
+        "object": "token_dashboard.sources.coding_tools.TestParser",
         "version": 1,
         "entry_format": 1,
     }

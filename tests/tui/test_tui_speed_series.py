@@ -22,7 +22,7 @@ textual = pytest.importorskip("textual", reason="the TUI tests need textual")
 
 from textual.widgets import DataTable, ListView  # noqa: E402
 
-from tokdash.tui.data import FetchOutcome  # noqa: E402
+from token_dashboard.tui.data import FetchOutcome  # noqa: E402
 from support.tui import (  # noqa: E402
     SHARED_MODEL,
     api,  # noqa: F401  (the fixture these tests ask pytest for)

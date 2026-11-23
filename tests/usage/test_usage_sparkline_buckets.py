@@ -5,11 +5,11 @@ import time
 
 import pytest
 
-from tokdash.compute import parse_entries_json
-from tokdash.dateutil import parse_date_range
-from tokdash.usage_buckets import bucket_granularity, bucket_key, bucket_key_resolver, interval_buckets, local_hour_keys
-from tokdash.usage_store import UsageEntryStore, build_source_signature
-from tokdash.sources.openclaw import _openclaw_usage_from_store
+from token_dashboard.compute import parse_entries_json
+from token_dashboard.dateutil import parse_date_range
+from token_dashboard.usage_buckets import bucket_granularity, bucket_key, bucket_key_resolver, interval_buckets, local_hour_keys
+from token_dashboard.usage_store import UsageEntryStore, build_source_signature
+from token_dashboard.sources.openclaw import _openclaw_usage_from_store
 
 
 def entries():
@@ -76,7 +76,7 @@ def test_wide_pre_epoch_windows_never_require_windows_local_time_conversion():
 
 
 def test_tokscale_backend_reuses_loaded_entries_for_hourly_buckets(monkeypatch):
-    from tokdash import compute
+    from token_dashboard import compute
 
     since, until = parse_date_range("2026-09-21", "2026-09-21")
     calls = []
@@ -93,7 +93,7 @@ def test_tokscale_backend_reuses_loaded_entries_for_hourly_buckets(monkeypatch):
 
 @pytest.mark.parametrize("raw", [[], entries()[:2]])
 def test_empty_and_recorded_cost_usage_never_loads_pricing(monkeypatch, raw):
-    from tokdash import compute
+    from token_dashboard import compute
 
     def unexpected_pricing_load():
         raise AssertionError("recorded costs need no pricing file read")
@@ -106,7 +106,7 @@ def test_empty_and_recorded_cost_usage_never_loads_pricing(monkeypatch, raw):
 
 
 def test_tokenless_charges_are_visible_but_empty_models_stay_suppressed(monkeypatch, tmp_path):
-    from tokdash import compute
+    from token_dashboard import compute
 
     def unexpected_pricing_load():
         raise AssertionError("tokenless rows need no pricing file read")
@@ -167,7 +167,7 @@ def test_native_app_totals_keep_all_integer_components_and_event_order_fees():
 
 @pytest.mark.parametrize("amount,expected", [(436.905, 436.90), (2188.175, 2188.18), (2.675, 2.68)])
 def test_usage_cent_rounding_is_independent_of_binary_partition_noise(amount, expected):
-    from tokdash.compute import _round_usage_cost
+    from token_dashboard.compute import _round_usage_cost
     for noise in (-1e-10, 0, 1e-10):
         assert _round_usage_cost(amount + noise) == expected
 
@@ -344,8 +344,8 @@ def test_bounded_monthly_read_uses_disjoint_indexed_ranges_and_iterable_sources(
 @pytest.mark.parametrize("shape", ["sparse", "dense", "long"])
 def test_shared_clock_and_bucket_pass_matches_independent_aggregations(granularity, first_day, last_day, shape):
     import random
-    from tokdash.sessions import _merged_interval_ms
-    from tokdash.usage_buckets import merged_interval_buckets
+    from token_dashboard.sessions import _merged_interval_ms
+    from token_dashboard.usage_buckets import merged_interval_buckets
     since, until = parse_date_range(first_day, last_day)
     first, last = int(since.timestamp()*1000), int(until.timestamp()*1000)
     span = last-first

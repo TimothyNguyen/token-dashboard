@@ -6,7 +6,7 @@ packages/coding-agent/src/core/session-manager.ts:
 createBranchedSession (label filtering/relinked parents), forkFrom (verbatim
 entries and parentSession), assertValidSessionId (custom IDs with underscores).
 The initial parent/child token example follows the reporter's redacted fixture:
-https://github.com/JingbiaoMei/Tokdash/issues/124#issuecomment-5855921857
+https://github.com/TimothyNguyen/token-dashboard/issues/124#issuecomment-5855921857
 """
 import copy
 import json
@@ -16,19 +16,19 @@ from types import SimpleNamespace
 
 import pytest
 
-from tokdash import compute, sessions
-from tokdash.compute import _collect_parser_file
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import BaseParser, PiAgentParser, _sig_cache
-from tokdash.usage_store import UsageEntryStore
+from token_dashboard import compute, sessions
+from token_dashboard.compute import _collect_parser_file
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import BaseParser, PiAgentParser, _sig_cache
+from token_dashboard.usage_store import UsageEntryStore
 
 
 @pytest.fixture(autouse=True)
 def isolated(monkeypatch, tmp_path):
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
     monkeypatch.setenv("PI_AGENT_DIR", str(tmp_path / "pi"))
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(tmp_path / "data"))
-    monkeypatch.setenv("TOKDASH_USAGE_DB_DURABLE", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path / "data"))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_DURABLE", "0")
     _sig_cache.clear()
     BaseParser._entry_cache.clear()
 
@@ -237,8 +237,8 @@ def test_missing_parents_with_underscore_custom_ids_stay_separate(tmp_path):
 
 @pytest.mark.parametrize("delete_root", [False, True])
 def test_durable_ancestry_survives_deleted_intermediate_and_restart(tmp_path, monkeypatch, delete_root):
-    monkeypatch.setenv("TOKDASH_USAGE_DB_DURABLE", "1")
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_DURABLE", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     root = tmp_path / "pi"
     a, b, c = turn("a", 1000), turn("b", 500), turn("c", 100)
     parent = write(root / "a", "parent", [a])
@@ -249,7 +249,7 @@ def test_durable_ancestry_survives_deleted_intermediate_and_restart(tmp_path, mo
     middle.unlink()
     if delete_root:
         parent.unlink()
-    from tokdash.sources import pi_forks
+    from token_dashboard.sources import pi_forks
     pi_forks._header.cache_clear()
     store = UsageEntryStore(db)
     sync(store, root)
@@ -313,7 +313,7 @@ def test_production_sync_context_and_parser_migration(tmp_path, monkeypatch):
 
 @pytest.mark.parametrize("durable", ["0", "1"])
 def test_missing_parent_across_restart(tmp_path, monkeypatch, durable):
-    monkeypatch.setenv("TOKDASH_USAGE_DB_DURABLE", durable)
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_DURABLE", durable)
     root = tmp_path / "pi"
     shared = turn("a", 1000)
     parent = write(root, "parent", [shared])
@@ -322,7 +322,7 @@ def test_missing_parent_across_restart(tmp_path, monkeypatch, durable):
     db_path = tmp_path / "usage.db"
     sync(UsageEntryStore(db_path), root)
     parent.unlink()
-    from tokdash.sources import pi_forks
+    from token_dashboard.sources import pi_forks
     pi_forks._header.cache_clear()
     store = UsageEntryStore(db_path)
     sync(store, root)

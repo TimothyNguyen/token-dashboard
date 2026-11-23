@@ -84,7 +84,7 @@ def _notice(tmp_path: Path, detail: str):
 def test_a_refused_network_is_not_reported_as_an_expired_sign_in(tmp_path):
     notice = _notice(tmp_path, "network_blocked")
 
-    # Still a call to action (the user has to fix something outside Tokdash), but about the
+    # Still a call to action (the user has to fix something outside TokenDashboard), but about the
     # network: the sign-in works, so "open Claude Code to refresh it" cannot help.
     assert notice == {"text": "Claude Code refused this network", "amber": True}
 

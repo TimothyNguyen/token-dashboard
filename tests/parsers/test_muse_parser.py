@@ -17,12 +17,12 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import clientpaths
-from tokdash.compute import _collect_parser_file
-from tokdash.pricing import PricingDatabase
-from tokdash.sources import coding_tools as ct
-from tokdash.sources.coding_tools import BaseParser, CodingToolsUsageTracker, MuseParser
-from tokdash.usage_store import UsageEntryStore
+from token_dashboard import clientpaths
+from token_dashboard.compute import _collect_parser_file
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources import coding_tools as ct
+from token_dashboard.sources.coding_tools import BaseParser, CodingToolsUsageTracker, MuseParser
+from token_dashboard.usage_store import UsageEntryStore
 
 SID = "11111111-1111-4111-8111-111111111111"
 CID = "22222222-2222-4222-8222-222222222222"
@@ -227,7 +227,7 @@ def test_child_log_counted_and_parent_mirror_dropped(monkeypatch, tmp_path):
 
 def test_relative_xdg_data_home_is_ignored(monkeypatch, tmp_path):
     """The Base Directory spec says relative XDG paths should be ignored.
-    Honouring one would resolve against Tokdash's working directory: the
+    Honouring one would resolve against TokenDashboard's working directory: the
     real Muse history goes unfound while an unrelated project-relative
     directory gets scanned."""
     home = tmp_path / "fake-home"

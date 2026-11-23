@@ -1,7 +1,7 @@
 """Repairing or purging the usage database must fail safely when it cannot finish.
 
-``tokdash db resync`` rebuilds the usage database into a temp file and swaps it
-in; ``tokdash uninstall --purge`` deletes it. On Windows a running server holds
+``token_dashboard db resync`` rebuilds the usage database into a temp file and swaps it
+in; ``token_dashboard uninstall --purge`` deletes it. On Windows a running server holds
 the file open, and any platform can fail the rename part-way. These tests
 simulate that with monkeypatched ``Path`` methods and check that the command
 leaves the live database (or a named backup) in place, says what to do next, and
@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import cli, usage_store
-from tokdash.onboard import engine, paths
+from token_dashboard import cli, usage_store
+from token_dashboard.onboard import engine, paths
 
 
 # --- db resync: a held usage DB must fail with a hint, not a traceback ---
@@ -22,7 +22,7 @@ from tokdash.onboard import engine, paths
 def test_db_resync_reports_friendly_error_when_db_held(tmp_path, monkeypatch):
     db = tmp_path / "usage.sqlite3"
     sqlite3.connect(str(db)).close()  # plain file; the store will schema it on demand
-    monkeypatch.setenv("TOKDASH_USAGE_DB_PATH", str(db))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_PATH", str(db))
     monkeypatch.setattr(cli, "_sync_usage_database", lambda: {"usage_entries": 0})
 
     real_replace = Path.replace
@@ -36,7 +36,7 @@ def test_db_resync_reports_friendly_error_when_db_held(tmp_path, monkeypatch):
     status = cli._resync_usage_database()
 
     assert status["ok"] is False
-    assert "tokdash serve" in status["error"]
+    assert "token_dashboard serve" in status["error"]
     assert db.exists()  # the live DB survived
     assert not list(tmp_path.glob("*.bak.*"))  # no half-done backup
     assert not list(tmp_path.glob("*.tmp.*"))  # no orphaned temp DB
@@ -58,7 +58,7 @@ def test_db_resync_rollback_restores_each_backup_to_its_own_path(tmp_path, monke
     # survives until the rename loop.
     db.write_bytes(b"not a sqlite database")
     shm.write_bytes(b"shm-bytes")
-    monkeypatch.setenv("TOKDASH_USAGE_DB_PATH", str(db))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_PATH", str(db))
     monkeypatch.setattr(cli, "_sync_usage_database", lambda: {"usage_entries": 0})
 
     real_replace = Path.replace
@@ -74,7 +74,7 @@ def test_db_resync_rollback_restores_each_backup_to_its_own_path(tmp_path, monke
     status = cli._resync_usage_database()
 
     assert status["ok"] is False
-    assert "tokdash serve" in status["error"]
+    assert "token_dashboard serve" in status["error"]
     assert db.read_bytes() == b"not a sqlite database"  # the -db backup went back to -db
     assert shm.read_bytes() == b"shm-bytes"  # the -shm backup went back to -shm
     assert not wal.exists()  # the mispairing would create it, holding the -shm backup
@@ -102,7 +102,7 @@ def test_purge_data_points_at_running_server_when_db_held(tmp_path, monkeypatch)
         raise OSError("held")
 
     monkeypatch.setattr(Path, "unlink", _no_unlink)
-    with pytest.raises(OSError, match="tokdash serve"):
+    with pytest.raises(OSError, match="token_dashboard serve"):
         engine._purge_data()
 
 
@@ -112,7 +112,7 @@ def test_purge_data_points_at_running_server_when_db_held(tmp_path, monkeypatch)
 def test_db_resync_reports_an_unfinished_rollback(tmp_path, monkeypatch):
     db = tmp_path / "usage.sqlite3"
     db.write_bytes(b"not a sqlite database")  # see the rollback test above
-    monkeypatch.setenv("TOKDASH_USAGE_DB_PATH", str(db))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_PATH", str(db))
     monkeypatch.setattr(cli, "_sync_usage_database", lambda: {"usage_entries": 0})
 
     real_replace = Path.replace
@@ -145,7 +145,7 @@ def test_db_resync_rolls_back_on_a_non_permission_oserror(tmp_path, monkeypatch)
     # renamed to .bak and no rollback attempted.
     db = tmp_path / "usage.sqlite3"
     db.write_bytes(b"not a sqlite database")
-    monkeypatch.setenv("TOKDASH_USAGE_DB_PATH", str(db))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_PATH", str(db))
     monkeypatch.setattr(cli, "_sync_usage_database", lambda: {"usage_entries": 0})
 
     real_replace = Path.replace
@@ -168,7 +168,7 @@ def test_db_resync_rolls_back_on_a_non_permission_oserror(tmp_path, monkeypatch)
     # The real cause is named, and the user is not sent to stop a server that is
     # not holding anything.
     assert "Invalid cross-device link" in status["error"]
-    assert "tokdash serve" not in status["error"]
+    assert "token_dashboard serve" not in status["error"]
 
 
 def test_db_resync_reports_an_unfinished_rollback_after_a_non_permission_oserror(
@@ -176,7 +176,7 @@ def test_db_resync_reports_an_unfinished_rollback_after_a_non_permission_oserror
 ):
     db = tmp_path / "usage.sqlite3"
     db.write_bytes(b"not a sqlite database")
-    monkeypatch.setenv("TOKDASH_USAGE_DB_PATH", str(db))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_PATH", str(db))
     monkeypatch.setattr(cli, "_sync_usage_database", lambda: {"usage_entries": 0})
 
     real_replace = Path.replace
@@ -199,7 +199,7 @@ def test_db_resync_reports_an_unfinished_rollback_after_a_non_permission_oserror
     assert surviving.name in status["error"]
     assert "restore it by hand" in status["error"]
     assert "rolling the resync back did not finish" in status["error"]
-    assert "tokdash serve" not in status["error"]
+    assert "token_dashboard serve" not in status["error"]
 
 
 # --- a failed connect must not leak the handle it opened ---
@@ -209,7 +209,7 @@ def test_usage_store_connect_closes_the_handle_when_schema_setup_fails(tmp_path,
     # _connect() runs schema setup before handing the connection out, so a failure
     # there escapes past every `with closing(self._connect())` and leaks the handle.
     # A corrupt database is the common path into that branch. On Windows the leaked
-    # handle then blocks renaming the file, which made `tokdash db resync` fail on
+    # handle then blocks renaming the file, which made `token_dashboard db resync` fail on
     # exactly the broken database it exists to repair — and blame a running server.
     db = tmp_path / "usage.sqlite3"
     db.write_bytes(b"not a sqlite database")
@@ -238,11 +238,11 @@ def test_db_resync_repairs_a_corrupt_database(tmp_path, monkeypatch):
     # a corrupt DB must not come back as "held open by another process".
     db = tmp_path / "usage.sqlite3"
     db.write_bytes(b"not a sqlite database")
-    monkeypatch.setenv("TOKDASH_USAGE_DB_PATH", str(db))
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_PATH", str(db))
     monkeypatch.setattr(cli, "_sync_usage_database", lambda: {"usage_entries": 3})
 
     status = cli._resync_usage_database()
 
     assert status.get("ok") is True, status.get("error")
-    assert "tokdash serve" not in str(status.get("error", ""))
+    assert "token_dashboard serve" not in str(status.get("error", ""))
     assert len(status["backups"]) == 1  # the corrupt file was kept as a .bak

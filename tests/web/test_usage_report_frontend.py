@@ -31,7 +31,7 @@ I18N_LANGS = ("en", "zh", "ja", "ko", "es", "pt")
 # Kana and Han, for the copy rules that only apply where words carry no spaces.
 CJK = r"[぀-ヿ一-鿿]"
 
-# The source line names the selected server whose tokdash counted the usage.
+# The source line names the selected server whose token_dashboard counted the usage.
 MACHINE_KEYS = (
     "usageReportFooterSrc",
 )
@@ -980,7 +980,7 @@ def test_the_server_warms_the_exact_facet_string_the_tab_asks_for() -> None:
     from the Python constant still passes, and the tab just quietly goes back to
     paying the cold scan it used to.
     """
-    from tokdash import api
+    from token_dashboard import api
 
     block = _report_block(_source())
     match = re.search(r"const USAGE_REPORT_FACETS = '([^']+)';", block)
@@ -1153,7 +1153,7 @@ def test_the_warmers_windows_match_the_tabs_own_across_years(tmp_path: Path) -> 
     cross two year boundaries and a leap day. The riskiest divergence is the week
     start: JavaScript's getDay() calls Sunday 0, Python's weekday() calls Monday 0.
     """
-    from tokdash import api
+    from token_dashboard import api
 
     days = [date(2024, 1, 1) + timedelta(days=n) for n in range(900)]
     helpers = "\n".join(
@@ -2235,7 +2235,7 @@ usageReportRenderLoading();
 const node = (id) => document.getElementById(id);
 process.stdout.write(JSON.stringify({
   sections: Object.fromEntries(SECTIONS.map((id) => [id, node(id).textContent])),
-  kpis: Object.fromEntries(KPIS.map((id) => [id, [node(id).textContent, node(id).classList.contains('tokdash-loading-placeholder')]])),
+  kpis: Object.fromEntries(KPIS.map((id) => [id, [node(id).textContent, node(id).classList.contains('token-dashboard-loading-placeholder')]])),
   title: node('usageReportTitle').textContent,
   banner: node('usageReportBanner').hidden,
   statePanel: node('usageReportStatePanel').hidden,
@@ -2992,7 +2992,7 @@ const busy = {
   projectsAvailable: true,
   projectCount: 258,
   projectRows: Array.from({ length: 8 }, (_u, i) => ({
-    project: 'tokdash-project-' + (i + 1) + '-with-a-very-long-repository-name',
+    project: 'token-dashboard-project-' + (i + 1) + '-with-a-very-long-repository-name',
     tokens: (9 - i) * 3e9,
   })),
   facetTotal: 58e9,
@@ -3108,7 +3108,7 @@ process.stdout.write(JSON.stringify(report));
     # The busy month fits three project rows once the heat cells shrink, so
     # the ladder must spend the cells before it gives up the third row.
     assert cards["amber/light"]["rows"] >= 3, "a project row was dropped while a smaller heat cell could have paid for it"
-    assert cards["amber/light"]["file"] == "tokdash-report-2026-09-01_2026-09-30-amber-default-light.png"
+    assert cards["amber/light"]["file"] == "token-dashboard-report-2026-09-01_2026-09-30-amber-default-light.png"
     # Neither tier carries a footer manifest or a reconciliation line any more;
     # the amber tier is a top-5 project ranking and nothing else.
     green = " ".join(cards["green/light"]["texts"])
@@ -3117,8 +3117,8 @@ process.stdout.write(JSON.stringify(report));
         assert "no project names" not in blob and "no prompt text" not in blob
         assert "Grouped by repository" not in blob
     assert "TOP PROJECTS" in amber and "PROJECTS ·" not in amber, "the project count went with the label"
-    assert "tokdash-project-" not in green
-    assert "tokdash-project-" in amber
+    assert "token-dashboard-project-" not in green
+    assert "token-dashboard-project-" in amber
     # Both rankings run to five: the fixture carries five of each and every
     # one must reach the canvas, not a silent top-3.
     assert cards["green/light"]["harnessIcons"] == 5, "the harness ranking stopped short of five"
@@ -3297,7 +3297,7 @@ for (const theme of ['paper', 'Ocean Blue', '', '!!!', null]) {
 }
 process.stdout.write(JSON.stringify(names));
 """)
-    stem = "tokdash-report-2026-09-01_2026-09-30-amber"
+    stem = "token-dashboard-report-2026-09-01_2026-09-30-amber"
     assert report == {
         "paper": f"{stem}-paper-dark.png",
         "Ocean Blue": f"{stem}-oceanblue-dark.png",
@@ -3569,7 +3569,7 @@ def test_every_export_writes_both_themes_for_the_tier_it_names(tmp_path: Path) -
 
     def files(*keys: str) -> list[str]:
         return [
-            f"tokdash-report-2026-09-01_2026-09-30-{key.split(':')[0]}-oceanblue-{key.split(':')[1]}.png"
+            f"token-dashboard-report-2026-09-01_2026-09-30-{key.split(':')[0]}-oceanblue-{key.split(':')[1]}.png"
             for key in keys
         ]
 
@@ -3639,7 +3639,7 @@ def test_a_download_never_names_a_window_it_did_not_paint(tmp_path: Path) -> Non
         f"september/{tier}/{mode}" for tier in ("green", "amber") for mode in ("light", "dark")
     ], "an overtaken paint still drew its cards"
     assert out["previews"] == ["amber:dark", "amber:light", "green:dark", "green:light"]
-    assert out["cardFile"] == "tokdash-report-2026-09-01_2026-09-01-green-default-light.png"
+    assert out["cardFile"] == "token-dashboard-report-2026-09-01_2026-09-01-green-default-light.png"
     assert out["boxes"] == [2, 2]
 
 
@@ -3701,7 +3701,7 @@ def test_share_prefs_carry_the_nickname_and_the_cost_choice(tmp_path: Path) -> N
     Cost prints by default (the header is tokens and cost), and the toggle is
     the opt-out. Only a prefsV-stamped blob may carry that opt-out: period
     clicks write prefs too, so an unstamped includeCost false is incidental.
-    Every other stored key is `tokdash-*`, so this one is too, and a bad blob
+    Every other stored key is `token-dashboard-*`, so this one is too, and a bad blob
     or a full store is no prefs rather than a broken tab.
     """
     program = _report_dom(
@@ -3714,7 +3714,7 @@ def test_share_prefs_carry_the_nickname_and_the_cost_choice(tmp_path: Path) -> N
     defaults = {"period": "month", "serverId": "local", "nickname": "", "includeCost": True}
     assert out["nothingStored"] == defaults
     [key] = out["keys"]
-    assert key.startswith("tokdash-") and "." not in key, key
+    assert key.startswith("token-dashboard-") and "." not in key, key
     assert out["written"] == {
         "prefsV": 2, "period": "year", "serverId": "mac", "nickname": "desk", "includeCost": False,
     }

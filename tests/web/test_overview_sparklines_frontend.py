@@ -39,12 +39,12 @@ from pathlib import Path
 
 import pytest
 
-import tokdash
+import token_dashboard
 
 from support.frontend import needs_node, run_node
 
 
-INDEX_HTML = Path(tokdash.__file__).parent / "static" / "index.html"
+INDEX_HTML = Path(token_dashboard.__file__).parent / "static" / "index.html"
 MODULE_START = "// ===== Overview sparklines"
 LIVE_CONTRACT = Path(__file__).parents[1] / "fixtures" / "overview_sparklines" / "live_contract.json"
 MODULE_END = "    function renderOverviewTab(data) {"
@@ -1715,10 +1715,10 @@ process.stdout.write(JSON.stringify({repeatWrites,changedWrites:writes,
 ])
 def test_real_usage_response_draws_curves_without_stats(tmp_path, monkeypatch, first, last, granularity, points):
     """Exercise the actual SQL -> compute -> API -> JS contract, including batch messages."""
-    from tokdash import api, compute
-    from tokdash.dateutil import parse_date_range
-    from tokdash.sources.openclaw import _openclaw_usage_from_store
-    from tokdash.usage_store import UsageEntryStore, build_source_signature
+    from token_dashboard import api, compute
+    from token_dashboard.dateutil import parse_date_range
+    from token_dashboard.sources.openclaw import _openclaw_usage_from_store
+    from token_dashboard.usage_store import UsageEntryStore, build_source_signature
 
     since, until = parse_date_range(first, last)
     store = UsageEntryStore(tmp_path / "usage.sqlite3")

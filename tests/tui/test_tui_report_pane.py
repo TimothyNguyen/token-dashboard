@@ -5,7 +5,7 @@ facets -- and each figure divides by its own; the page says which. The When
 section reaches the whole hour grid and the whole week, Projects follows the sort
 it advertises, a facet that failed says it failed (and one still running, that it
 is running), and the pane leaves out the rules and store footer that the piped
-``tokdash report`` keeps. The piped report itself is test_tui_report.py's.
+``token_dashboard report`` keeps. The piped report itself is test_tui_report.py's.
 Pilots over the contract-shaped payloads in ``support.tui``.
 """
 from __future__ import annotations
@@ -69,7 +69,7 @@ def test_report_keeps_the_two_scans_denominators_apart(api):
         text = visible(app, "#rp-body")
         # Attribution divides the ANALYTICS scan, named above the rows it ranks.
         assert "shares divide the analytics scan total 900.0K" in text, text
-        assert "tokdash" in text and "500.0K" in text, text
+        assert "token_dashboard" in text and "500.0K" in text, text
         assert "unattributed" in text and "200.0K" in text, text
         # The two scans do not add up, and the page says so instead of hiding it.
         assert "differs from the scan total by +100,000 tokens" in text, text
@@ -385,7 +385,7 @@ def test_the_report_pane_shows_no_rules_and_no_store_footer(api):
 def test_the_piped_report_still_carries_its_rules_and_footer(api):
     """The pane's trim is the pane's business: the document is unchanged."""
 
-    from tokdash.tui.report import build_report_segments, emit_plain
+    from token_dashboard.tui.report import build_report_segments, emit_plain
 
     segments = build_report_segments(
         copy.deepcopy(fx.USAGE), copy.deepcopy(fx.INSIGHTS),

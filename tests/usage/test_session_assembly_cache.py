@@ -14,15 +14,15 @@ SQL one it replaced.
 """
 import json
 
-from tokdash import sessions as sessions_module
-from tokdash.sessions import (
+from token_dashboard import sessions as sessions_module
+from token_dashboard.sessions import (
     _assembly_token,
     _row_touches_window,
     _session_records_to_raw_sessions,
     _stored_session_assembly,
     _SESSION_ASSEMBLY,
 )
-from tokdash.usage_store import UsageEntryStore
+from token_dashboard.usage_store import UsageEntryStore
 
 DAY = 24 * 60 * 60 * 1000
 BASE = 1_800_000_000_000
@@ -303,14 +303,14 @@ def test_the_turn_budget_evicts_and_can_be_switched_off(tmp_path, monkeypatch):
     }
     store = _CountingStore(_store(tmp_path, contents))
 
-    monkeypatch.setenv("TOKDASH_SESSION_CACHE_TURNS", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_SESSION_CACHE_TURNS", "0")
     _stored_session_assembly(store, "claude", None, None)
     _stored_session_assembly(store, "claude", None, None)
     assert store.decoded_ids == [["s1", "s2"], ["s1", "s2"]]
     assert _SESSION_ASSEMBLY.stats() == (0, 0)
 
     # Room for one session of six turns, so caching both evicts the older.
-    monkeypatch.setenv("TOKDASH_SESSION_CACHE_TURNS", "6")
+    monkeypatch.setenv("TOKEN_DASHBOARD_SESSION_CACHE_TURNS", "6")
     _SESSION_ASSEMBLY.clear()
     _stored_session_assembly(store, "claude", None, None)
     assert _SESSION_ASSEMBLY.stats() == (1, 6)
@@ -319,6 +319,6 @@ def test_the_turn_budget_evicts_and_can_be_switched_off(tmp_path, monkeypatch):
 
     # Switching it off under a running server drops what it was already holding
     # rather than leaving it resident for the life of the process.
-    monkeypatch.setenv("TOKDASH_SESSION_CACHE_TURNS", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_SESSION_CACHE_TURNS", "0")
     _stored_session_assembly(store, "claude", None, None)
     assert _SESSION_ASSEMBLY.stats() == (0, 0)

@@ -10,7 +10,7 @@ translation is still missing.
 Run from the repo root::
 
     python3 scripts/release_body.py --version 2.6.2
-    gh release create "v2.6.2" --title "v2.6.2" --latest -F /tmp/tokdash-release-notes.md
+    gh release create "v2.6.2" --title "v2.6.2" --latest -F /tmp/token-dashboard-release-notes.md
 """
 from __future__ import annotations
 
@@ -21,9 +21,9 @@ import sys
 from pathlib import Path
 
 CHANGELOG_EN = Path("docs/development/CHANGELOG.md")
-RELEASE_NOTES_ZH = Path("src/tokdash/static/release-notes.zh.json")
-CHANGELOG_CN_URL = "https://github.com/JingbiaoMei/Tokdash/blob/main/docs/development/CHANGELOG_CN.md"
-DEFAULT_OUTPUT = Path("/tmp/tokdash-release-notes.md")
+RELEASE_NOTES_ZH = Path("src/token_dashboard/static/release-notes.zh.json")
+CHANGELOG_CN_URL = "https://github.com/TimothyNguyen/token-dashboard/blob/main/docs/development/CHANGELOG_CN.md"
+DEFAULT_OUTPUT = Path("/tmp/token-dashboard-release-notes.md")
 
 
 def section_for(version: str, text: str) -> str:

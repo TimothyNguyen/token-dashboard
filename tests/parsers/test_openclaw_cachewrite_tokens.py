@@ -7,7 +7,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from tokdash.sources.openclaw import get_session_usage
+from token_dashboard.sources.openclaw import get_session_usage
 
 
 def _write_jsonl(path: Path, rows: list[dict]) -> None:

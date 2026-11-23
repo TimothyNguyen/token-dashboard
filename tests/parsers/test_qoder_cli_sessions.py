@@ -21,18 +21,18 @@ from pathlib import Path
 
 import pytest
 
-import tokdash.sessions as sessions
-from tokdash import clientpaths
-from tokdash.pricing import PricingDatabase
-from tokdash.sessions import (
+import token_dashboard.sessions as sessions
+from token_dashboard import clientpaths
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sessions import (
     SESSION_TOOLS,
     _raw_sessions_for_tool,
     get_session_detail,
     get_sessions_data,
     reload_pricing_db,
 )
-from tokdash.sources import coding_tools
-from tokdash.sources.coding_tools import BaseParser, QoderCliParser, _sig_cache
+from token_dashboard.sources import coding_tools
+from token_dashboard.sources.coding_tools import BaseParser, QoderCliParser, _sig_cache
 
 # One priced model so billing drift is visible; "qmodel-unpriced" stays absent
 # from the pricing file to pin the zero-cost path.
@@ -155,7 +155,7 @@ def _clear_caches():
 def _isolate(monkeypatch, tmp_path):
     _ROOTS.clear()
     monkeypatch.setattr(clientpaths, "qoder_cli_roots", lambda: list(_ROOTS))
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(tmp_path / "data-home"))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path / "data-home"))
     monkeypatch.delenv("QODER_USD_PER_CREDIT", raising=False)
     monkeypatch.delenv("QODER_CLI_CONTEXT_WINDOW", raising=False)
     _clear_caches()
@@ -634,7 +634,7 @@ def test_runtime_config_one_implementation(monkeypatch, tmp_path, caplog):
     # (cache signature, then parse), so twice on a cold collect is CORRECT and
     # an exact-once assertion would fail against right code.
     caplog.clear()
-    with caplog.at_level(logging.WARNING, logger="tokdash.sources.coding_tools"):
+    with caplog.at_level(logging.WARNING, logger="token_dashboard.sources.coding_tools"):
         BaseParser._entry_cache.clear()
         _parser().collect(None, None)
     warns = [r for r in caplog.records if "invalid QODER_USD_PER_CREDIT" in r.getMessage()]
@@ -644,7 +644,7 @@ def test_runtime_config_one_implementation(monkeypatch, tmp_path, caplog):
 def test_parity_property_randomized(monkeypatch, tmp_path):
     """The release gate: live parser vs Sessions harness over the same fixture
     corpus, store off, WorkBuddy sum formula, five seeds."""
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     for seed in range(5):
         rng = random.Random(seed)
         root1 = tmp_path / f"root1-{seed}"

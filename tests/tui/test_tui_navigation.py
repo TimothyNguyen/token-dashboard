@@ -40,7 +40,7 @@ def test_the_top_row_names_the_page_and_the_palette_it_got(api, monkeypatch):
     async def body(app, pilot):
         brand = app.query_one("#brand")
         assert brand.display and brand.region.height == 1
-        assert str(app.query_one("#brand-name", Static).content) == "Tokdash"
+        assert str(app.query_one("#brand-name", Static).content) == "TokenDashboard"
         note = visible(app, "#brand-note").strip()
         assert note.startswith("colour:"), note
         assert "truecolour" in note, note

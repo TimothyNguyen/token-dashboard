@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from tokdash.tui import terminal
+from token_dashboard.tui import terminal
 
 
 def ceiling(env, **kwargs):
@@ -71,8 +71,8 @@ def test_no_color_is_obeyed_rather_than_argued_with():
     assert report["mono"] is True and report["ceiling"] == "mono"
 
 
-def test_tokdash_tui_color_always_overrides_no_color_and_says_it_did():
-    env = {"NO_COLOR": "1", "TOKDASH_TUI_COLOR": "always", "TERM": "xterm-256color"}
+def test_token_dashboard_tui_color_always_overrides_no_color_and_says_it_did():
+    env = {"NO_COLOR": "1", "TOKEN_DASHBOARD_TUI_COLOR": "always", "TERM": "xterm-256color"}
     got, written_env, report = ceiling(env, is_tty=True)
     assert (got, written_env.get("TEXTUAL_COLOR_SYSTEM")) == ("256", "256")
     assert "NO_COLOR" not in written_env, (

@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-import tokdash
+import token_dashboard
 
 from support.frontend import extract_js_function, index_source, needs_node, run_node
 from support.i18n_profile import (
@@ -29,9 +29,9 @@ from support.i18n_profile import (
 )
 
 
-INDEX_HTML = Path(tokdash.__file__).parent / "static" / "index.html"
-THEME_CONFIG_JS = Path(tokdash.__file__).parent / "static" / "theme-config.js"
-THEMES_CSS = Path(tokdash.__file__).parent / "static" / "themes.css"
+INDEX_HTML = Path(token_dashboard.__file__).parent / "static" / "index.html"
+THEME_CONFIG_JS = Path(token_dashboard.__file__).parent / "static" / "theme-config.js"
+THEMES_CSS = Path(token_dashboard.__file__).parent / "static" / "themes.css"
 
 
 def _heat_palette_for(theme: str) -> tuple[list[str], list[str]]:
@@ -1001,7 +1001,7 @@ function marked(id) {
 function milestoneState() {
   return {
     enabled: profileMilestonesEnabled,
-    stored: localStorage.getItem('tokdash-profile-milestones'),
+    stored: localStorage.getItem('token-dashboard-profile-milestones'),
     toggles: document.querySelectorAll('.profile-milestone-toggle').map((toggle) => ({
       legend: toggle.closest('.profile-activity-legend').id,
       pressed: toggle.getAttribute('aria-pressed'),
@@ -1181,7 +1181,7 @@ statsCache.default = [contribution(0, 1200000000)];
 setProfileActivityMode('daily');
 print(milestoneState());
 """,
-            prelude="localStorage.setItem('tokdash-profile-milestones', 'on');\n",
+            prelude="localStorage.setItem('token-dashboard-profile-milestones', 'on');\n",
         ),
     )
     assert remembered["enabled"] is True
@@ -1392,7 +1392,7 @@ def test_milestone_auras_follow_the_active_heat_palette(tmp_path: Path):
             THEME_CONFIG_JS.read_text(encoding="utf-8"),
             slice_statement(
                 source,
-                "const THEME_CONFIG = window.TOKDASH_THEME_CONFIG || {};",
+                "const THEME_CONFIG = window.TOKEN_DASHBOARD_THEME_CONFIG || {};",
                 "let HEAT_COLORS = [...HEAT_COLORS_LIGHT];",
             ),
             slice_line(source, "const VALID_STYLE_THEMES = ["),
@@ -1822,7 +1822,7 @@ def test_main_inline_script_parses_with_node(tmp_path: Path):
         r"<script(?:\s[^>]*)?>(.*?)</script>", source, flags=re.DOTALL
     )
     main_script = max(inline_scripts, key=len)
-    harness = tmp_path / "tokdash-main.js"
+    harness = tmp_path / "token-dashboard-main.js"
     harness.write_text(main_script, encoding="utf-8")
     subprocess.run(
         ["node", "--check", str(harness)],

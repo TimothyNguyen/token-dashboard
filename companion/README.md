@@ -1,8 +1,8 @@
-# Tokdash Companion
+# TokenDashboard Companion
 
-Native, lightweight menu-bar / notification-area clients for the Tokdash
+Native, lightweight menu-bar / notification-area clients for the TokenDashboard
 service. macOS uses SwiftUI `MenuBarExtra`; Windows uses C#/WPF with
-Win32 `Shell_NotifyIconW` interop. Both read the existing Tokdash HTTP API -
+Win32 `Shell_NotifyIconW` interop. Both read the existing TokenDashboard HTTP API -
 they do not parse logs, calculate prices, scan credentials, or replace the
 web dashboard.
 
@@ -18,7 +18,7 @@ companion/
     RESEARCH.md              platform research
   contract/             shared API contract + fixtures + expected behavior
     COMPANION_API.md
-    fixtures/           realistic JSON responses from the Tokdash API
+    fixtures/           realistic JSON responses from the TokenDashboard API
     expected/           observable UI outcomes per state
   assets/               logo assets (PNG)
   macos/                SwiftUI app + tests (built on the MacBook via SSH)

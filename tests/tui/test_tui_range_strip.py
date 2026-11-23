@@ -2,7 +2,7 @@
 
 Five shortcuts that print their own key, a chooser behind the last of them for
 the rest, and the exact dates as the last thing the strip gives up. Stepping and
-the chooser hand every window over as explicit dates; ``tokdash tui --period``
+the chooser hand every window over as explicit dates; ``token_dashboard tui --period``
 opens on the dates its token names; and a window change paints no old figures
 under the new label -- a late reply is dropped, a sort while the new window
 loads shows nothing yet, and the panes not on screen re-read only when shown.
@@ -21,9 +21,9 @@ textual = pytest.importorskip("textual", reason="the TUI tests need textual")
 
 from textual.widgets import Button, DataTable  # noqa: E402
 
-from tokdash.tui.data import FetchOutcome  # noqa: E402
-from tokdash.tui.ranges import MORE_KEY, STRIP_PRESETS  # noqa: E402
-from tokdash.tui.ranges import PRESETS as _ALL_PRESETS  # noqa: E402
+from token_dashboard.tui.data import FetchOutcome  # noqa: E402
+from token_dashboard.tui.ranges import MORE_KEY, STRIP_PRESETS  # noqa: E402
+from token_dashboard.tui.ranges import PRESETS as _ALL_PRESETS  # noqa: E402
 import support.tui as fx  # noqa: E402  (the layout-law tests call it fx)
 from support.tui import (  # noqa: E402
     SIZES,
@@ -221,7 +221,7 @@ def test_more_picker_resolves_a_preset_to_explicit_dates(api):
 
 
 def test_the_period_flag_opens_on_the_dates_it_names(api):
-    """``tokdash tui --period week`` may not open on Today.
+    """``token_dashboard tui --period week`` may not open on Today.
 
     run_tui validates the token and hands it to the app. Dropping it on the way
     in shows one day's figures under a claim of a week, which is the same

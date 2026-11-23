@@ -81,7 +81,7 @@ jobs:
             --verify-tag \
             --draft \
             --latest=false \
-            --title "Tokdash Companion ${{ needs.preflight.outputs.version }} (unsigned build)" \
+            --title "TokenDashboard Companion ${{ needs.preflight.outputs.version }} (unsigned build)" \
             --notes-file companion/RELEASE_NOTES.md
 
   windows:
@@ -110,13 +110,13 @@ jobs:
           dotnet --info
 
       - name: Restore locked dependencies
-        run: dotnet restore companion/windows/TokdashCompanion.slnx --locked-mode
+        run: dotnet restore companion/windows/TokenDashboardCompanion.slnx --locked-mode
 
       - name: Build and test unsigned portable ZIP
         shell: pwsh
         run: >
           companion/scripts/build_windows_release.ps1
-          -OutputDirectory "${{ runner.temp }}/tokdash-companion-windows"
+          -OutputDirectory "${{ runner.temp }}/token-dashboard-companion-windows"
 
       - name: Upload unsigned ZIP to draft release
         shell: pwsh
@@ -124,7 +124,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           COMPANION_VERSION: ${{ needs.preflight.outputs.version }}
         run: |
-          $asset = Join-Path $env:RUNNER_TEMP "tokdash-companion-windows\Tokdash-Companion-$env:COMPANION_VERSION-windows-x64-unsigned.zip"
+          $asset = Join-Path $env:RUNNER_TEMP "token-dashboard-companion-windows\TokenDashboard-Companion-$env:COMPANION_VERSION-windows-x64-unsigned.zip"
           gh release upload $env:GITHUB_REF_NAME $asset
           if ($LASTEXITCODE -ne 0) {
               throw "Failed to upload $asset"
@@ -155,18 +155,18 @@ jobs:
       - name: Build Store MSIX
         shell: pwsh
         env:
-          TOKDASH_MSIX_IDENTITY_NAME: ${{ vars.MSIX_IDENTITY_NAME }}
-          TOKDASH_MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
-          TOKDASH_MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
+          TOKEN_DASHBOARD_MSIX_IDENTITY_NAME: ${{ vars.MSIX_IDENTITY_NAME }}
+          TOKEN_DASHBOARD_MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
+          TOKEN_DASHBOARD_MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
         run: >
           companion/scripts/build_windows_msix.ps1
-          -OutputDirectory "${{ runner.temp }}/tokdash-companion-msix"
+          -OutputDirectory "${{ runner.temp }}/token-dashboard-companion-msix"
 
       - name: Upload Store MSIX for Partner Center
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: tokdash-companion-${{ needs.preflight.outputs.version }}-store-msix
-          path: ${{ runner.temp }}/tokdash-companion-msix/*
+          name: token-dashboard-companion-${{ needs.preflight.outputs.version }}-store-msix
+          path: ${{ runner.temp }}/token-dashboard-companion-msix/*
           if-no-files-found: error
           retention-days: 1
 
@@ -193,7 +193,7 @@ jobs:
 
       - name: Build unsigned universal DMG
         env:
-          COMPANION_OUTPUT_DIR: ${{ runner.temp }}/tokdash-companion-macos
+          COMPANION_OUTPUT_DIR: ${{ runner.temp }}/token-dashboard-companion-macos
         run: bash companion/scripts/build_macos_release.sh
 
       - name: Upload unsigned DMG to draft release
@@ -203,7 +203,7 @@ jobs:
         run: |
           set -euo pipefail
           gh release upload "$GITHUB_REF_NAME" \
-            "$RUNNER_TEMP/tokdash-companion-macos/Tokdash-Companion-$COMPANION_VERSION-macos-universal-unsigned.dmg"
+            "$RUNNER_TEMP/token-dashboard-companion-macos/TokenDashboard-Companion-$COMPANION_VERSION-macos-universal-unsigned.dmg"
 
   publish:
     name: Publish checksummed release
@@ -225,8 +225,8 @@ jobs:
           mkdir dist
           gh release download "$GITHUB_REF_NAME" \
             --dir dist \
-            --pattern "Tokdash-Companion-*-unsigned.zip" \
-            --pattern "Tokdash-Companion-*-unsigned.dmg"
+            --pattern "TokenDashboard-Companion-*-unsigned.zip" \
+            --pattern "TokenDashboard-Companion-*-unsigned.dmg"
           test "$(find dist -maxdepth 1 -type f | wc -l)" -eq 2
 
       - name: Generate and upload SHA256SUMS
@@ -236,8 +236,8 @@ jobs:
           set -euo pipefail
           cd dist
           sha256sum \
-            Tokdash-Companion-*-macos-universal-unsigned.dmg \
-            Tokdash-Companion-*-windows-x64-unsigned.zip \
+            TokenDashboard-Companion-*-macos-universal-unsigned.dmg \
+            TokenDashboard-Companion-*-windows-x64-unsigned.zip \
             > SHA256SUMS
           gh release upload "$GITHUB_REF_NAME" SHA256SUMS
 
@@ -249,7 +249,7 @@ jobs:
           gh release edit "$GITHUB_REF_NAME" \
             --draft=false \
             --latest=false \
-            --title "Tokdash Companion ${{ needs.preflight.outputs.version }} (unsigned build)"
+            --title "TokenDashboard Companion ${{ needs.preflight.outputs.version }} (unsigned build)"
 
 # Release assets move directly through a draft GitHub Release, so the public
 # download path uses no artifact storage. The one artifact is the Store MSIX, which

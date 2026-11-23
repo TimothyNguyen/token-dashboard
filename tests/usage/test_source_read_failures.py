@@ -13,8 +13,8 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import compute, sessions
-from tokdash.sources import coding_tools
+from token_dashboard import compute, sessions
+from token_dashboard.sources import coding_tools
 
 
 # --- rglob walks: a non-PermissionError OSError mid-walk must not blank the source ---

@@ -1,4 +1,4 @@
-# Tokdash TUI + `tokdash report` — implementation spec
+# TokenDashboard TUI + `token-dashboard report` — implementation spec
 
 Status: final, ready for parallel implementation. Every symbol, cache key, flag,
 binding, and Textual API in this document was verified against the source tree and
@@ -19,22 +19,22 @@ right about 8.2.8 — see §6 "verified Textual 8.x facts".
 
 ## 0. Architecture in one paragraph
 
-Two new commands on the existing flat argparse parser: `tokdash tui` (Textual,
-Overview + Report tabs) and `tokdash report` (one-shot, ccusage-style text). Both
-consume data through ONE new thin module (`src/tokdash/tui/data.py`) that imports
-`get_cached_or_fetch` and the private key helpers from `tokdash.api` — which
+Two new commands on the existing flat argparse parser: `token-dashboard tui` (Textual,
+Overview + Report tabs) and `token-dashboard report` (one-shot, ccusage-style text). Both
+consume data through ONE new thin module (`src/token_dashboard/tui/data.py`) that imports
+`get_cached_or_fetch` and the private key helpers from `token_dashboard.api` — which
 `cli.py` already imports at module top (`from .api import app`, cli.py:18), so
-importing `tokdash.api` costs the CLI nothing new. The TUI reproduces the exact
+importing `token_dashboard.api` costs the CLI nothing new. The TUI reproduces the exact
 route-level call shapes (same keys → same single-flight, stale-while-revalidate,
 pricing-aware, day-pinned cache semantics **within its own process**; the shared
 SQLite usage store remains the cross-process cache). No HTTP, no uvicorn, no daemon
-threads started by the TUI, no new global flags, no writes. `tokdash report` never
-imports Textual (headless-safe); only `src/tokdash/tui/app.py` imports `textual`.
+threads started by the TUI, no new global flags, no writes. `token-dashboard report` never
+imports Textual (headless-safe); only `src/token_dashboard/tui/app.py` imports `textual`.
 
 Locked decisions (user-approved, not re-litigated):
 1. Rendering stack = Textual (new direct pyproject dependency, pulls rich).
-2. Commands: `tokdash tui` (interactive, Overview + Report tabs) and
-   `tokdash report` (one-shot, honors `--json/--pretty/--output` via `_emit_json`).
+2. Commands: `token-dashboard tui` (interactive, Overview + Report tabs) and
+   `token-dashboard report` (one-shot, honors `--json/--pretty/--output` via `_emit_json`).
 3. Data access = in-process imports of the same functions the FastAPI routes
    delegate to — no HTTP client, no uvicorn.
 4. v1 scope = Overview + Report only. No Sessions tab, no quota, no writes, no
@@ -43,12 +43,12 @@ Locked decisions (user-approved, not re-litigated):
 ## 1. Module layout (every file justified)
 
 ```
-src/tokdash/tui/__init__.py      # empty package marker; auto-discovered under [tool.setuptools] package-dir {"": "src"}
-src/tokdash/tui/data.py          # the ONLY data-access module (TUI + report share it); wraps get_cached_or_fetch with the SAME keys the routes use
-src/tokdash/tui/formatting.py    # pure string rules (Run type, tokens, cost, duration, deltas, glyphs, null-vs-zero law); NO textual/rich import
-src/tokdash/tui/report.py        # shared segment renderer (build_report_segments + emit_plain/emit_ansi/emit_markup) + run_report(args); NO textual/rich import
-src/tokdash/tui/app.py           # Textual App + run_tui(args); the ONLY tokdash module importing textual (and the only one allowed to import rich)
-src/tokdash/cli.py               # EDIT: 2 choices + 2 lazy dispatch branches + tui flag guard + parse-time period guard
+src/token_dashboard/tui/__init__.py      # empty package marker; auto-discovered under [tool.setuptools] package-dir {"": "src"}
+src/token_dashboard/tui/data.py          # the ONLY data-access module (TUI + report share it); wraps get_cached_or_fetch with the SAME keys the routes use
+src/token_dashboard/tui/formatting.py    # pure string rules (Run type, tokens, cost, duration, deltas, glyphs, null-vs-zero law); NO textual/rich import
+src/token_dashboard/tui/report.py        # shared segment renderer (build_report_segments + emit_plain/emit_ansi/emit_markup) + run_report(args); NO textual/rich import
+src/token_dashboard/tui/app.py           # Textual App + run_tui(args); the ONLY token-dashboard module importing textual (and the only one allowed to import rich)
+src/token_dashboard/cli.py               # EDIT: 2 choices + 2 lazy dispatch branches + tui flag guard + parse-time period guard
 pyproject.toml                   # EDIT: add "textual>=8.0.0"
 docs/development/CHANGELOG.md    # EDIT: Unreleased → Added entries
 README.md + README_CN/ES/JA/KO/PT.md  # EDIT in the SAME PR: document both commands (RELEASING.md "README sync": six READMEs are one document)
@@ -68,18 +68,18 @@ Import boundaries (hard rules, each has a test):
 - `report.py` imports `data` + `formatting` + stdlib + `..cli._emit_json`; it must
   not import textual or rich (the emit_markup escape is hand-rolled, §5).
 - `app.py` may import textual and rich (textual pulls rich transitively).
-- `cli.py` imports `tokdash.tui.report` / `tokdash.tui.app` lazily inside their
+- `cli.py` imports `token_dashboard.tui.report` / `token_dashboard.tui.app` lazily inside their
   dispatch branches (precedent: `from .onboard.engine import run_lifecycle`,
   cli.py dispatch).
 
-Rejected file-level alternatives: a `tokdash/term.py` extraction of ANSI helpers
+Rejected file-level alternatives: a `token-dashboard/term.py` extraction of ANSI helpers
 (instead re-export the verified `onboard/engine.py:1611-1646` family — zero
 churn to shipped lifecycle code); one mega `tui.py` (would force the report path
 to import textual); an HTTP `clients/` module (locked decision 3); a separate
 `tui/cache.py` (the api module's cache is reused verbatim); a separate viewmodels
 layer (the segment builder in report.py is the view model).
 
-## 2. CLI integration (`src/tokdash/cli.py`) — exact edits
+## 2. CLI integration (`src/token_dashboard/cli.py`) — exact edits
 
 1. **choices (cli.py:85)** — add two words, keep everything else byte-identical:
    ```python
@@ -128,9 +128,9 @@ layer (the segment builder in report.py is the view model).
    (cli.py:192-194 comment) holds because no flag names were added.
 5. **`db_action` positional (cli.py:88-94) is untouched and meaningless for both
    commands** — but it is NOT inert the way it looks: it has its own `choices`
-   list, so `tokdash report week` fails at argparse with "invalid choice: 'week'"
-   (exit 2), while `tokdash report status` is accepted and silently ignored (same
-   class as `tokdash db`'s argument). **Period is flag-only: `tokdash report
+   list, so `token-dashboard report week` fails at argparse with "invalid choice: 'week'"
+   (exit 2), while `token-dashboard report status` is accepted and silently ignored (same
+   class as `token-dashboard db`'s argument). **Period is flag-only: `token-dashboard report
    --period week`.** The README must say so.
 6. `_harden_windows_stdio()` already runs first in `cli()` (cli.py:997) — both
    commands inherit `errors="replace"` stdio on Windows.
@@ -139,7 +139,7 @@ Exit-code conventions: handlers return `int`; user-facing failures
 `raise SystemExit("message")` (stderr, exit 1); argparse misuse exit 2 via
 `parser.error`. The two new guards both use `parser.error` → exit 2.
 
-## 3. `src/tokdash/tui/data.py` — public signatures (exact)
+## 3. `src/token_dashboard/tui/data.py` — public signatures (exact)
 
 Imports (all verified to exist):
 ```python
@@ -167,7 +167,7 @@ from ..insights import compute_insights   # insights.py:279
 from ..usage_store import (
     UsageDatabaseSchemaTooNewError,        # usage_store.py:24
     UsageEntryStore,                       # usage_store.py:935 (__init__ mkdirs the DB parent — see ensure_usage_db_compatible)
-    persistent_usage_db_enabled,           # usage_store.py:537 (TOKDASH_USAGE_DB not in {0,false,no,off})
+    persistent_usage_db_enabled,           # usage_store.py:537 (TOKEN_DASHBOARD_USAGE_DB not in {0,false,no,off})
     raise_if_usage_db_incompatible,        # usage_store.py:68 (free function; read-only open, NO mkdir, silent unless too-new)
 )
 ```
@@ -184,7 +184,7 @@ class FetchOutcome:
 
 def ensure_usage_db_compatible() -> None:
     """Call once before UI/compute starts. NO-OP unless persistent_usage_db_enabled()
-    (under TOKDASH_USAGE_DB=0 the store is not consulted, and UsageEntryStore() would
+    (under TOKEN_DASHBOARD_USAGE_DB=0 the store is not consulted, and UsageEntryStore() would
     mkdir the DB parent — forbidden filesystem mutation). Raises
     UsageDatabaseSchemaTooNewError. Implementation:
         if persistent_usage_db_enabled(): raise_if_usage_db_incompatible()
@@ -244,7 +244,7 @@ def report_windows(today: datetime.date | None = None) -> list[tuple[str, str]]:
 
 def db_summary() -> str:
     """One-line db status for the TUI status bar / report footer.
-    if not persistent_usage_db_enabled(): return "usage db disabled (TOKDASH_USAGE_DB=0) — live parsing"
+    if not persistent_usage_db_enabled(): return "usage db disabled (TOKEN_DASHBOARD_USAGE_DB=0) — live parsing"
     store = UsageEntryStore(); st = store.status()
     return f"{st['path']} · {st['usage_entries']} usage rows"
     (status() keys verified: path, meta, usage_entries, quota_snapshots, sources,
@@ -262,7 +262,7 @@ All five `fetch_*` go through it. NEVER retry `UsageDatabaseSchemaTooNewError`
 (terminal by design, usage_store.py:24) or `ValueError`.
 
 Why key parity still matters even though `get_cached_or_fetch` is per-process
-memory (a TUI beside `tokdash serve` shares only the on-disk store): identical
+memory (a TUI beside `token-dashboard serve` shares only the on-disk store): identical
 keys give the TUI correct within-process semantics — single-flight, TTL,
 stale-while-revalidate, pricing-identity folding, and the day-pin on open windows
 (`_window_cache_key` stamps the capture day into OPEN-window keys, api.py:279-295,
@@ -275,7 +275,7 @@ optional; the band here is fed by `fetch_stats`), no `_warm_caches()` call (a
 serial TUI never fans out 20 tools; the 25s+ startup warm would be spent on keys
 the user may never view).
 
-## 4. `src/tokdash/tui/formatting.py` — pure rules, no textual/rich imports
+## 4. `src/token_dashboard/tui/formatting.py` — pure rules, no textual/rich imports
 
 Re-export the ANSI gate:
 ```python
@@ -372,9 +372,9 @@ def window_line(rng: dict) -> str
   mutating them corrupts later consumers in the same process). The non-mutation
   test (§10) locks this.
 
-## 5. `src/tokdash/tui/report.py` — shared renderer + one-shot command
+## 5. `src/token_dashboard/tui/report.py` — shared renderer + one-shot command
 
-**Shared-renderer seam (structural anti-drift):** the pipeable `tokdash report`
+**Shared-renderer seam (structural anti-drift):** the pipeable `token-dashboard report`
 bytes and the TUI Report tab are built by ONE function from the same three
 payloads, so they cannot disagree:
 
@@ -396,7 +396,7 @@ def build_report_segments(usage: dict, insights: dict | None, active_time: dict 
     # warn; the TUI hard-fails the whole pane on a real error, so None there
     # can only mean in-flight) and "db_line" (the app's cached db_summary line;
     # the builder must NOT call db_summary on the TUI path — repaints run on
-    # the UI event loop and a fresh machine's db_summary creates ~/.tokdash).
+    # the UI event loop and a fresh machine's db_summary creates ~/.token-dashboard).
 
 def emit_plain(segments: list[list[Run]]) -> str    # strips styles, no ANSI. Piped stdout, --output, tests.
 def emit_ansi(segments: list[list[Run]]) -> str     # applies _ok/_bad/_warn/_bold/_accent ("muted"/None → plain).
@@ -415,12 +415,12 @@ retry helper covers external contention):
    `ValueError` → `raise SystemExit(str(exc))` (normally the §2.2 parse guard
    already exited 2).
 2. `ensure_usage_db_compatible()`; `UsageDatabaseSchemaTooNewError` →
-   `raise SystemExit(f"{e} — run 'tokdash update'")`.
+   `raise SystemExit(f"{e} — run 'token-dashboard update'")`.
 3. Fetch, sequentially, usage-first (mirrors `loadUsageReport()` ordering,
    index.html:14363+):
    - `usage = fetch_usage(period_used, date_from, date_to).value` — hard-fail:
      `CacheBackpressureError` after 3 tries →
-     `SystemExit("Tokdash is busy computing — try again shortly")`; any other
+     `SystemExit("TokenDashboard is busy computing — try again shortly")`; any other
      exception → `SystemExit(str(e))`.
    - insights (SOFT): calendar case
      `fetch_insights("year", date_from, date_to, REPORT_FACETS, True)`; rolling
@@ -455,7 +455,7 @@ retry helper covers external contention):
 **Fixed section layout** (field-sourced; `—` = EM_DASH; null rules per §4 law):
 
 ```
-Tokdash report · {period label} · {window_line(usage.range)}[ · {insights.timezone}]
+TokenDashboard report · {period label} · {window_line(usage.range)}[ · {insights.timezone}]
 Tokens {fmt_tokens(total_tokens)}  {delta comparison.tokens_pct}
 Cost   {fmt_cost_headline(total_cost)}  {delta comparison.cost_pct}
 Msgs   {fmt_int(total_messages)}  {delta comparison.messages_pct}
@@ -503,7 +503,7 @@ Rejected report alternatives: three-window combined print (web prints one window
 `--period` picks it — and 3 windows triples cold compute); `--back N` chips;
 `--from/--to` flags.
 
-## 6. `src/tokdash/tui/app.py` — Textual structure
+## 6. `src/token_dashboard/tui/app.py` — Textual structure
 
 **Verified Textual 8.x facts (live-tested against textual 8.2.8 — do not "fix"
 these back to old-Textual patterns):**
@@ -557,21 +557,21 @@ these back to old-Textual patterns):**
 ```python
 def run_tui(args: argparse.Namespace) -> int:
     if not sys.stdout.isatty() or os.environ.get("TERM", "") == "dumb":
-        raise SystemExit("`tokdash tui` needs an interactive terminal. "
-                         "One-shot view: `tokdash report`; JSON: `tokdash export --pretty`.")
+        raise SystemExit("`token-dashboard tui` needs an interactive terminal. "
+                         "One-shot view: `token-dashboard report`; JSON: `token-dashboard export --pretty`.")
     try: ensure_usage_db_compatible()
     except UsageDatabaseSchemaTooNewError as e:
-        raise SystemExit(f"{e} — run 'tokdash update'")
+        raise SystemExit(f"{e} — run 'token-dashboard update'")
     if not period_is_recognized(args.period):        # belt-and-suspenders (§2.2 guard normally fires)
         raise SystemExit(f"Unknown period {args.period!r}.")
-    app = TokdashApp(initial_period=args.period)     # textual import stays inside this module
+    app = TokenDashboardApp(initial_period=args.period)     # textual import stays inside this module
     app.run()
     return app.return_code or 0                      # App.run() returns None; textual prescribes
                                                      # sys.exit(app.return_code) — without this the
                                                      # mid-run fatal exit never reaches the shell
 
-class TokdashApp(App):
-    TITLE = "tokdash"
+class TokenDashboardApp(App):
+    TITLE = "token-dashboard"
     CSS = """
     #status { height: 1; }
     #pane-overview, #pane-report { padding: 0 1; }
@@ -606,7 +606,7 @@ Footer
 ```
 The Report pane is ONE Static fed by the §5 shared segment builder — the same
 function that produces the piped report bytes, so the TUI Report tab and
-`tokdash report` structurally cannot drift (hero/streak/when/podium/agents all
+`token-dashboard report` structurally cannot drift (hero/streak/when/podium/agents all
 live inside the segments; progressive paint = re-emit with more sources filled).
 (Replaces any per-figure rp-* widget set.)
 
@@ -680,7 +680,7 @@ forced). Keypress-triggered — no midnight timer, no polling.
 
 **Failure delivery:** worker bodies raise; supervisors `except Exception` and
 classify the unwrapped error (WorkerFailed → `.error`) per the §7 matrix:
-`UsageDatabaseSchemaTooNewError` → `sys.stderr.write(f"{e} — run 'tokdash update'\n")`
+`UsageDatabaseSchemaTooNewError` → `sys.stderr.write(f"{e} — run 'token-dashboard update'\n")`
 then `self.exit(return_code=1)`; `CacheBackpressureError` (already 3 failed
 attempts inside data.py) → red `_bad`-styled line in that pane's body Static
 ("busy computing — press r"); any other Exception → pane-local red line
@@ -696,20 +696,20 @@ focus-nav); Sessions fan-out or quota in Overview; `activity-insights` strip
 
 ## 7. Error-handling matrix
 
-| Error | Raised by | `tokdash tui` | `tokdash report` | Retry? |
+| Error | Raised by | `token-dashboard tui` | `token-dashboard report` | Retry? |
 |---|---|---|---|---|
-| `UsageDatabaseSchemaTooNewError` | preflight / store / compute (terminal by design; never swallow) | startup: `SystemExit(f"{e} — run 'tokdash update'")` exit 1; mid-run: stderr print + `self.exit(return_code=1)`, propagated to the process via `run_tui`'s `return app.return_code or 0` | `SystemExit(f"{e} — run 'tokdash update'")` exit 1 | Never |
-| `CacheBackpressureError` | get_cached_or_fetch cold-miss contention | data.py retries 3× (450 ms·(n+1) + ≤250 ms jitter); still failing → pane-local "busy computing — press r" | same retry; usage → `SystemExit("Tokdash is busy computing — try again shortly")`; insights/active → soft-fail to dashes + warn line, exit 0 | 3× then stop |
+| `UsageDatabaseSchemaTooNewError` | preflight / store / compute (terminal by design; never swallow) | startup: `SystemExit(f"{e} — run 'token-dashboard update'")` exit 1; mid-run: stderr print + `self.exit(return_code=1)`, propagated to the process via `run_tui`'s `return app.return_code or 0` | `SystemExit(f"{e} — run 'token-dashboard update'")` exit 1 | Never |
+| `CacheBackpressureError` | get_cached_or_fetch cold-miss contention | data.py retries 3× (450 ms·(n+1) + ≤250 ms jitter); still failing → pane-local "busy computing — press r" | same retry; usage → `SystemExit("TokenDashboard is busy computing — try again shortly")`; insights/active → soft-fail to dashes + warn line, exit 0 | 3× then stop |
 | Unrecognized period token | §2.2 parse guard (tui/report) | exit 2, accepted-token list | exit 2, same | No |
 | `ValueError` from `resolve_report_period` | data.py | n/a (cycle lists are closed; parse guard fires) | `SystemExit(str(exc))` exit 1 | No |
 | `UnknownFacetError` (insights.py:59) | compute_insights | impossible — REPORT_FACETS verbatim; never interpolate facet strings | same | No |
 | Any other Exception in a worker | compute layer (fail-open paths already tried live parsers) | pane-local red error line, app alive | usage → `SystemExit(str(e))`; insights/active → warn + dashes, exit 0 | No |
-| Not a tty / `TERM=dumb` | `run_tui` preflight | `SystemExit` pointing at `tokdash report` / `tokdash export` | n/a (report never needs a tty) | No |
+| Not a tty / `TERM=dumb` | `run_tui` preflight | `SystemExit` pointing at `token-dashboard report` / `token-dashboard export` | n/a (report never needs a tty) | No |
 | argparse (unknown cmd, `report week` positional, flag misuse) | flat parser | exit 2 (existing behavior) | exit 2 | No |
 
 Invariant rows: never write `usage.sqlite3` outside store methods; never hold
 `usage_db_process_lock` across UI work; reads may themselves run a reprice repair
-(`_read_priced`) — fine, that's inside store code; respect `TOKDASH_USAGE_DB=0`
+(`_read_priced`) — fine, that's inside store code; respect `TOKEN_DASHBOARD_USAGE_DB=0`
 (no store construction → `ensure_usage_db_compatible` no-ops, `db_summary` prints
 the disabled line without touching the filesystem); `stats["sessions"]` is a
 legacy MESSAGE count (compute.py:1254-1266) — never label it "sessions";
@@ -728,11 +728,11 @@ previous-usage helpers directly.
   3.10 leg is the effective floor arbiter.
 - `app.py` may import rich; `data/formatting/report` must not (rich is not yet a
   direct dependency and only arrives via textual).
-- No new console script. `include-package-data` unaffected (`src/tokdash/tui/` is
+- No new console script. `include-package-data` unaffected (`src/token_dashboard/tui/` is
   pure Python under the existing src-layout auto-discovery).
 - Dev/test runs ONLY in a dedicated venv per AGENTS.md — never the pipx runtime.
-  A pipx-installed tokdash on a dev box simply won't see textual until the
-  release ships; `tokdash tui` will then fail at the textual import inside
+  A pipx-installed token-dashboard on a dev box simply won't see textual until the
+  release ships; `token-dashboard tui` will then fail at the textual import inside
   `run_tui`'s module (acceptable pre-release; `report` stays usable only from the
   dev env for now).
 
@@ -740,21 +740,21 @@ previous-usage helpers directly.
 
 - `docs/development/CHANGELOG.md` → `## Unreleased` → `### Added` (Keep-a-Changelog
   prose style with PR ref, matching existing entries):
-  - `tokdash tui` — interactive terminal dashboard (Overview + Report) reading the
+  - `token-dashboard tui` — interactive terminal dashboard (Overview + Report) reading the
     same in-process compute and caches as the web dashboard, no server needed.
-  - `tokdash report` — ccusage-style one-shot activity report; `--json/--pretty/
+  - `token-dashboard report` — ccusage-style one-shot activity report; `--json/--pretty/
     --output` follow the export conventions.
 - `README.md` new "Terminal dashboard" subsection (both commands, `--period`
   semantics incl. flag-only-period note, interactive keys table) → same-PR sync of
   `README_CN/ES/JA/KO/PT.md` (RELEASING.md:51-55: a PR that changes README.md
   updates all five siblings in the same PR; headings/flags/code fences identical).
-- `src/tokdash/static/release-notes.json` edited at release bump only (not in the
+- `src/token_dashboard/static/release-notes.json` edited at release bump only (not in the
   feature PR).
 
 ## 10. Test plan
 
 `tests/tui/test_tui_data.py` (no textual; runs in the plain suite):
-- Key parity: monkeypatch `tokdash.tui.data.get_cached_or_fetch` recorder;
+- Key parity: monkeypatch `token_dashboard.tui.data.get_cached_or_fetch` recorder;
   `fetch_usage("today", d, d)` yields the key `== _usage_cache_key("today", d, d)`
   computed via the api helpers; same for insights (facets verbatim identity
   assert: `facets is REPORT_FACETS` reaches the key), active-time (include_review
@@ -765,7 +765,7 @@ previous-usage helpers directly.
   `"7d"`/`"14d"`/`"today"`/`"30"`/`"all"` pass through as `(token, None, None)`;
   `"banana"` → ValueError; case-insensitive `"WEEK"`.
 - `FetchOutcome` pass-through (status/age from a faked CacheFetchResult).
-- `ensure_usage_db_compatible`: no-op under `TOKDASH_USAGE_DB=0` (spy that
+- `ensure_usage_db_compatible`: no-op under `TOKEN_DASHBOARD_USAGE_DB=0` (spy that
   `raise_if_usage_db_incompatible` is NOT called and `UsageEntryStore` is NOT
   constructed); calls it when enabled; re-raises schema-too-new.
 - `db_summary` both modes (no store construction when disabled).
@@ -792,15 +792,15 @@ previous-usage helpers directly.
 
 `tests/tui/test_tui_report.py`:
 - Canned fixtures (deepcopy'd) for usage/insights/active_time (importorskip
-  nothing — pure python). Monkeypatch `tokdash.tui.report`'s imported fetch
+  nothing — pure python). Monkeypatch `token_dashboard.tui.report`'s imported fetch
   names + `_local_today`. Human path assertions: window line, "Top agent",
   `Sessions 42`, top-10 truncation, em-dash for a missing active_time join and a
   `cost=0.0` row, `projects.unavailable_reason` warn branch, source_errors footer
-  (string entry + dict-with-source), db footer both TOKDASH_USAGE_DB modes,
+  (string entry + dict-with-source), db footer both TOKEN_DASHBOARD_USAGE_DB modes,
   insights soft-fail → dash + `analytics scan failed` line + **exit 0**.
 - `--json`: `cli(["report","--period","week","--json","--pretty"])` stdout parses;
   keys == §5.4 contract; `--output` writes utf-8 with trailing newline and NO ANSI
-  even with `tokdash.tui.report._color_enabled` monkeypatched `lambda: True`;
+  even with `token_dashboard.tui.report._color_enabled` monkeypatched `lambda: True`;
   piped text (stdout not tty) width == 80 (assert a deterministic fixture line
   count / `shutil.get_terminal_size` monkeypatch).
 - Parser guards: `cli(["tui","--json"])` → exit 2; `cli(["report","--period","banana"])`
@@ -814,15 +814,15 @@ previous-usage helpers directly.
 
 `tests/tui/test_tui_import_discipline.py`:
 - Install a `sys.meta_path` finder that raises `ImportError("textual blocked")`
-  for `textual*`; inside it: `import tokdash.tui.data, tokdash.tui.formatting,
-  tokdash.tui.report` succeed, `run_report` (fetchers monkeypatched) returns 0;
+  for `textual*`; inside it: `import token_dashboard.tui.data, token_dashboard.tui.formatting,
+  token_dashboard.tui.report` succeed, `run_report` (fetchers monkeypatched) returns 0;
   `"textual" not in sys.modules` after. Removing the finder, `import
-  tokdash.tui.app` works.
+  token_dashboard.tui.app` works.
 
 `tests/tui/test_tui_app.py` (textual installed via `-e .`; keep the whole module on
 `pytest.importorskip("textual", reason=...)` so a stripped env stays green):
-- Canned FetchOutcomes monkeypatched at `tokdash.tui.app` fetch names;
-  `async with TokdashApp("today").run_test() as pilot:` — `ov-kpis` text contains
+- Canned FetchOutcomes monkeypatched at `token_dashboard.tui.app` fetch names;
+  `async with TokenDashboardApp("today").run_test() as pilot:` — `ov-kpis` text contains
   `"12.4M"` and `"$142.31"` and Overview-red up-delta (surface="overview");
   `ov-tools` row count == len(by_tool); skeleton copy present before completion;
   status bar contains `cache hit` + db line.
@@ -836,7 +836,7 @@ previous-usage helpers directly.
   captures the scheduled callback + delay == `STALE_REREAD_SECONDS == 12.0`;
   invoking the callback re-calls the fetch with `refresh=False` exactly once
   (second stale outcome does NOT reschedule for the same gen).
-- Day rollover: monkeypatch `tokdash.tui.app._local_today` to a mutable holder;
+- Day rollover: monkeypatch `token_dashboard.tui.app._local_today` to a mutable holder;
   flip the date, `pilot.press("r")` (or any key) → pane reload started (fetch call
   count grows) and `self._today` advanced.
 - `run_tui` tty preflight: monkeypatch `sys.stdout.isatty → False` → SystemExit
@@ -846,9 +846,9 @@ previous-usage helpers directly.
   `test_version_surfaces.py` unaffected; verified no test pins the choices list).
 
 Manual gates (spec'd, not CI'd) — Windows first-class per AGENTS.md:
-Windows Terminal + legacy conhost `tokdash report` (blocks→`#`, colors→plain when
-`_color_enabled` false); `tokdash tui` under WT; `NO_COLOR=1` and `TERM=dumb`
-refusals; `tokdash tui` running while `tokdash serve` is warm (stat-only sync, at
+Windows Terminal + legacy conhost `token-dashboard report` (blocks→`#`, colors→plain when
+`_color_enabled` false); `token-dashboard tui` under WT; `NO_COLOR=1` and `TERM=dumb`
+refusals; `token-dashboard tui` running while `token-dashboard serve` is warm (stat-only sync, at
 most one duplicate tail parse); cp1252 console with an emoji in a project path
 (errors='replace' survives — `_harden_windows_stdio`).
 
@@ -884,7 +884,7 @@ most one duplicate tail parse); cp1252 console with an emoji in a project path
 
 ## 12. Rejected alternatives (kept for the record)
 
-- `tokdash/term.py` refactor of `onboard/engine.py` (blast radius on shipped
+- `token-dashboard/term.py` refactor of `onboard/engine.py` (blast radius on shipped
   setup/doctor/update code; re-export instead).
 - README-lag policy ("other locales may lag one release") — violates
   RELEASING.md's same-PR six-README rule.
@@ -913,7 +913,7 @@ most one duplicate tail parse); cp1252 console with an emoji in a project path
    tool + indented model rows; openclaw synthesizes from `openclaw_models`.
 4. **Quota tab** → third TabPane, lazy (first activation loads, never
    re-fetches), companion-shaped cards (`charts.quota_table`), snapshot-only.
-   `u` is the ONLY network entry point (mirrors `tokdash quota poll`);
+   `u` is the ONLY network entry point (mirrors `token-dashboard quota poll`);
    no timer may ever poll. Reentrancy-guarded; stranded-load recovery
    mirrors the other panes.
 5. **Credits / status split** → codex reset credits are a bottom section
@@ -1031,7 +1031,7 @@ most one duplicate tail parse); cp1252 console with an emoji in a project path
    where → NO section at all (the "0 available" header belongs to a card
    that granted none, never to a universe without credits). `labels`
    (TOOL_LABELS) arrive as data — charts purity holds.
-9. **Bare `tokdash` prints help** → `command` default is None and `cli()`
+9. **Bare `token-dashboard` prints help** → `command` default is None and `cli()`
    answers None with `parser.print_help(); return 0` (global flags alone are
    still no verb). The old implicit `serve` + browser-open is gone; every
    autostart writer embeds "serve" explicitly, so nothing unattended rides

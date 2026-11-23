@@ -6,23 +6,23 @@ from pathlib import Path
 import sys
 
 import pytest
-from tokdash import speed_cache as cache, speed_worker, session_speed, compute, sessions, speed_native
-from tokdash.sources.coding_tools import CodingToolsUsageTracker
-from tokdash.usage_store import UsageEntryStore
-from tokdash.speed_mode import collect_timings
+from token_dashboard import speed_cache as cache, speed_worker, session_speed, compute, sessions, speed_native
+from token_dashboard.sources.coding_tools import CodingToolsUsageTracker
+from token_dashboard.usage_store import UsageEntryStore
+from token_dashboard.speed_mode import collect_timings
 
 @pytest.fixture
 def corpus(tmp_path,monkeypatch):
     sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
     import speed_fixtures, output_speed_expansion_fixtures
-    from bench_tokdash_server import _prune_parsers
+    from bench_token_dashboard_server import _prune_parsers
     root=tmp_path/'corpus';data=tmp_path/'data'
     inventory=output_speed_expansion_fixtures.build(root,20)
     for k,v in speed_fixtures.isolated_env(root,data,tmp_path/'xdg').items():
         monkeypatch.setenv(k,v)
     original=CodingToolsUsageTracker.__init__
     monkeypatch.setattr(CodingToolsUsageTracker,'__init__',original)
-    from tokdash import clientpaths
+    from token_dashboard import clientpaths
     for name in ('codex_sessions_dir','codex_archived_sessions_dir','dsh_sessions_dir','qwen_runtime_base','opencode_db_path','kilo_db_paths','mimocode_db_path'):
         monkeypatch.setattr(clientpaths,name,getattr(clientpaths,name))
     monkeypatch.setattr(sessions,'SESSION_TOOLS',sessions.SESSION_TOOLS)
@@ -40,7 +40,7 @@ def build_requested(request):
 
 def test_overview_ingest_never_constructs_timing_helpers_or_opens_speed_database(corpus,monkeypatch):
     root,data,_=corpus
-    import tokdash.sources.coding_tools as readers
+    import token_dashboard.sources.coding_tools as readers
     def forbidden(*args,**kwargs):
         raise AssertionError('ordinary accounting invoked a timing reader')
     for name in ('CodexResponseAssociation','KimiStepAssociation','omp_message_timing','QwenTimingAssociation','native_message_timing'):
@@ -59,7 +59,7 @@ def test_atomic_generation_counts_cached_bounds_and_session_model_parity(corpus,
     before=store.query_entries()
     request={'from':'2026-09-01','to':'2026-09-28','source':''}
     build_requested(request)
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION','1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION','1')
     payload=cache.payload(request['from'],request['to'])
     assert payload['cache']['state']=='ready'
     counts={r['source']:r['speed_calls'] for r in payload['rows']}
@@ -138,7 +138,7 @@ def test_terminal_snapshot_reads_stale_publication_without_rebuilding(corpus,mon
             c.execute("UPDATE message SET data=json_set(data,'$.tokens.output',77) WHERE id='m1'")
     else:
         import output_speed_expansion_fixtures as fixtures
-        from tokdash.sources.coding_tools import _sig_cache
+        from token_dashboard.sources.coding_tools import _sig_cache
         with Path(inventory['codex_file']).open('a') as stream:
             stream.write(''.join(json.dumps(row)+'\n' for row in fixtures.codex_call(100)))
         _sig_cache.clear()
@@ -183,7 +183,7 @@ def test_terminal_snapshot_preserves_failure_and_last_good_rows(corpus,monkeypat
 
 
 def test_covering_report_index_preserves_both_views_and_upgrades_only_in_worker(corpus,monkeypatch):
-    from tokdash import speed_report
+    from token_dashboard import speed_report
     compute._sync_usage_store(CodingToolsUsageTracker())
     request={'from':'2026-09-01','to':'2026-09-28','source':''}
     build_requested(request)
@@ -367,7 +367,7 @@ def test_native_selected_session_and_absent_clocks_have_cached_empty_bounds(corp
 @pytest.mark.parametrize('source', ['opencode', 'kilocode', 'mimo'])
 def test_stale_full_native_index_keeps_other_calls_and_refreshes_only_requested_session(corpus,monkeypatch,source):
     root,_,_=corpus
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION','1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION','1')
     compute._sync_usage_store(CodingToolsUsageTracker())
     db=root/(source+'.db')
     with sqlite3.connect(db) as c:
@@ -422,7 +422,7 @@ def test_stale_full_native_index_keeps_other_calls_and_refreshes_only_requested_
 @pytest.mark.parametrize('removed', [False, True])
 def test_unrequested_changed_native_scope_retains_last_good_or_retires_removed_database(corpus,monkeypatch,removed):
     root,_,_=corpus
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION','1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION','1')
     compute._sync_usage_store(CodingToolsUsageTracker())
     build_requested({'from':'2026-09-01','to':'2026-09-28','source':''})
     with closing(cache.connect()) as c:
@@ -453,7 +453,7 @@ def test_batch_limits_and_deduplicates_before_any_cache_work():
 @pytest.mark.parametrize('scope', ['native-session','sdk-session','batch','filtered-model','other-dates'])
 def test_partial_refresh_cannot_certify_model_window_after_unindexed_usage_appears(corpus,monkeypatch,scope):
     _,_,inventory=corpus
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION','1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION','1')
     store,_=compute._sync_usage_store(CodingToolsUsageTracker())
     request={'from':'2026-09-01','to':'2026-09-28','source':''}
     build_requested(request)
@@ -464,7 +464,7 @@ def test_partial_refresh_cannot_certify_model_window_after_unindexed_usage_appea
     header['payload']['id']='additional-codex-session'
     new_file=original.with_name('additional-session.jsonl')
     new_file.write_text(''.join(json.dumps(row)+'\n' for row in [header,*fixtures.codex_call(100)]))
-    from tokdash.sources.coding_tools import _sig_cache
+    from token_dashboard.sources.coding_tools import _sig_cache
     _sig_cache.clear()
     compute._sync_usage_store(CodingToolsUsageTracker())
     assert store.measurement_generation()>before
@@ -494,7 +494,7 @@ def test_partial_refresh_cannot_certify_model_window_after_unindexed_usage_appea
 
 @pytest.mark.parametrize('upgrade', ['unrecorded','older-contract','session-build'])
 def test_upgrade_rechecks_every_input_once_and_reuses_measurements(corpus,monkeypatch,upgrade):
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION','1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION','1')
     compute._sync_usage_store(CodingToolsUsageTracker())
     request={'from':'2026-09-01','to':'2026-09-28','source':''}
     build_requested(request)
@@ -502,7 +502,7 @@ def test_upgrade_rechecks_every_input_once_and_reuses_measurements(corpus,monkey
         before=[tuple(r) for r in c.execute('SELECT * FROM speed_responses ORDER BY source,entry_key')]
         if upgrade=='older-contract':
             # A contract change re-checks even an input that is still being written.
-            monkeypatch.setenv('TOKDASH_SPEED_SETTLE_SECONDS','3600')
+            monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_SETTLE_SECONDS','3600')
             c.execute("UPDATE speed_inputs SET usage_state=json_set(usage_state,'$[1][2]',0)")
         else:
             c.execute('UPDATE speed_inputs SET usage_state=NULL')
@@ -545,8 +545,8 @@ def test_timeline_equal_clocks_distinct_agents_filtered_models_and_summary_parit
 
 def test_native_opt_in_cache_cannot_contaminate_ordinary_usage(corpus):
     root,_,_=corpus
-    from tokdash.sources.coding_tools import OpenCodeParser
-    from tokdash.pricing import PricingDatabase
+    from token_dashboard.sources.coding_tools import OpenCodeParser
+    from token_dashboard.pricing import PricingDatabase
     parser=OpenCodeParser(PricingDatabase());parser.db_path=root/'opencode.db'
     with collect_timings(False):plain=parser.collect()
     with collect_timings():timed=parser.collect()
@@ -584,8 +584,8 @@ def test_long_filtered_gap_does_not_consume_the_entire_chart_budget():
 
 
 def test_zero_worker_pid_launches_the_next_job_instead_of_signalling_process_group(tmp_path,monkeypatch):
-    monkeypatch.setenv('TOKDASH_DATA_DIR',str(tmp_path/'data'))
-    monkeypatch.setenv('TOKDASH_USAGE_DB_PATH',str(tmp_path/'data'/'usage.sqlite3'))
+    monkeypatch.setenv('TOKEN_DASHBOARD_DATA_DIR',str(tmp_path/'data'))
+    monkeypatch.setenv('TOKEN_DASHBOARD_USAGE_DB_PATH',str(tmp_path/'data'/'usage.sqlite3'))
     assert not cache._alive('0') and not cache._alive(0) and not cache._alive('-1')
     assert not cache._alive('not a pid')
     launched=[]
@@ -633,8 +633,8 @@ def test_a_vanished_rollout_settles_instead_of_staying_pending(corpus,monkeypatc
     which is read there. A deleted one keeps its last read, or settles as
     unknown once the reader has changed; so does one an earlier build stranded.
     """
-    from tokdash import clientpaths
-    from tokdash.sources.coding_tools import _sig_cache
+    from token_dashboard import clientpaths
+    from token_dashboard.sources.coding_tools import _sig_cache
     root,_,inventory=corpus
     # The scan cache is keyed by path, and a passing case's tmp dir is reused.
     _sig_cache.clear()

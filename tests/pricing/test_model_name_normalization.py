@@ -3,7 +3,7 @@
 Covers provider prefix stripping, case/punctuation normalization,
 and snapshot/release suffix removal.
 """
-from tokdash.model_normalization import normalize_model_name
+from token_dashboard.model_normalization import normalize_model_name
 
 
 def test_provider_prefix_and_case_punctuation_normalization():

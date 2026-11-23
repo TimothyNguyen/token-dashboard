@@ -13,8 +13,8 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import output_speed as sp
-from tokdash.output_speed import (
+from token_dashboard import output_speed as sp
+from token_dashboard.output_speed import (
     KIMI_MAX_PLAUSIBLE_TOK_PER_S,
     STATUS_AMBIGUOUS_PAIR,
     STATUS_INVALID_TIMING,

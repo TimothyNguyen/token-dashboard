@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Tokdash Companion — UI Concept</title>
+<title>TokenDashboard Companion — UI Concept</title>
 <style>
 /* ============================================================
    Page chrome (prototype scaffolding — not part of the concept)
@@ -615,8 +615,8 @@ body {
 <body>
 
 <header class="page-head">
-  <h1>Tokdash Companion — UI concept</h1>
-  <p>Interactive HTML prototype. Fake data only; no network calls. Companion reads the local Tokdash HTTP API — it does not parse logs or replace the dashboard.</p>
+  <h1>TokenDashboard Companion — UI concept</h1>
+  <p>Interactive HTML prototype. Fake data only; no network calls. Companion reads the local TokenDashboard HTTP API — it does not parse logs or replace the dashboard.</p>
 </header>
 
 <div class="controls" role="group" aria-label="Prototype controls">
@@ -634,7 +634,7 @@ body {
       <option value="loading">Loading</option>
       <option value="refreshing">Refreshing with previous data</option>
       <option value="offline">Offline</option>
-      <option value="busy">Tokdash busy</option>
+      <option value="busy">TokenDashboard busy</option>
       <option value="partial">Partial data</option>
       <option value="empty">Empty today</option>
     </select>
@@ -668,8 +668,8 @@ body {
       <span class="mb-right">
         <svg width="15" height="11" viewBox="0 0 20 14" fill="currentColor" aria-hidden="true"><path d="M10 12.5a1.7 1.7 0 1 0 0 .01M10 9c-1.9 0-3.6.7-4.9 1.9l1.4 1.4A4.9 4.9 0 0 1 10 11c1.3 0 2.6.5 3.5 1.3l1.4-1.4A6.9 6.9 0 0 0 10 9zm0-4C7 5 4.2 6.1 2 8.3l1.4 1.4A9.3 9.3 0 0 1 10 7c2.5 0 4.8 1 6.6 2.7L18 8.3A11.3 11.3 0 0 0 10 5zm0-4C6.1 1 2.5 2.6-.6 5.6L.8 7A14.6 14.6 0 0 1 10 3c3.6 0 6.9 1.4 9.2 4l1.4-1.4A16.6 16.6 0 0 0 10 1z"/></svg>
         <svg width="22" height="11" viewBox="0 0 25 12" fill="none" stroke="currentColor" aria-hidden="true"><rect x="0.5" y="0.5" width="21" height="11" rx="3"/><rect x="2" y="2" width="14" height="8" rx="1.5" fill="currentColor" stroke="none"/><path d="M23.5 4v4a2.2 2.2 0 0 0 0-4z" fill="currentColor" stroke="none"/></svg>
-        <button class="mac-extra" id="mac-extra" aria-label="Tokdash, menu bar extra" title="Tokdash — Today $3.42 · 18.7M tokens">
-          <!-- Monochrome template variant of the Tokdash logo (docs/assets) -->
+        <button class="mac-extra" id="mac-extra" aria-label="TokenDashboard, menu bar extra" title="TokenDashboard — Today $3.42 · 18.7M tokens">
+          <!-- Monochrome template variant of the TokenDashboard logo (docs/assets) -->
           <svg id="mac-extra-icon" width="16" height="17" viewBox="0 0 371 394" fill="currentColor" aria-hidden="true">
             <rect x="24" y="24" width="323" height="296" rx="56" fill="none" stroke="currentColor" stroke-width="26"/>
             <path d="M146 312 L146 380 L226 312 Z"/>
@@ -679,14 +679,14 @@ body {
             <path d="M98 240 L160 158 L216 184 L294 84" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
             <circle cx="98" cy="240" r="20"/><circle cx="160" cy="158" r="20"/><circle cx="216" cy="184" r="20"/><circle cx="294" cy="84" r="20"/>
           </svg>
-          <span class="mac-tip" role="tooltip">Tokdash — Today $3.42 · 18.7M tokens</span>
+          <span class="mac-tip" role="tooltip">TokenDashboard — Today $3.42 · 18.7M tokens</span>
         </button>
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="7" cy="7" r="5.2"/><path d="m11 11 3.4 3.4" stroke-linecap="round"/></svg>
         <svg width="15" height="11" viewBox="0 0 16 12" fill="currentColor" aria-hidden="true"><rect x="0" y="0" width="16" height="3.4" rx="1.7"/><rect x="0" y="4.3" width="16" height="3.4" rx="1.7"/><rect x="0" y="8.6" width="16" height="3.4" rx="1.7"/></svg>
         <span class="dim" id="mac-clock">Sat 25 Jul&nbsp;&nbsp;20:20</span>
       </span>
     </div>
-    <div class="mac-pop" id="mac-pop" role="dialog" aria-label="Tokdash companion"></div>
+    <div class="mac-pop" id="mac-pop" role="dialog" aria-label="TokenDashboard companion"></div>
     <div class="closed-caption" id="mac-closed-cap" hidden>Closed state — monochrome template icon only, no permanent menu-bar text.<br/>Hover the icon to see its tooltip.</div>
   </div>
 </div>
@@ -716,8 +716,8 @@ body {
         <button class="win-tray-icon" tabindex="-1" aria-label="Show hidden icons">
           <svg width="11" height="11" viewBox="0 0 10 10" fill="none" stroke="#4A4A4A" stroke-width="1.5" aria-hidden="true"><path d="M2.2 3.8 5 6.6l2.8-2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <button class="win-tray-icon" id="win-tray-icon" aria-label="Tokdash, notification area icon. Right-click for menu." title="Tokdash — Today $3.42 · 18.7M tokens">
-          <!-- Color Tokdash logo, white interior for taskbar contrast (docs/assets) -->
+        <button class="win-tray-icon" id="win-tray-icon" aria-label="TokenDashboard, notification area icon. Right-click for menu." title="TokenDashboard — Today $3.42 · 18.7M tokens">
+          <!-- Color TokenDashboard logo, white interior for taskbar contrast (docs/assets) -->
           <svg id="win-tray-glyph" width="17" height="18" viewBox="0 0 371 394" aria-hidden="true">
             <rect x="24" y="24" width="323" height="296" rx="56" fill="#fff" stroke="#08253F" stroke-width="26"/>
             <path d="M146 312 L146 380 L226 312 Z" fill="#08253F"/>
@@ -727,7 +727,7 @@ body {
             <path d="M98 240 L160 158 L216 184 L294 84" fill="none" stroke="#B9967D" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
             <circle cx="98" cy="240" r="20" fill="#B9967D"/><circle cx="160" cy="158" r="20" fill="#B9967D"/><circle cx="216" cy="184" r="20" fill="#B9967D"/><circle cx="294" cy="84" r="20" fill="#B9967D"/>
           </svg>
-          <span class="win-tip" role="tooltip">Tokdash — Today $3.42 · 18.7M tokens</span>
+          <span class="win-tip" role="tooltip">TokenDashboard — Today $3.42 · 18.7M tokens</span>
         </button>
         <button class="win-tray-icon" tabindex="-1" aria-label="Network, volume, battery">
           <svg width="30" height="14" viewBox="0 0 34 14" fill="none" aria-hidden="true">
@@ -742,8 +742,8 @@ body {
       <button class="win-clock" tabindex="-1" aria-label="Date and time">8:20 PM<br/>25/07/2026</button>
     </div>
     <div class="win-desktop-edge" aria-hidden="true"></div>
-    <div class="win-menu" id="win-menu" role="menu" aria-label="Tokdash" hidden></div>
-    <div class="win-fly" id="win-fly" role="dialog" aria-label="Tokdash companion"></div>
+    <div class="win-menu" id="win-menu" role="menu" aria-label="TokenDashboard" hidden></div>
+    <div class="win-fly" id="win-fly" role="dialog" aria-label="TokenDashboard companion"></div>
     <div class="closed-caption" id="win-closed-cap" hidden>Closed state — one stable notification-area icon.<br/>Hover for the tooltip, right-click for the context menu.</div>
   </div>
 </div>
@@ -781,7 +781,7 @@ body {
     <li>Quota display: main surface shows only windows below their low-quota threshold, max two entries. Defaults: 5-hour 20%, weekly 10%; both configurable in Settings.</li>
     <li>Full quota list: a Low / All toggle inside the surface; All is grouped by provider, capped at four rows, and scrolls. No separate subscriptions window — everything stays in the status-bar surface.</li>
     <li>Naming: "Low" over "Urgent" — the section filters state; it is not an alarm list.</li>
-    <li>Branding: the concepts use the Tokdash logo from <code>docs/assets</code>, recreated inline so the file stays self-contained. macOS gets a monochrome template variant for the menu bar (per platform convention); Windows uses the color logo with a white interior so it stays readable on light and dark taskbars. Production should ship real rendered assets at each required size rather than scaled SVG.</li>
+    <li>Branding: the concepts use the TokenDashboard logo from <code>docs/assets</code>, recreated inline so the file stays self-contained. macOS gets a monochrome template variant for the menu bar (per platform convention); Windows uses the color logo with a white interior so it stays readable on light and dark taskbars. Production should ship real rendered assets at each required size rather than scaled SVG.</li>
     <li>Contribution heatmap: rejected. The dashboard's Stats tab already provides one; the companion answers three glance questions, and a heatmap answers none of them. It would also need year-range data the companion contract deliberately avoids fetching, and it conflicts with the "no decorative charts" direction.</li>
   </ul>
 
@@ -876,7 +876,7 @@ function heroHTML(state) {
   if (state === "empty") {
     return `<p class="kicker">Today</p>
       <p class="empty-today">No usage recorded today</p>
-      <p class="empty-sub">Tokdash is running. Today's totals will appear as tools report usage.</p>`;
+      <p class="empty-sub">TokenDashboard is running. Today's totals will appear as tools report usage.</p>`;
   }
   const dim = (state === "offline" || state === "busy") ? "dimmed" : "";
   return `<p class="kicker">Today</p>
@@ -953,14 +953,14 @@ function bannerHTML(state, platform) {
   if (state === "offline") {
     const btnCls = platform === "win" ? "win-btn" : "mac-btn";
     return `<div class="banner">${ICON.err}<div>
-      <p class="b-title">Tokdash is not reachable</p>
-      <p class="b-body">Start Tokdash, or check the server address in Settings.</p>
+      <p class="b-title">TokenDashboard is not reachable</p>
+      <p class="b-body">Start TokenDashboard, or check the server address in Settings.</p>
       <div class="b-actions"><button type="button" class="${btnCls}">Retry</button><button type="button" class="${btnCls}">Settings</button></div>
     </div></div>`;
   }
   if (state === "busy") {
     return `<div class="banner">${ICON.warn}<div>
-      <p class="b-title">Tokdash is busy — retrying</p>
+      <p class="b-title">TokenDashboard is busy — retrying</p>
       <p class="b-body">${DATA.stale}. Backing off automatically.</p>
     </div></div>`;
   }
@@ -978,10 +978,10 @@ function renderMac(state) {
   document.getElementById("mac-pop").innerHTML = `
   <div class="inner">
     <section class="mac-head">
-      <span class="wordmark">${ICON.logo(14)} Tokdash</span>
+      <span class="wordmark">${ICON.logo(14)} TokenDashboard</span>
       <span class="conn"><span class="dot ${info.dot}" aria-hidden="true"></span>${info.conn}</span>
       <span class="grow"></span>
-      <button type="button" class="mac-icon-btn" id="mac-gear" aria-label="Tokdash menu" aria-haspopup="menu" aria-expanded="false">${ICON.gear}</button>
+      <button type="button" class="mac-icon-btn" id="mac-gear" aria-label="TokenDashboard menu" aria-haspopup="menu" aria-expanded="false">${ICON.gear}</button>
     </section>
     ${showBanner ? `<section class="hairline">${bannerHTML(state, "mac")}</section>` : ""}
     <section class="mac-hero hairline">${heroHTML(state)}</section>
@@ -1000,12 +1000,12 @@ function renderMac(state) {
       <button type="button" class="quit">Quit</button>
     </section>
   </div>
-  <div class="mac-menu" id="mac-menu" role="menu" aria-label="Tokdash" hidden>
+  <div class="mac-menu" id="mac-menu" role="menu" aria-label="TokenDashboard" hidden>
     <button type="button" role="menuitem"><span class="check"></span>Settings…</button>
     <button type="button" role="menuitem"><span class="check"></span>Quota Alert Thresholds…</button>
     <button type="button" role="menuitem"><span class="check">${ICON.check}</span>Launch at Login</button>
     <div class="sep" role="separator"></div>
-    <button type="button" role="menuitem"><span class="check"></span>Quit Tokdash Companion</button>
+    <button type="button" role="menuitem"><span class="check"></span>Quit TokenDashboard Companion</button>
   </div>`;
 
   const gear = document.getElementById("mac-gear");
@@ -1030,7 +1030,7 @@ function renderWin(state) {
   document.getElementById("win-fly").innerHTML = `
   <div class="inner">
     <section class="win-head">
-      <span class="wordmark">${ICON.logo(15)} Tokdash</span>
+      <span class="wordmark">${ICON.logo(15)} TokenDashboard</span>
       <span class="conn"><span class="dot ${info.dot}" aria-hidden="true"></span>${info.conn}</span>
       <span class="grow"></span>
       <button type="button" class="win-icon-btn" aria-label="Refresh${refreshing ? ", refreshing" : ""}" ${refreshing ? 'aria-busy="true"' : ""}>
@@ -1057,7 +1057,7 @@ function renderWin(state) {
 function renderWinMenu() {
   const menu = document.getElementById("win-menu");
   menu.innerHTML = `
-    <button type="button" role="menuitem">${ICON.ext}Open Tokdash</button>
+    <button type="button" role="menuitem">${ICON.ext}Open TokenDashboard</button>
     <button type="button" role="menuitem">${ICON.refresh}Refresh</button>
     <button type="button" role="menuitem">${ICON.gear}Settings</button>
     <div class="sep" role="separator"></div>

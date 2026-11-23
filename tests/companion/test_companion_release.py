@@ -24,8 +24,8 @@ def test_companion_version_is_single_authority() -> None:
     assert re.fullmatch(r"\d+\.\d+\.\d+", version)
 
     for project in (
-        COMPANION / "windows/TokdashCompanion/TokdashCompanion.csproj",
-        COMPANION / "windows/TokdashCompanion.Tests/TokdashCompanion.Tests.csproj",
+        COMPANION / "windows/TokenDashboardCompanion/TokenDashboardCompanion.csproj",
+        COMPANION / "windows/TokenDashboardCompanion.Tests/TokenDashboardCompanion.Tests.csproj",
     ):
         assert "<Version>" not in project.read_text(encoding="utf-8")
 
@@ -48,8 +48,8 @@ def test_companion_version_is_single_authority() -> None:
     assert global_json["sdk"]["allowPrerelease"] is False
 
     for lockfile in (
-        COMPANION / "windows/TokdashCompanion/packages.lock.json",
-        COMPANION / "windows/TokdashCompanion.Tests/packages.lock.json",
+        COMPANION / "windows/TokenDashboardCompanion/packages.lock.json",
+        COMPANION / "windows/TokenDashboardCompanion.Tests/packages.lock.json",
     ):
         assert lockfile.is_file()
         assert json.loads(lockfile.read_text(encoding="utf-8"))["version"] == 1
@@ -60,18 +60,18 @@ def test_macos_release_metadata_and_icons_are_complete() -> None:
     assert "ENABLE_HARDENED_RUNTIME: YES" in project_yml
 
     pbxproj = (
-        COMPANION / "macos/TokdashCompanion.xcodeproj/project.pbxproj"
+        COMPANION / "macos/TokenDashboardCompanion.xcodeproj/project.pbxproj"
     ).read_text(encoding="utf-8")
     assert re.findall(r"^\s*objectVersion = (\d+);", pbxproj, re.MULTILINE) == ["60"]
     assert set(re.findall(r"SWIFT_VERSION = ([^;]+);", pbxproj)) == {"5.0"}
 
-    info = (COMPANION / "macos/TokdashCompanion/Info.plist").read_text(
+    info = (COMPANION / "macos/TokenDashboardCompanion/Info.plist").read_text(
         encoding="utf-8"
     )
     assert "$(MARKETING_VERSION)" in info
     assert "$(CURRENT_PROJECT_VERSION)" in info
 
-    icon_dir = COMPANION / "macos/TokdashCompanion/Assets.xcassets/AppIcon.appiconset"
+    icon_dir = COMPANION / "macos/TokenDashboardCompanion/Assets.xcassets/AppIcon.appiconset"
     expected = {
         "icon_16x16.png": (16, 16),
         "icon_16x16@2x.png": (32, 32),
@@ -91,7 +91,7 @@ def test_macos_release_metadata_and_icons_are_complete() -> None:
 
 def test_windows_release_is_x64_portable_and_msix_is_deferred() -> None:
     project = (
-        COMPANION / "windows/TokdashCompanion/TokdashCompanion.csproj"
+        COMPANION / "windows/TokenDashboardCompanion/TokenDashboardCompanion.csproj"
     ).read_text(encoding="utf-8")
     assert "'$(RuntimeIdentifier)' == 'win-x64'" in project
     assert "<PublishTrimmed>false</PublishTrimmed>" in project
@@ -100,7 +100,7 @@ def test_windows_release_is_x64_portable_and_msix_is_deferred() -> None:
         encoding="utf-8"
     )
     assert '"--runtime", "win-x64"' in script
-    assert "Tokdash-Companion-$version-windows-x64-unsigned.zip" in script
+    assert "TokenDashboard-Companion-$version-windows-x64-unsigned.zip" in script
     assert "-p:PublishTrimmed=false" in script
     assert "THIRD-PARTY-NOTICES.txt" in script
     assert "windows-x64-unsigned.msix" not in script
@@ -110,7 +110,7 @@ def test_windows_release_is_x64_portable_and_msix_is_deferred() -> None:
     # resource. A loose Assets/tray.ico may be missing when a user moves or
     # launches the EXE by itself, and must only be a compatibility fallback.
     program = (
-        COMPANION / "windows/TokdashCompanion/Program.cs"
+        COMPANION / "windows/TokenDashboardCompanion/Program.cs"
     ).read_text(encoding="utf-8")
     embedded_load = program.index("IntPtr h = LoadImageResourceW(")
     sidecar_load = program.index("Path.Combine(AppContext.BaseDirectory")
@@ -124,7 +124,7 @@ def test_windows_release_is_x64_portable_and_msix_is_deferred() -> None:
     ).read_text(encoding="utf-8")
     assert 'ProcessorArchitecture="x64"' in manifest
     assert 'Category="windows.startupTask"' in manifest
-    assert 'TaskId="TokdashCompanionStartup"' in manifest
+    assert 'TaskId="TokenDashboardCompanionStartup"' in manifest
     assert 'Enabled="false"' in manifest
     assert 'Name="runFullTrust"' in manifest
 
@@ -140,7 +140,7 @@ def test_companion_workflows_avoid_temporary_artifact_storage() -> None:
     # public download path because Partner Center signs it. Everything a user downloads
     # still moves through the draft release.
     assert companion_release.count("actions/upload-artifact@") == 1
-    assert "tokdash-companion-msix" in companion_release
+    assert "token-dashboard-companion-msix" in companion_release
     assert 'tags:\n      - "companion-v*"' in companion_release
     assert "name: Companion unsigned release" in companion_release
     # Companion releases are ordinary releases, but must never take the repository's
@@ -218,8 +218,8 @@ def test_companion_docs_do_not_misidentify_windows_ui() -> None:
 
 def test_companion_privacy_surface_remains_read_only_and_explicit() -> None:
     source_roots = (
-        COMPANION / "windows/TokdashCompanion",
-        COMPANION / "macos/TokdashCompanion",
+        COMPANION / "windows/TokenDashboardCompanion",
+        COMPANION / "macos/TokenDashboardCompanion",
     )
     source = "\n".join(
         path.read_text(encoding="utf-8", errors="ignore")
@@ -239,10 +239,10 @@ def test_companion_privacy_surface_remains_read_only_and_explicit() -> None:
         assert forbidden not in source
 
     windows_client = (
-        COMPANION / "windows/TokdashCompanion/TokdashClient.cs"
+        COMPANION / "windows/TokenDashboardCompanion/TokenDashboardClient.cs"
     ).read_text(encoding="utf-8")
     mac_client = (
-        COMPANION / "macos/TokdashCompanion/TokdashClient.swift"
+        COMPANION / "macos/TokenDashboardCompanion/TokenDashboardClient.swift"
     ).read_text(encoding="utf-8")
     for endpoint in ("/health", "/api/usage", "/api/quota"):
         assert endpoint in windows_client

@@ -1,7 +1,7 @@
 """Guards for the two-language changelog.
 
 English is canonical: `docs/development/CHANGELOG.md` is the full record and
-`src/tokdash/static/release-notes.json` the in-app What's new view. Chinese is the only
+`src/token_dashboard/static/release-notes.json` the in-app What's new view. Chinese is the only
 translation shipped today, and it has two halves that both have to line up with English:
 the shipped sidecar the dashboard overlays, and the docs page a GitHub Release links.
 
@@ -24,7 +24,7 @@ from support.frontend import needs_node
 from support.i18n_profile import release_notes_script, run_page
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-STATIC_DIR = REPO_ROOT / "src" / "tokdash" / "static"
+STATIC_DIR = REPO_ROOT / "src" / "token_dashboard" / "static"
 INDEX_HTML = STATIC_DIR / "index.html"
 RELEASE_NOTES_EN = STATIC_DIR / "release-notes.json"
 RELEASE_NOTES_ZH = STATIC_DIR / "release-notes.zh.json"

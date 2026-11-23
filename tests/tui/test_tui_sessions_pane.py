@@ -19,7 +19,7 @@ textual = pytest.importorskip("textual", reason="the TUI tests need textual")
 
 from textual.widgets import Button, DataTable, Input, Static  # noqa: E402
 
-from tokdash.sessions import SESSION_TOOLS  # noqa: E402
+from token_dashboard.sessions import SESSION_TOOLS  # noqa: E402
 import support.tui as fx  # noqa: E402  (the layout-law tests call it fx)
 from support.tui import (  # noqa: E402
     SESSION_DETAIL,
@@ -314,7 +314,7 @@ def test_a_session_names_its_project_and_keeps_its_id_whole(api):
         app.action_show_pane("sessions")
         await settle(pilot, 5)
         painted = visible(app, "#sn-table")
-        assert "tokdash" in painted, painted
+        assert "token_dashboard" in painted, painted
         assert "cx-1" in painted, painted  # room at 120: name AND id
         assert "cx-\u2026" not in painted, painted
 
@@ -324,7 +324,7 @@ def test_a_session_names_its_project_and_keeps_its_id_whole(api):
         app.action_show_pane("sessions")
         await settle(pilot, 5)
         painted = visible(app, "#sn-table")
-        assert "tokdash" in painted, painted
+        assert "token_dashboard" in painted, painted
         assert "\u20261" not in painted.replace(" ", ""), painted
 
     fx.run(api, tight, size=(80, 24))

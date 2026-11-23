@@ -9,10 +9,10 @@ from pathlib import Path
 
 import zstandard
 
-from tokdash import clientpaths, osinfo
-from tokdash.pricing import PricingDatabase
-from tokdash.sources import coding_tools as ct
-from tokdash.sources.coding_tools import (
+from token_dashboard import clientpaths, osinfo
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources import coding_tools as ct
+from token_dashboard.sources.coding_tools import (
     BaseParser,
     ZedParser,
     _sig_cache,

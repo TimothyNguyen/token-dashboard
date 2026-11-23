@@ -41,14 +41,14 @@ def check_msix_packaging(version: str) -> None:
 
     # Identity must never be hard-coded: Partner Center issues it, and a stale literal
     # would be rejected at upload rather than caught here.
-    if re.search(r'Name="Tokdash\.Companion"', template):
+    if re.search(r'Name="TokenDashboard\.Companion"', template):
         fail("AppxManifest Identity/Name must come from Partner Center, not a literal")
 
     # Substituting and parsing catches malformed XML in the template itself. An XML
     # comment cannot contain a double hyphen, which is easy to introduce when documenting
     # command-line flags.
     substituted = (
-        template.replace("@@IDENTITY_NAME@@", "12345Example.TokdashCompanion")
+        template.replace("@@IDENTITY_NAME@@", "12345Example.TokenDashboardCompanion")
         .replace("@@PUBLISHER@@", "CN=00000000-0000-0000-0000-000000000000")
         .replace("@@PUBLISHER_DISPLAY_NAME@@", "Example")
         .replace("@@VERSION@@", f"{version}.0")
@@ -106,7 +106,7 @@ def check_msix_packaging(version: str) -> None:
     runtime_behavior = application.get(f"{{{ns['uap10']}}}RuntimeBehavior")
     trust_level = application.get(f"{{{ns['uap10']}}}TrustLevel")
     # A full-trust packaged desktop app runs outside AppContainer, which is what lets the
-    # companion reach a loopback Tokdash service. appContainer would silently break it.
+    # companion reach a loopback TokenDashboard service. appContainer would silently break it.
     if runtime_behavior != "packagedClassicApp":
         fail(f"Application RuntimeBehavior must be packagedClassicApp, got {runtime_behavior!r}")
     if trust_level != "mediumIL":
@@ -188,7 +188,7 @@ def main() -> None:
     pbxproj = (
         COMPANION_ROOT
         / "macos"
-        / "TokdashCompanion.xcodeproj"
+        / "TokenDashboardCompanion.xcodeproj"
         / "project.pbxproj"
     ).read_text(encoding="utf-8")
     marketing_versions = set(
@@ -223,7 +223,7 @@ def main() -> None:
         )
 
     info_plist = (
-        COMPANION_ROOT / "macos" / "TokdashCompanion" / "Info.plist"
+        COMPANION_ROOT / "macos" / "TokenDashboardCompanion" / "Info.plist"
     ).read_text(encoding="utf-8")
     for build_setting in ("$(MARKETING_VERSION)", "$(CURRENT_PROJECT_VERSION)"):
         if build_setting not in info_plist:
@@ -232,12 +232,12 @@ def main() -> None:
     for project in (
         COMPANION_ROOT
         / "windows"
-        / "TokdashCompanion"
-        / "TokdashCompanion.csproj",
+        / "TokenDashboardCompanion"
+        / "TokenDashboardCompanion.csproj",
         COMPANION_ROOT
         / "windows"
-        / "TokdashCompanion.Tests"
-        / "TokdashCompanion.Tests.csproj",
+        / "TokenDashboardCompanion.Tests"
+        / "TokenDashboardCompanion.Tests.csproj",
     ):
         if re.search(r"<Version>.*?</Version>", project.read_text(encoding="utf-8")):
             fail(f"{project.relative_to(REPO_ROOT)} must inherit companion/VERSION")
@@ -250,8 +250,8 @@ def main() -> None:
     if "<CompanionBuildNumber>2</CompanionBuildNumber>" not in props:
         fail("Windows build number must match macOS CURRENT_PROJECT_VERSION 2")
     for lockfile in (
-        COMPANION_ROOT / "windows" / "TokdashCompanion" / "packages.lock.json",
-        COMPANION_ROOT / "windows" / "TokdashCompanion.Tests" / "packages.lock.json",
+        COMPANION_ROOT / "windows" / "TokenDashboardCompanion" / "packages.lock.json",
+        COMPANION_ROOT / "windows" / "TokenDashboardCompanion.Tests" / "packages.lock.json",
     ):
         if not lockfile.is_file():
             fail(f"missing locked .NET dependency graph: {lockfile.relative_to(REPO_ROOT)}")
@@ -297,7 +297,7 @@ def main() -> None:
         # Companion releases are ordinary releases, not prereleases, but they must never
         # take the repository's "Latest" pointer: this repo also publishes the Python
         # package, and a companion tag newer than the newest vX.Y.Z would otherwise become
-        # what /releases/latest resolves to for everyone installing Tokdash itself.
+        # what /releases/latest resolves to for everyone installing TokenDashboard itself.
         "--latest=false",
         "environment: companion-release-publish",
         "macos-universal-unsigned.dmg",
@@ -307,7 +307,7 @@ def main() -> None:
         # unsigned until Partner Center signs it, and Windows refuses to install an
         # unsigned MSIX. It leaves through a short-lived artifact instead.
         "build_windows_msix.ps1",
-        "TOKDASH_MSIX_IDENTITY_NAME",
+        "TOKEN_DASHBOARD_MSIX_IDENTITY_NAME",
         "if-no-files-found: error",
         "retention-days: 1",
     ):
@@ -343,8 +343,8 @@ def main() -> None:
     native_source = "\n".join(
         path.read_text(encoding="utf-8", errors="ignore")
         for root in (
-            COMPANION_ROOT / "windows" / "TokdashCompanion",
-            COMPANION_ROOT / "macos" / "TokdashCompanion",
+            COMPANION_ROOT / "windows" / "TokenDashboardCompanion",
+            COMPANION_ROOT / "macos" / "TokenDashboardCompanion",
         )
         for path in root.rglob("*")
         if path.suffix in {".cs", ".swift"}
@@ -364,7 +364,7 @@ def main() -> None:
     icon_dir = (
         COMPANION_ROOT
         / "macos"
-        / "TokdashCompanion"
+        / "TokenDashboardCompanion"
         / "Assets.xcassets"
         / "AppIcon.appiconset"
     )

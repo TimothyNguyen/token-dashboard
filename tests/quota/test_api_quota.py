@@ -7,16 +7,16 @@ from __future__ import annotations
 
 import pytest
 
-import tokdash.api as api
+import token_dashboard.api as api
 
 
 def test_get_quota_returns_stored_codex_session_data_without_collecting(monkeypatch):
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore
 
     api._clear_cache()
     monkeypatch.setattr(
-        "tokdash.sources.quota.collect_local_snapshots",
+        "token_dashboard.sources.quota.collect_local_snapshots",
         lambda: (_ for _ in ()).throw(AssertionError("local collector called")),
     )
     UsageEntryStore().insert_quota_snapshots(
@@ -58,7 +58,7 @@ def test_get_quota_returns_stored_codex_session_data_without_collecting(monkeypa
 
 def test_get_quota_does_not_call_network_collectors(monkeypatch):
     api._clear_cache()
-    monkeypatch.setattr("tokdash.sources.quota.collect_network_snapshots", lambda: (_ for _ in ()).throw(AssertionError("network called")))
+    monkeypatch.setattr("token_dashboard.sources.quota.collect_network_snapshots", lambda: (_ for _ in ()).throw(AssertionError("network called")))
 
     payload = api.get_quota()
 
@@ -75,7 +75,7 @@ def test_get_quota_exposes_new_provider_shells_and_consent_keys():
 
 
 def test_quota_state_marks_only_locally_present_provider_shells_detected(monkeypatch, tmp_path):
-    from tokdash.sources import quota
+    from token_dashboard.sources import quota
 
     api._clear_cache()
     present = tmp_path / "present"
@@ -111,8 +111,8 @@ def test_quota_state_marks_only_locally_present_provider_shells_detected(monkeyp
 
 
 def test_anthropic_zai_environment_credential_is_discovered_and_detected(monkeypatch, tmp_path):
-    from tokdash.sources import quota
-    from tokdash.sources.quota import credential_sources
+    from token_dashboard.sources import quota
+    from token_dashboard.sources.quota import credential_sources
 
     api._clear_cache()
     missing = tmp_path / "missing"
@@ -134,8 +134,8 @@ def test_anthropic_zai_environment_credential_is_discovered_and_detected(monkeyp
 
 
 def test_quota_history_route_uses_stored_snapshots(tmp_path):
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore
 
     store = UsageEntryStore()
     store.insert_quota_snapshots(
@@ -171,7 +171,7 @@ def test_quota_consent_route_persists_provider_flags():
 
 
 def test_quota_refresh_collects_and_stores_network_snapshots(monkeypatch):
-    from tokdash.sources.quota.types import QuotaSnapshot
+    from token_dashboard.sources.quota.types import QuotaSnapshot
 
     snapshot = QuotaSnapshot(
         "claude",
@@ -187,7 +187,7 @@ def test_quota_refresh_collects_and_stores_network_snapshots(monkeypatch):
         {"fixture": True},
     )
     monkeypatch.setattr(api, "_try_begin_quota_refresh", lambda: 0.0)
-    monkeypatch.setattr("tokdash.sources.quota.collect_enabled_snapshots", lambda include_network=True, store=None: [snapshot])
+    monkeypatch.setattr("token_dashboard.sources.quota.collect_enabled_snapshots", lambda include_network=True, store=None: [snapshot])
 
     payload = api.refresh_quota()
 
@@ -222,7 +222,7 @@ def test_quota_refresh_failure_releases_cooldown(monkeypatch):
     monkeypatch.setattr(api, "_quota_last_refresh_monotonic", 0.0)
     monkeypatch.setattr(api, "_quota_prev_refresh_monotonic", 0.0)
     monkeypatch.setattr(
-        "tokdash.sources.quota.collect_enabled_snapshots",
+        "token_dashboard.sources.quota.collect_enabled_snapshots",
         lambda include_network=True, store=None: (_ for _ in ()).throw(RuntimeError("boom")),
     )
 
@@ -234,8 +234,8 @@ def test_quota_refresh_failure_releases_cooldown(monkeypatch):
 
 
 def test_get_quota_exposes_codex_reset_credit_inventory():
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore
 
     api._clear_cache()
     UsageEntryStore().insert_quota_snapshots(
@@ -270,7 +270,7 @@ def test_get_quota_exposes_codex_reset_credit_inventory():
 
 
 def test_quota_refresh_keeps_current_state_when_usage_db_disabled(monkeypatch):
-    from tokdash.sources.quota.types import QuotaSnapshot
+    from token_dashboard.sources.quota.types import QuotaSnapshot
 
     snapshot = QuotaSnapshot(
         "antigravity",
@@ -285,9 +285,9 @@ def test_quota_refresh_keeps_current_state_when_usage_db_disabled(monkeypatch):
         "ok",
         {},
     )
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     monkeypatch.setattr(api, "_try_begin_quota_refresh", lambda: 0.0)
-    monkeypatch.setattr("tokdash.sources.quota.collect_enabled_snapshots", lambda include_network=True, store=None: [snapshot])
+    monkeypatch.setattr("token_dashboard.sources.quota.collect_enabled_snapshots", lambda include_network=True, store=None: [snapshot])
 
     payload = api.refresh_quota()
     state = api.get_quota()
@@ -298,7 +298,7 @@ def test_quota_refresh_keeps_current_state_when_usage_db_disabled(monkeypatch):
 
 def test_get_quota_tolerates_malformed_poll_interval(monkeypatch):
     api._clear_cache()
-    monkeypatch.setenv("TOKDASH_QUOTA_POLL_INTERVAL", "not-an-int")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_POLL_INTERVAL", "not-an-int")
 
     payload = api.get_quota()
 
@@ -308,8 +308,8 @@ def test_get_quota_tolerates_malformed_poll_interval(monkeypatch):
 
 
 def test_get_quota_marks_network_enabled_and_last_run_for_api_rows():
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore
 
     api._clear_cache()
     api.set_quota_consent({"credential_scan": True, "codex_api": True})
@@ -338,8 +338,8 @@ def test_get_quota_marks_network_enabled_and_last_run_for_api_rows():
 
 
 def test_get_quota_prefers_freshest_bucket_across_accounts():
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore
 
     api._clear_cache()
     UsageEntryStore().insert_quota_snapshots(
@@ -437,8 +437,8 @@ def test_get_quota_reports_master_switch_and_poll_source():
 
 
 def test_quota_history_route_bounds_series_to_max_points():
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore
 
     UsageEntryStore().insert_quota_snapshots(
         [
@@ -466,8 +466,8 @@ def test_quota_history_route_bounds_series_to_max_points():
 
 
 def test_get_quota_exposes_status_detail_for_freshest_api_status_row():
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore
 
     api._clear_cache()
     UsageEntryStore().insert_quota_snapshots(
@@ -496,7 +496,7 @@ def test_get_quota_exposes_status_detail_for_freshest_api_status_row():
 
 
 def test_poll_quota_idles_entirely_when_disabled(monkeypatch):
-    import tokdash.sources.quota as quota
+    import token_dashboard.sources.quota as quota
 
     quota.config.set_quota_enabled(False)
 
@@ -516,8 +516,8 @@ def test_poll_quota_idles_entirely_when_disabled(monkeypatch):
 def test_stale_token_banner_clears_after_successful_api_poll():
     """A failure status row (bucket "api") is only written on failure, so it stays the
     newest "api" row forever after recovery — the banner must yield to a newer ok row."""
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore
 
     api._clear_cache()
     store = UsageEntryStore()
@@ -541,8 +541,8 @@ def test_stale_token_banner_clears_after_successful_api_poll():
 
 
 def test_get_quota_exposes_remaining_percent_alongside_used_percent():
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore
 
     api._clear_cache()
     UsageEntryStore().insert_quota_snapshots(
@@ -561,8 +561,8 @@ def test_get_quota_exposes_remaining_percent_alongside_used_percent():
 
 
 def test_get_quota_exposes_unlimited_bucket_without_finite_percent():
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore
 
     api._clear_cache()
     UsageEntryStore().insert_quota_snapshots(
@@ -582,8 +582,8 @@ def test_get_quota_exposes_unlimited_bucket_without_finite_percent():
 
 
 def test_stale_token_banner_shows_when_failure_is_newest():
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore
 
     api._clear_cache()
     UsageEntryStore().insert_quota_snapshots(
@@ -612,8 +612,8 @@ def test_nameless_fallback_failure_clears_once_the_provider_answers_again():
     The ``codex_session`` row is the shape stored databases really have: the local rollout
     parser files its windows under ``default`` too. It is the client's own record rather
     than the provider's answer, so it must not make this view look like a live account."""
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore
 
     api._clear_cache()
     UsageEntryStore().insert_quota_snapshots(
@@ -642,8 +642,8 @@ def test_nameless_fallback_failure_clears_once_the_provider_answers_again():
 def test_nameless_fallback_failure_still_warns_when_it_is_the_newest_row():
     """The retirement is a timestamp comparison, not a suppression: with nothing answered
     since, a credential-less failure is the provider's live state and must still print."""
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore
 
     api._clear_cache()
     UsageEntryStore().insert_quota_snapshots(
@@ -667,8 +667,8 @@ def test_nameless_fallback_failure_still_warns_when_it_is_the_newest_row():
 def test_named_account_that_only_fails_keeps_warning_despite_a_healthy_sibling():
     """A named account is a credential the user can see, so it answers for itself. The
     global Token Plan polling fine does not retire a ``cn`` key that has never worked."""
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore
 
     api._clear_cache()
     UsageEntryStore().insert_quota_snapshots(
@@ -700,8 +700,8 @@ def test_default_account_that_has_answered_keeps_its_own_error():
     name as "credential-less" and let a sibling's success bury a real expired sign-in --
     exactly the regression per-account retirement (#70) was added to prevent.
     """
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore
 
     api._clear_cache()
     UsageEntryStore().insert_quota_snapshots(
@@ -729,8 +729,8 @@ def test_default_account_that_has_answered_keeps_its_own_error():
 
 def test_codex_plan_label_normalized_in_state_only():
     """Card label shows "Pro Lite"; stored rows keep the raw plan_type."""
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore
 
     api._clear_cache()
     store = UsageEntryStore()
@@ -751,8 +751,8 @@ def test_codex_plan_label_normalized_in_state_only():
 def test_get_quota_api_enabled_session_does_not_override_bucket():
     """codex_api enabled: a newer codex_session row must not win the 7d bucket over an
     older codex_api row — the API is the sole oracle once enabled."""
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore
 
     api._clear_cache()
     api.set_quota_consent({"credential_scan": True, "codex_api": True})
@@ -782,8 +782,8 @@ def test_get_quota_api_enabled_session_does_not_override_bucket():
 def test_get_quota_api_enabled_session_only_omits_bucket():
     """codex_api enabled but only session rows exist for a bucket: the bucket is omitted
     rather than falling back to stale session data (accepted empty-card behavior)."""
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore
 
     api._clear_cache()
     api.set_quota_consent({"credential_scan": True, "codex_api": True})
@@ -806,8 +806,8 @@ def test_get_quota_api_enabled_session_only_omits_bucket():
 def test_get_quota_api_disabled_shows_session_and_marks_estimated():
     """codex_api disabled: the session row is shown as the bucket, and the codex card is
     marked estimated."""
-    from tokdash.sources.quota.types import QuotaSnapshot
-    from tokdash.usage_store import UsageEntryStore
+    from token_dashboard.sources.quota.types import QuotaSnapshot
+    from token_dashboard.usage_store import UsageEntryStore
 
     api._clear_cache()
     api.set_quota_consent({"codex_api": False})
@@ -832,7 +832,7 @@ def test_quota_state_does_not_read_claude_credentials_without_scan_consent(monke
     # Regression (#1): the per-profile plan reader opens .credentials.json and may trigger
     # the macOS Keychain. A dashboard load must NOT touch it without credential-scan
     # consent (default off).
-    import tokdash.sources.quota as quota
+    import token_dashboard.sources.quota as quota
 
     called = []
 
@@ -846,8 +846,8 @@ def test_quota_state_does_not_read_claude_credentials_without_scan_consent(monke
 
 
 def test_quota_state_reads_claude_plan_with_scan_consent(monkeypatch):
-    import tokdash.sources.quota as quota
-    from tokdash.sources.quota import config
+    import token_dashboard.sources.quota as quota
+    from token_dashboard.sources.quota import config
 
     config.set_quota_consent({"credential_scan": True})
     called = []

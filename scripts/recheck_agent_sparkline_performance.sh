@@ -5,8 +5,8 @@ baseline=${1:?Usage: scripts/recheck_agent_sparkline_performance.sh BASELINE OUT
 output_dir=${2:?Output directory required}
 previous_output=${3:?Complete previous campaign required}
 previous_revision=${4:?Previous tested revision required}
-python_bin=${TOKDASH_BENCH_PYTHON:-python3}
-browser_python=${TOKDASH_BROWSER_PYTHON:-/home/howard/anaconda3/envs/webapptest/bin/python}
+python_bin=${TOKEN_DASHBOARD_BENCH_PYTHON:-python3}
+browser_python=${TOKEN_DASHBOARD_BROWSER_PYTHON:-/home/howard/anaconda3/envs/webapptest/bin/python}
 mkdir -p "$output_dir"
 if ! PYTHONPATH=src "$python_bin" -m pytest > "$output_dir/pytest.log" 2>&1; then
     printf 'Tests failed; see %s/pytest.log\n' "$output_dir"

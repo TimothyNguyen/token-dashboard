@@ -7,12 +7,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from tokdash.sources.quota import codex
-from tokdash.sources.quota.codex import (
+from token_dashboard.sources.quota import codex
+from token_dashboard.sources.quota.codex import (
     collect_codex_session_snapshots,
     collect_codex_session_snapshots_incremental,
 )
-from tokdash.usage_store import UsageEntryStore
+from token_dashboard.usage_store import UsageEntryStore
 
 _BACKFILL_KEY = "quota_codex_session_backfill_done"
 

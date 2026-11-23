@@ -12,15 +12,15 @@ If that’s not available for your fork:
 
 ## Privacy model
 
-- **No telemetry**: Tokdash does not intentionally send your data anywhere.
+- **No telemetry**: TokenDashboard does not intentionally send your data anywhere.
 - **Local parsing**: usage is computed from local session files (see [supported clients](reference/SUPPORTED_CLIENTS.md)).
-- **Optional quota polling**: the Quota tab is local-only by default. Per-provider API polling can be enabled from the tab or with `tokdash quota consent`; it uses your local CLI credentials only to call that provider's own quota endpoint, and stores responses in the local usage SQLite DB. See [quota tracking internals](reference/QUOTA.md).
-- **Server exposure**: Tokdash binds to `127.0.0.1` by default. Tailscale Serve provides private read-only access (apart from the opt-in click-to-update exception below), SSH forwarding provides authenticated write access, and `--bind 0.0.0.0` explicitly exposes unauthenticated reads on every interface. See the [remote-access guide](guides/REMOTE_ACCESS.md).
+- **Optional quota polling**: the Quota tab is local-only by default. Per-provider API polling can be enabled from the tab or with `token-dashboard quota consent`; it uses your local CLI credentials only to call that provider's own quota endpoint, and stores responses in the local usage SQLite DB. See [quota tracking internals](reference/QUOTA.md).
+- **Server exposure**: TokenDashboard binds to `127.0.0.1` by default. Tailscale Serve provides private read-only access (apart from the opt-in click-to-update exception below), SSH forwarding provides authenticated write access, and `--bind 0.0.0.0` explicitly exposes unauthenticated reads on every interface. See the [remote-access guide](guides/REMOTE_ACCESS.md).
 
 ## Scope notes
 
-- Tokdash is a **local** dashboard by default (`127.0.0.1` bind).
-- Tokdash does **not** provide authentication/authorization for reads.
+- TokenDashboard is a **local** dashboard by default (`127.0.0.1` bind).
+- TokenDashboard does **not** provide authentication/authorization for reads.
 - If you run with `--bind 0.0.0.0`, you are exposing the dashboard to your LAN. Do not expose it to the public internet.
 
 ## Write-protection model
@@ -42,7 +42,7 @@ as non-loopback):
   as `Host` and an `https://` `Origin`, both of which are rejected. A malformed/unparseable
   `Referer` also fails closed (treated as cross-origin → `403`, never a `500`).
 - **Per-session token.** A random token is minted each server start and required as
-  `X-Tokdash-Token`. The dashboard fetches it from `GET /api/csrf-token` (itself loopback/
+  `X-TokenDashboard-Token`. The dashboard fetches it from `GET /api/csrf-token` (itself loopback/
   same-origin gated, so another localhost port can't read it).
 
 ### The one authenticated-write exception: dashboard click-to-update
@@ -53,9 +53,9 @@ serve a genuine remote caller, and it carries its own, stronger authentication c
 the loopback/Host/token trio:
 
 - **An explicit opt-in origin.** Remote updates stay off until the operator pins the exact HTTPS
-  origin in `TOKDASH_UPDATE_ORIGIN` (or `update_origin` in `config.json`). No origin configured =
+  origin in `TOKEN_DASHBOARD_UPDATE_ORIGIN` (or `update_origin` in `config.json`). No origin configured =
   every remote update request is refused; the localhost CLI path is unaffected.
-- **A pairing code minted on the host.** `tokdash update-enroll` issues a single-use code; the
+- **A pairing code minted on the host.** `token-dashboard update-enroll` issues a single-use code; the
   browser redeems it at `POST /api/update/enroll` to get a session. The code is consumed whether
   the guess is right or wrong, and enrollment is rate-limited.
 - **A `Secure`/`HttpOnly`/`SameSite=Lax` host-only session cookie + a double-submit CSRF token.**
@@ -70,7 +70,7 @@ the loopback/Host/token trio:
 This is the ONLY write that reaches a non-loopback caller, and only over an HTTPS origin the
 operator configured. Everything else — `PUT /api/pricing-db`, the quota/consent/settings writes,
 `POST /api/update-check/consent` — remains loopback-gated exactly as before. A localhost browser
-uses the ordinary loopback write path (`X-Tokdash-Token`) for `/api/update/start`; the pairing
+uses the ordinary loopback write path (`X-TokenDashboard-Token`) for `/api/update/start`; the pairing
 chain is only for remote origins.
 
 For setup commands and a comparison of remote-access methods, see
@@ -89,7 +89,7 @@ headers:
 - **Tailscale Serve** requests are effectively read-only *through the write gate* (their foreign
   `Host` / `https` `Origin` fail the allowlist). Tailscale identity is the read-access boundary:
   only devices on your tailnet can connect. The single carve-out is the authenticated
-  click-to-update plane above: if you pin this Serve hostname in `TOKDASH_UPDATE_ORIGIN`, an
+  click-to-update plane above: if you pin this Serve hostname in `TOKEN_DASHBOARD_UPDATE_ORIGIN`, an
   enrolled + CSRF-tokened browser on your tailnet may start an update — that is the feature
   working as designed, and pinning the origin IS the opt-in.
 - **Cloudflare Tunnel** requests fail the same allowlist — cloudflared preserves the
@@ -100,12 +100,12 @@ headers:
   through the gate, as long as the proxy passes the external `Host`/`Origin`/`Referer`
   through unchanged (Caddy does so by default; the guide's nginx snippet sets
   `Host $host`). The proxy's own authentication (basic auth, forward auth, SSO) behind
-  TLS is the read-access boundary. Tokdash cannot verify that the proxy enforces it.
+  TLS is the read-access boundary. TokenDashboard cannot verify that the proxy enforces it.
 - **Public tunnels without edge authentication** (Tailscale Funnel, Cloudflare Quick
   Tunnels, bare ngrok, LocalTunnel) expose the unauthenticated read API to the public
   internet. Writes still fail closed — these services preserve the external
   `Host`/`Origin`, which fail the allowlist — but per the policy above, do not expose
-  Tokdash this way.
+  TokenDashboard this way.
 
 Every read-only claim above rests on header preservation. A proxy that rewrites `Host` to a
 loopback address **and** also rewrites `Origin`/`Referer` to a loopback origin — or removes
@@ -127,7 +127,7 @@ endpoints (`PUT /api/pricing-db`, `POST /api/quota/consent`, `POST /api/quota/se
 
 The default CORS policy permits loopback origins and HTTPS reads between Tailscale Serve hosts
 with the same `<tailnet-name>.ts.net` suffix. Other browser-page origins require
-`TOKDASH_ALLOW_ORIGINS` / `TOKDASH_ALLOW_ORIGIN_REGEX`; setting either option replaces the default
+`TOKEN_DASHBOARD_ALLOW_ORIGINS` / `TOKEN_DASHBOARD_ALLOW_ORIGIN_REGEX`; setting either option replaces the default
 origin policy, so list every required origin. CORS is unrelated to the write gate and never grants
 write access to a non-loopback bind — loopback bind + Host/Origin + token are still required for
 every mutating request.
@@ -140,23 +140,23 @@ binding `0.0.0.0` makes the effective bind non-loopback and disables writes enti
 ## Quota tracking
 
 Quota tracking has a master switch, `quota.enabled` in `config.json` (default on), that governs
-*all* quota work. When it is off — or the `TOKDASH_QUOTA_POLL=0` kill switch is set — the poller
+*all* quota work. When it is off — or the `TOKEN_DASHBOARD_QUOTA_POLL=0` kill switch is set — the poller
 idles entirely: no session scanning, no network calls, and no database writes. `GET /api/quota/refresh`
 then returns a "quota tracking disabled" error. The per-provider consent keys are narrower: they only
 govern the opt-in *network* tiers and never enable the master switch on their own.
 
 Provider network calls are default-off. Local-only quota data may be read from
-Codex session files and Claude credentials metadata. When a provider is explicitly enabled, Tokdash
+Codex session files and Claude credentials metadata. When a provider is explicitly enabled, TokenDashboard
 reads the local CLI credential file for that provider and calls that provider's quota endpoint:
 
 - Codex: `$CODEX_HOME/auth.json`, `https://chatgpt.com/backend-api/wham/usage`, and `.../wham/rate-limit-reset-credits`
-- Claude Code: `CLAUDE_CODE_OAUTH_TOKEN` (highest-precedence override), `$CLAUDE_CONFIG_DIR/.credentials.json`, or the macOS Keychain item `Claude Code-credentials` (read-only, via `security find-generic-password`), `https://api.anthropic.com/api/oauth/usage?cedar_ember=1` (the flag adds Claude Code's limit-reset grants to the same response; if the server rejects it as a bad request, one retry goes to the plain URL). That request's User-Agent is `claude-cli/<version> (external, cli) tokdash/<version>`: Anthropic lists reset grants only for the Claude Code surface, so it opens with the Claude Code CLI's own prefix, since the token is that CLI's sign-in, and then names Tokdash. Tokdash only reads the grants and never calls the endpoint that spends one. With credential scanning consented, the home directory is listed for `~/.claude*` installs and each one's own `.credentials.json` is read the same way (or list the directories in `TOKDASH_CLAUDE_PROFILES`), so a second subscription signed in through `CLAUDE_CONFIG_DIR=~/.claude-academic` gets its own quota; without that consent the directory is not listed at all. The env override and the Keychain item belong to the default install only, and each install's token goes only to the same Anthropic usage endpoint. Two directories holding one sign-in are recognised by the claim in the token's payload that names the sign-in (account id, then subject, then email) — decoded locally, never sent anywhere, and deliberately not the organization id, so two seats on one team stay two subscriptions — so a copied install is not counted twice.
+- Claude Code: `CLAUDE_CODE_OAUTH_TOKEN` (highest-precedence override), `$CLAUDE_CONFIG_DIR/.credentials.json`, or the macOS Keychain item `Claude Code-credentials` (read-only, via `security find-generic-password`), `https://api.anthropic.com/api/oauth/usage?cedar_ember=1` (the flag adds Claude Code's limit-reset grants to the same response; if the server rejects it as a bad request, one retry goes to the plain URL). That request's User-Agent is `claude-cli/<version> (external, cli) token-dashboard/<version>`: Anthropic lists reset grants only for the Claude Code surface, so it opens with the Claude Code CLI's own prefix, since the token is that CLI's sign-in, and then names TokenDashboard. TokenDashboard only reads the grants and never calls the endpoint that spends one. With credential scanning consented, the home directory is listed for `~/.claude*` installs and each one's own `.credentials.json` is read the same way (or list the directories in `TOKEN_DASHBOARD_CLAUDE_PROFILES`), so a second subscription signed in through `CLAUDE_CONFIG_DIR=~/.claude-academic` gets its own quota; without that consent the directory is not listed at all. The env override and the Keychain item belong to the default install only, and each install's token goes only to the same Anthropic usage endpoint. Two directories holding one sign-in are recognised by the claim in the token's payload that names the sign-in (account id, then subject, then email) — decoded locally, never sent anywhere, and deliberately not the organization id, so two seats on one team stay two subscriptions — so a copied install is not counted twice.
 - Antigravity: `~/.gemini/jetski-standalone-oauth-token` (current), with fallback to `~/.gemini/antigravity-cli/antigravity-oauth-token` (legacy), `https://daily-cloudcode-pa.googleapis.com/v1internal:*`
 - Command Code: `COMMAND_CODE_API_KEY` or `COMMANDCODE_API_KEY`, `~/.commandcode/auth.json`, or the `commandcode` entry in OpenCode's `auth.json`, `https://api.commandcode.ai/alpha/billing/credits` and `.../alpha/billing/subscriptions`, plus a best-effort `.../alpha/whoami` whose only use is an organization id to scope those two calls (read-only; the key is never refreshed or written back)
 
-Tokdash never refreshes or writes provider tokens. Quota snapshots are stored locally in
-`usage.sqlite3`; `tokdash export` excludes them unless `--include-quota` is passed. Snapshot
+TokenDashboard never refreshes or writes provider tokens. Quota snapshots are stored locally in
+`usage.sqlite3`; `token-dashboard export` excludes them unless `--include-quota` is passed. Snapshot
 `raw_json` payloads never contain credentials (token material is stripped before storage, with
-regression tests). With `TOKDASH_USAGE_DB=0` (local persistence opted out) nothing quota-related
+regression tests). With `TOKEN_DASHBOARD_USAGE_DB=0` (local persistence opted out) nothing quota-related
 is written to disk at all: no history is kept, the background poller is disabled, and the Quota
 tab only shows transient in-memory results from a manual refresh.

@@ -17,8 +17,8 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import sessions
-from tokdash.sessions import (
+from token_dashboard import sessions
+from token_dashboard.sessions import (
     _drop_codex_subagent_replay_turns,
     _merge_raw_session,
     _merge_raw_session_sequence,

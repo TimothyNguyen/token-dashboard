@@ -1,7 +1,7 @@
 """Path resolution for the Qoder IDE DB and CLI roots (clientpaths)."""
 from pathlib import Path
 
-from tokdash import clientpaths, osinfo
+from token_dashboard import clientpaths, osinfo
 
 
 def _make_db(base: Path) -> Path:

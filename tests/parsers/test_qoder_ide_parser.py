@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import clientpaths, osinfo
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import BaseParser, QoderIdeParser
+from token_dashboard import clientpaths, osinfo
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import BaseParser, QoderIdeParser
 
 FIXTURES = Path(__file__).parents[1] / "fixtures" / "qoder"
 CN_ROOT = FIXTURES / "localdb_cn"
@@ -190,7 +190,7 @@ def test_mid_copy_wal_disappearance_retries(monkeypatch, tmp_path):
     The first attempt must be dropped as a generation change and the retry
     must succeed (shared snapshot contract with ZCode).
     """
-    import tokdash.sources.coding_tools as coding_tools
+    import token_dashboard.sources.coding_tools as coding_tools
 
     root = tmp_path / "qoder"
     db = _make_db(root, [

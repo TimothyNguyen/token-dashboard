@@ -27,8 +27,8 @@ def _build_dists(tmp_path: Path, root: Path = REPO_ROOT) -> tuple[Path, Path]:
         check=True,
         capture_output=True,
     )
-    wheels = list(tmp_path.glob("tokdash-*.whl"))
-    sdists = list(tmp_path.glob("tokdash-*.tar.gz"))
+    wheels = list(tmp_path.glob("token_dashboard-*.whl"))
+    sdists = list(tmp_path.glob("token_dashboard-*.tar.gz"))
     assert wheels, "no wheel built"
     assert sdists, "no sdist built"
     return wheels[0], sdists[0]
@@ -62,12 +62,12 @@ def test_wheel_excludes_companion(tmp_path: Path) -> None:
     names = _wheel_names(wheel)
     _assert_no_companion(names, "wheel")
     with zipfile.ZipFile(wheel) as zf:
-        source = zf.read("tokdash/static/index.html").decode("utf-8")
+        source = zf.read("token_dashboard/static/index.html").decode("utf-8")
     paths = re.findall(r"/static/vendor/[^'\"\s)]+", source)
     assert len(paths) == 5
     for path in paths:
-        assert f"tokdash{path}" in names, f"wheel missing {path}"
-    assert "tokdash/static/vendor/NOTICE.txt" in names
+        assert f"token_dashboard{path}" in names, f"wheel missing {path}"
+    assert "token_dashboard/static/vendor/NOTICE.txt" in names
 
 
 def test_sdist_excludes_companion(tmp_path: Path) -> None:
@@ -85,12 +85,12 @@ def test_optional_local_fonts_stay_out_of_distributions(tmp_path: Path) -> None:
     """Installing the optional face locally must not change release contents."""
     source = tmp_path / "source"
     shutil.copytree(
-        REPO_ROOT / "src" / "tokdash", source / "src" / "tokdash",
+        REPO_ROOT / "src" / "token_dashboard", source / "src" / "token_dashboard",
         ignore=shutil.ignore_patterns("__pycache__", "fonts"),
     )
     for name in ("pyproject.toml", "MANIFEST.in", "README.md", "LICENSE"):
         shutil.copy2(REPO_ROOT / name, source / name)
-    optional = source / "src/tokdash/static/vendor/fonts/noto-sans-sc-v41"
+    optional = source / "src/token_dashboard/static/vendor/fonts/noto-sans-sc-v41"
     optional.mkdir(parents=True)
     for name in ("slice.woff2", "noto-sans-sc.css", "OFL.txt"):
         (optional / name).write_bytes(b"optional local font asset")

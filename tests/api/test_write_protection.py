@@ -5,7 +5,7 @@ import pytest
 
 pytest.importorskip("fastapi")
 
-import tokdash.api as api
+import token_dashboard.api as api
 
 
 class _Req:
@@ -45,7 +45,7 @@ def test_get_is_never_gated():
 # --- token requirement -----------------------------------------------------------
 
 def test_put_allowed_with_valid_token():
-    assert _deny("PUT", _hdrs(**{"x-tokdash-token": api._CSRF_TOKEN})) is None
+    assert _deny("PUT", _hdrs(**{"x-token-dashboard-token": api._CSRF_TOKEN})) is None
 
 
 def test_put_denied_without_token():
@@ -53,45 +53,45 @@ def test_put_denied_without_token():
 
 
 def test_put_denied_with_wrong_token():
-    assert _deny("PUT", _hdrs(**{"x-tokdash-token": "nope"})) is not None
+    assert _deny("PUT", _hdrs(**{"x-token-dashboard-token": "nope"})) is not None
 
 
 # --- Host / Origin -------------------------------------------------------------
 
 def test_put_denied_foreign_host():
-    assert _deny("PUT", {"host": "evil.example.com", "x-tokdash-token": api._CSRF_TOKEN}) is not None
+    assert _deny("PUT", {"host": "evil.example.com", "x-token-dashboard-token": api._CSRF_TOKEN}) is not None
 
 
 def test_put_denied_cross_origin():
-    h = _hdrs(**{"x-tokdash-token": api._CSRF_TOKEN, "origin": "http://evil.example.com"})
+    h = _hdrs(**{"x-token-dashboard-token": api._CSRF_TOKEN, "origin": "http://evil.example.com"})
     assert _deny("PUT", h) is not None
 
 
 def test_put_allowed_same_origin():
-    h = _hdrs(**{"x-tokdash-token": api._CSRF_TOKEN, "origin": "http://127.0.0.1:55423"})
+    h = _hdrs(**{"x-token-dashboard-token": api._CSRF_TOKEN, "origin": "http://127.0.0.1:55423"})
     assert _deny("PUT", h) is None
 
 
 def test_put_denied_cross_referer_when_no_origin():
-    h = _hdrs(**{"x-tokdash-token": api._CSRF_TOKEN, "referer": "http://evil.example.com/x"})
+    h = _hdrs(**{"x-token-dashboard-token": api._CSRF_TOKEN, "referer": "http://evil.example.com/x"})
     assert _deny("PUT", h) is not None
 
 
 # --- bind / port ---------------------------------------------------------------
 
 def test_put_denied_non_loopback_bind():
-    assert _deny("PUT", _hdrs(**{"x-tokdash-token": api._CSRF_TOKEN}), bind="0.0.0.0") is not None
+    assert _deny("PUT", _hdrs(**{"x-token-dashboard-token": api._CSRF_TOKEN}), bind="0.0.0.0") is not None
 
 
 def test_custom_port_allowlist():
     tok = api._CSRF_TOKEN
-    assert _deny("PUT", {"host": "127.0.0.1:8080", "x-tokdash-token": tok}, port=8080) is None
+    assert _deny("PUT", {"host": "127.0.0.1:8080", "x-token-dashboard-token": tok}, port=8080) is None
     # the default-port Host must be rejected when serving on a custom port
-    assert _deny("PUT", {"host": "127.0.0.1:55423", "x-tokdash-token": tok}, port=8080) is not None
+    assert _deny("PUT", {"host": "127.0.0.1:55423", "x-token-dashboard-token": tok}, port=8080) is not None
 
 
 def test_ipv6_loopback_host():
-    assert _deny("PUT", {"host": "[::1]:55423", "x-tokdash-token": api._CSRF_TOKEN}) is None
+    assert _deny("PUT", {"host": "[::1]:55423", "x-token-dashboard-token": api._CSRF_TOKEN}) is None
 
 
 # --- _is_loopback classification -------------------------------------------------
@@ -140,7 +140,7 @@ def test_put_denied_implicit_port_origin():
     # Browsers omit :80/:443 from Origin, so a page at http://localhost (:80) sends
     # Origin: http://localhost. With the server on 55423 this must be rejected.
     for origin in ("http://localhost", "https://localhost", "http://127.0.0.1"):
-        h = _hdrs(**{"x-tokdash-token": api._CSRF_TOKEN, "origin": origin})
+        h = _hdrs(**{"x-token-dashboard-token": api._CSRF_TOKEN, "origin": origin})
         assert _deny("PUT", h) is not None, origin
 
 
@@ -148,7 +148,7 @@ def test_implicit_port_allowed_only_when_serving_on_80():
     # Legit case: the server is actually bound to :80, so the bare-host Host/Origin
     # are the correct same-origin values.
     tok = api._CSRF_TOKEN
-    h = {"host": "localhost", "x-tokdash-token": tok, "origin": "http://localhost"}
+    h = {"host": "localhost", "x-token-dashboard-token": tok, "origin": "http://localhost"}
     assert _deny("PUT", h, port=80) is None
 
 
@@ -156,8 +156,8 @@ def test_origin_scheme_enforced_at_implicit_port():
     # Cross-scheme must be rejected even at an implicit port: an https://localhost (:443)
     # page must NOT pass the gate of an http server on :80 (and vice versa).
     tok = api._CSRF_TOKEN
-    assert _deny("PUT", {"host": "localhost", "x-tokdash-token": tok, "origin": "https://localhost"}, port=80) is not None
-    assert _deny("PUT", {"host": "localhost", "x-tokdash-token": tok, "origin": "http://localhost"}, port=80) is None
+    assert _deny("PUT", {"host": "localhost", "x-token-dashboard-token": tok, "origin": "https://localhost"}, port=80) is not None
+    assert _deny("PUT", {"host": "localhost", "x-token-dashboard-token": tok, "origin": "http://localhost"}, port=80) is None
 
 
 # --- F3: the write guard is actually wired into the ASGI stack -------------------
@@ -371,16 +371,16 @@ def test_same_tailnet_cors_does_not_open_remote_writes():
             "host": "macbook.tail76535.ts.net",
             "origin": "https://wsl.tail76535.ts.net",
             "content-type": "application/json",
-            "x-tokdash-token": api._CSRF_TOKEN,
+            "x-token-dashboard-token": api._CSRF_TOKEN,
         },
     ) == 403
 
 
 def test_write_guard_registered_and_blocks_through_asgi(monkeypatch):
-    monkeypatch.setenv("TOKDASH_WARM_ON_START", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_WARM_ON_START", "0")
     # bind/port already set by the autouse fixture.
     assert _asgi_status("GET", "/health", {"host": "127.0.0.1:55423"}) == 200
-    assert _asgi_status("GET", "/tokdash/health", {"host": "127.0.0.1:55423"}) == 200
+    assert _asgi_status("GET", "/token-dashboard/health", {"host": "127.0.0.1:55423"}) == 200
     # Foreign Host -> middleware 403, short-circuiting before the sync handler.
     denied = _asgi_status("PUT", "/api/pricing-db", {"host": "evil.example.com", "content-type": "application/json"})
     assert denied == 403
@@ -390,9 +390,9 @@ def test_update_check_post_endpoints_are_write_gated(monkeypatch):
     # POST /api/update-check/consent writes config.json, so it must stay gated end-to-end,
     # not just the PUT. /api/update-check itself is now GET (see
     # test_update_check_get_is_not_write_gated below) since it is read-only.
-    monkeypatch.setenv("TOKDASH_WARM_ON_START", "0")
-    monkeypatch.delenv("TOKDASH_UPDATE_CHECK", raising=False)
-    from tokdash.onboard import updatecheck
+    monkeypatch.setenv("TOKEN_DASHBOARD_WARM_ON_START", "0")
+    monkeypatch.delenv("TOKEN_DASHBOARD_UPDATE_CHECK", raising=False)
+    from token_dashboard.onboard import updatecheck
 
     assert updatecheck.is_enabled() is False
     assert _asgi_status("POST", "/api/update-check/consent", {"host": "evil.example.com", "content-type": "application/json"}) == 403
@@ -401,7 +401,7 @@ def test_update_check_post_endpoints_are_write_gated(monkeypatch):
 
 
 def test_quota_post_endpoints_are_write_gated(monkeypatch):
-    monkeypatch.setenv("TOKDASH_WARM_ON_START", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_WARM_ON_START", "0")
     assert _asgi_status("POST", "/api/quota/consent", {"host": "evil.example.com", "content-type": "application/json"}) == 403
 
 
@@ -425,7 +425,7 @@ def test_quota_refresh_get_is_not_write_gated(monkeypatch):
     assert api.mutation_denied_reason("GET", {"host": "evil.example.com"}) is None
     # 3) The handler short-circuits to 409 under the kill switch, before any network/session
     #    I/O -- called directly (no ASGI, no threadpool) so it can never hang.
-    monkeypatch.setenv("TOKDASH_QUOTA_POLL", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_QUOTA_POLL", "0")
     with pytest.raises(HTTPException) as exc:
         api.refresh_quota()
     assert exc.value.status_code == 409
@@ -443,10 +443,10 @@ def test_update_check_get_is_not_write_gated(monkeypatch):
     # default (isolated data dir) so the handler short-circuits to enabled:False; stubbing
     # updatecheck.check keeps the test hermetic (no real PyPI network call) even if that
     # short-circuit ever regressed -- this test exercises the guard, not the PyPI-check logic.
-    from tokdash.onboard import updatecheck
+    from token_dashboard.onboard import updatecheck
 
-    monkeypatch.setenv("TOKDASH_WARM_ON_START", "0")
-    monkeypatch.delenv("TOKDASH_UPDATE_CHECK", raising=False)
+    monkeypatch.setenv("TOKEN_DASHBOARD_WARM_ON_START", "0")
+    monkeypatch.delenv("TOKEN_DASHBOARD_UPDATE_CHECK", raising=False)
     monkeypatch.setattr(
         updatecheck,
         "check",
@@ -457,21 +457,21 @@ def test_update_check_get_is_not_write_gated(monkeypatch):
 
 
 def test_authorized_consent_is_admitted_through_asgi(monkeypatch):
-    monkeypatch.setenv("TOKDASH_WARM_ON_START", "0")
-    monkeypatch.delenv("TOKDASH_UPDATE_CHECK", raising=False)
-    from tokdash.onboard import updatecheck
+    monkeypatch.setenv("TOKEN_DASHBOARD_WARM_ON_START", "0")
+    monkeypatch.delenv("TOKEN_DASHBOARD_UPDATE_CHECK", raising=False)
+    from token_dashboard.onboard import updatecheck
 
     status = _asgi_status(
         "POST", "/api/update-check/consent",
         {"host": "127.0.0.1:55423", "origin": "http://127.0.0.1:55423",
-         "content-type": "application/json", "x-tokdash-token": api._CSRF_TOKEN},
+         "content-type": "application/json", "x-token-dashboard-token": api._CSRF_TOKEN},
     )
     assert status == 200 and updatecheck.is_enabled() is True
 
 
 def test_non_ascii_token_denied_not_500():
     # secrets.compare_digest raises on non-ASCII str; the gate must return a denial, not crash.
-    reason = _deny("PUT", _hdrs(**{"x-tokdash-token": "café"}))
+    reason = _deny("PUT", _hdrs(**{"x-token-dashboard-token": "café"}))
     assert reason is not None and "token" in reason.lower()
 
 
@@ -480,7 +480,7 @@ def test_malformed_referer_denied_not_500():
     # fail closed (return a denial reason), never let it bubble out as an HTTP 500.
     # (Regression: secgate-01.)
     assert api._origin_value("http://[") == ""  # unparseable -> empty, never raises
-    reason = _deny("PUT", _hdrs(**{"x-tokdash-token": api._CSRF_TOKEN, "referer": "http://["}))
+    reason = _deny("PUT", _hdrs(**{"x-token-dashboard-token": api._CSRF_TOKEN, "referer": "http://["}))
     assert reason is not None and "referer" in reason.lower()
 
 
@@ -493,10 +493,10 @@ def test_malformed_referer_csrf_token_endpoint_403_not_500():
 
 def test_malformed_referer_returns_403_through_asgi(monkeypatch):
     # End-to-end through the real middleware: a malformed Referer 403s instead of 500ing.
-    monkeypatch.setenv("TOKDASH_WARM_ON_START", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_WARM_ON_START", "0")
     status = _asgi_status(
         "PUT", "/api/pricing-db",
         {"host": "127.0.0.1:55423", "referer": "http://[",
-         "content-type": "application/json", "x-tokdash-token": api._CSRF_TOKEN},
+         "content-type": "application/json", "x-token-dashboard-token": api._CSRF_TOKEN},
     )
     assert status == 403

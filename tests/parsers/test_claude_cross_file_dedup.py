@@ -9,18 +9,18 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import clientpaths, compute
-from tokdash.onboard.paths import pricing_db_override_path
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import BaseParser, ClaudeParser, CodingToolsUsageTracker, _sig_cache
-from tokdash.usage_store import UsageEntryStore
+from token_dashboard import clientpaths, compute
+from token_dashboard.onboard.paths import pricing_db_override_path
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import BaseParser, ClaudeParser, CodingToolsUsageTracker, _sig_cache
+from token_dashboard.usage_store import UsageEntryStore
 
 
 @pytest.fixture(autouse=True)
 def _isolated_claude(monkeypatch, tmp_path):
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
     monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path / ".claude"))
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     _clear()
     yield
     _clear()
@@ -95,7 +95,7 @@ def test_largest_snapshot_wins_in_either_sync_order(largest, first):
 @pytest.mark.parametrize("durable", ["0", "1"])
 @pytest.mark.parametrize("delete", ["aaaa", "bbbb"])
 def test_deleting_either_identical_copy_keeps_the_survivor(monkeypatch, durable, delete):
-    monkeypatch.setenv("TOKDASH_USAGE_DB_DURABLE", durable)
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_DURABLE", durable)
     paths = {name: _write(name, [_row()]) for name in ("aaaa", "bbbb")}
     _assert_parity({"claude:shared": (100, 5, 0, 0)})
     assert _owner() == "aaaa"
@@ -107,7 +107,7 @@ def test_deleting_either_identical_copy_keeps_the_survivor(monkeypatch, durable,
 
 @pytest.mark.parametrize("durable", ["0", "1"])
 def test_rewriting_owner_without_shared_message_promotes_unchanged_copy(monkeypatch, durable):
-    monkeypatch.setenv("TOKDASH_USAGE_DB_DURABLE", durable)
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_DURABLE", durable)
     _write("aaaa", [_row(buckets=(100, 50, 0, 0))])
     _write("bbbb", [_row()])
     _assert_parity()
@@ -186,7 +186,7 @@ def test_incremental_update_does_not_reparse_unchanged_candidates(monkeypatch):
 
 
 def test_durable_largest_candidate_survives_other_file_rewrites(monkeypatch):
-    monkeypatch.setenv("TOKDASH_USAGE_DB_DURABLE", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_DURABLE", "1")
     archived = _write("aaaa", [_row(buckets=(100, 50, 0, 0))])
     _write("bbbb", [_row()])
     _assert_parity()
@@ -214,7 +214,7 @@ def test_parser_upgrade_rebuilds_last_writer_owned_rows():
 
 
 def test_schema_upgrade_retains_missing_durable_candidate(monkeypatch):
-    monkeypatch.setenv("TOKDASH_USAGE_DB_DURABLE", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_DURABLE", "1")
     archived = _write("aaaa", [_row(buckets=(100, 50, 0, 0))])
     _write("bbbb", [_row()])
     _assert_parity()
@@ -234,7 +234,7 @@ def test_schema_upgrade_retains_missing_durable_candidate(monkeypatch):
 
 
 def test_removing_a_nonowning_reclassification_can_change_the_owner(monkeypatch):
-    monkeypatch.setenv("TOKDASH_USAGE_DB_DURABLE", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_DURABLE", "0")
     _write("aaaa", [_row()])
     middle = _write("bbbb", [_row(buckets=(0, 5, 100, 0), second=1)])
     _write("cccc", [_row(second=2)])
@@ -247,7 +247,7 @@ def test_removing_a_nonowning_reclassification_can_change_the_owner(monkeypatch)
 
 
 def test_promoted_candidate_uses_current_pricing(monkeypatch):
-    monkeypatch.setenv("TOKDASH_USAGE_DB_DURABLE", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_DURABLE", "0")
     override = pricing_db_override_path()
     override.parent.mkdir(parents=True, exist_ok=True)
 
@@ -271,7 +271,7 @@ def test_promoted_candidate_uses_current_pricing(monkeypatch):
 
 def test_promoted_candidate_uses_the_syncs_pricing_snapshot(monkeypatch):
     """Disk rates can change after the tracker captures its pricing identity."""
-    monkeypatch.setenv("TOKDASH_USAGE_DB_DURABLE", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_DURABLE", "0")
     original = _write("aaaa", [_row(buckets=(100, 50, 0, 0))])
     _write("bbbb", [_row()])
     _assert_parity()
@@ -294,7 +294,7 @@ def test_promoted_candidate_uses_the_syncs_pricing_snapshot(monkeypatch):
 
 def test_file_local_reduction_matches_original_line_by_line_streaming_rule(monkeypatch):
     """Independent oracle protects against both views sharing the same wrong fold."""
-    monkeypatch.setenv("TOKDASH_USAGE_DB_DURABLE", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB_DURABLE", "0")
     rng = random.Random(170)
     splits = [(100, 5, 0, 0), (0, 5, 100, 0), (0, 5, 0, 100),
               (100, 50, 0, 0), (0, 50, 100, 0), (50, 5, 0, 0)]

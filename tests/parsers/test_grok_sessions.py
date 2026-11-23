@@ -17,16 +17,16 @@ from pathlib import Path
 
 import pytest
 
-from tokdash import sessions
-from tokdash.dateutil import parse_date_range
-from tokdash.pricing import PricingDatabase
-from tokdash.sessions import (
+from token_dashboard import sessions
+from token_dashboard.dateutil import parse_date_range
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sessions import (
     SESSION_TOOLS,
     _grok_sessions,
     get_sessions_data,
     reload_pricing_db,
 )
-from tokdash.sources.coding_tools import BaseParser, GrokParser
+from token_dashboard.sources.coding_tools import BaseParser, GrokParser
 
 from test_grok_parser import _inference, _model_event, _write_log
 
@@ -68,7 +68,7 @@ def _write_summary(grok_home: Path, cwd: str, session_id: str, **overrides) -> P
 def _isolated_grok_home(monkeypatch, tmp_path):
     home = tmp_path / ".grok"
     monkeypatch.setenv("GROK_HOME", str(home))
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "1")
     sessions._load_grok_sessions.cache_clear()
     BaseParser._entry_cache.clear()
     reload_pricing_db()

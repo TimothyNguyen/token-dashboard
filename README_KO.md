@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="https://tokdash.github.io/"><img src="https://raw.githubusercontent.com/JingbiaoMei/tokdash/main/docs/assets/tokdash_logo_full.png" alt="Tokdash" width="420" /></a>
+  <a href="https://token-dashboard.github.io/"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/token-dashboard_logo_full.png" alt="TokenDashboard" width="420" /></a>
 </p>
 
 <p align="center">
@@ -11,52 +11,52 @@
 </p>
 
 <p align="center">
-  <a href="https://opencode.ai/" title="OpenCode"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/opencode.png" alt="OpenCode" height="34"></a>
-  <a href="https://openai.com/codex/" title="Codex"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/codex.png" alt="Codex" height="34"></a>
-  <a href="https://www.claude.com/product/claude-code" title="Claude Code"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/claude.png" alt="Claude Code" height="34"></a>
-  <a href="https://github.com/google-gemini/gemini-cli" title="Gemini CLI"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/gemini.png" alt="Gemini CLI" height="34"></a>
-  <a href="https://antigravity.google/" title="Antigravity"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/antigravity.png" alt="Antigravity" height="34"></a>
-  <a href="https://openclaw.ai/" title="OpenClaw"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/openclaw.png" alt="OpenClaw" height="34"></a>
-  <a href="https://github.com/MoonshotAI/kimi-cli" title="Kimi CLI"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/kimi.png" alt="Kimi CLI" height="34"></a>
-  <a href="https://mimo.xiaomi.com/coder" title="MiMo Code"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/mimo.png" alt="MiMo Code" height="34"></a>
-  <a href="https://grok.com/build" title="Grok Build"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/grok.png" alt="Grok Build" height="34"></a>
-  <a href="https://pi.dev/" title="Pi"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/pi.png" alt="Pi" height="34"></a>
-  <a href="https://omp.sh/" title="omp"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/omp.png" alt="omp" height="34"></a>
-  <a href="https://kilocode.ai/" title="Kilo Code"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/kilocode.png" alt="Kilo Code" height="34"></a>
-  <a href="https://cline.bot/" title="Cline"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/cline.png" alt="Cline" height="34"></a>
-  <a href="https://github.com/features/copilot" title="GitHub Copilot CLI"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/copilot.png" alt="GitHub Copilot CLI" height="34"></a>
-  <a href="https://hermes-agent.nousresearch.com/" title="Hermes"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/hermes.png" alt="Hermes" height="34"></a>
-  <a href="https://github.com/deepseek-ai/deepseek-harness" title="DeepSeek Harness"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/dsh.png" alt="DeepSeek Harness" height="34"></a>
-  <a href="https://reasonix.io/" title="Reasonix"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/reasonix.png" alt="Reasonix" height="34"></a>
-  <a href="https://zcode.z.ai" title="ZCode"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/zcode.png" alt="ZCode" height="34"></a>
-  <a href="https://www.workbuddy.ai/" title="WorkBuddy"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/workbuddy.png" alt="WorkBuddy" height="34"></a>
-  <a href="https://qoder.com/" title="Qoder IDE"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/qoder-ide.png" alt="Qoder IDE" height="34"></a>
-  <a href="https://qoder.com/" title="Qoder CLI"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/qoder-cli.png" alt="Qoder CLI" height="34"></a>
-  <a href="https://zed.dev/" title="Zed"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/zed.png" alt="Zed" height="34"></a>
-  <a href="https://github.com/QwenLM/qwen-code" title="Qwen Code"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/qwen-code.png" alt="Qwen Code" height="34"></a>
-  <a href="https://charm.land/crush" title="Crush"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/crush.png" alt="Crush" height="34"></a>
-  <a href="https://dev.meta.ai/docs/muse-code" title="Muse Code"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/muse.png" alt="Muse Code" height="34"></a>
-  <a href="https://freebuff.com/" title="Freebuff"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/freebuff.png" alt="Freebuff" height="34"></a>
-  <a href="https://github.com/MiniMax-AI/minimax-code" title="MiniMax Code"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/minimax.png" alt="MiniMax Code" height="34"></a>
-<a href="https://devin.ai/cli" title="Devin CLI"><img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/agents/pills/devin.png" alt="Devin CLI" height="34"></a>
+  <a href="https://opencode.ai/" title="OpenCode"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/opencode.png" alt="OpenCode" height="34"></a>
+  <a href="https://openai.com/codex/" title="Codex"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/codex.png" alt="Codex" height="34"></a>
+  <a href="https://www.claude.com/product/claude-code" title="Claude Code"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/claude.png" alt="Claude Code" height="34"></a>
+  <a href="https://github.com/google-gemini/gemini-cli" title="Gemini CLI"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/gemini.png" alt="Gemini CLI" height="34"></a>
+  <a href="https://antigravity.google/" title="Antigravity"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/antigravity.png" alt="Antigravity" height="34"></a>
+  <a href="https://openclaw.ai/" title="OpenClaw"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/openclaw.png" alt="OpenClaw" height="34"></a>
+  <a href="https://github.com/MoonshotAI/kimi-cli" title="Kimi CLI"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/kimi.png" alt="Kimi CLI" height="34"></a>
+  <a href="https://mimo.xiaomi.com/coder" title="MiMo Code"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/mimo.png" alt="MiMo Code" height="34"></a>
+  <a href="https://grok.com/build" title="Grok Build"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/grok.png" alt="Grok Build" height="34"></a>
+  <a href="https://pi.dev/" title="Pi"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/pi.png" alt="Pi" height="34"></a>
+  <a href="https://omp.sh/" title="omp"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/omp.png" alt="omp" height="34"></a>
+  <a href="https://kilocode.ai/" title="Kilo Code"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/kilocode.png" alt="Kilo Code" height="34"></a>
+  <a href="https://cline.bot/" title="Cline"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/cline.png" alt="Cline" height="34"></a>
+  <a href="https://github.com/features/copilot" title="GitHub Copilot CLI"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/copilot.png" alt="GitHub Copilot CLI" height="34"></a>
+  <a href="https://hermes-agent.nousresearch.com/" title="Hermes"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/hermes.png" alt="Hermes" height="34"></a>
+  <a href="https://github.com/deepseek-ai/deepseek-harness" title="DeepSeek Harness"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/dsh.png" alt="DeepSeek Harness" height="34"></a>
+  <a href="https://reasonix.io/" title="Reasonix"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/reasonix.png" alt="Reasonix" height="34"></a>
+  <a href="https://zcode.z.ai" title="ZCode"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/zcode.png" alt="ZCode" height="34"></a>
+  <a href="https://www.workbuddy.ai/" title="WorkBuddy"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/workbuddy.png" alt="WorkBuddy" height="34"></a>
+  <a href="https://qoder.com/" title="Qoder IDE"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/qoder-ide.png" alt="Qoder IDE" height="34"></a>
+  <a href="https://qoder.com/" title="Qoder CLI"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/qoder-cli.png" alt="Qoder CLI" height="34"></a>
+  <a href="https://zed.dev/" title="Zed"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/zed.png" alt="Zed" height="34"></a>
+  <a href="https://github.com/QwenLM/qwen-code" title="Qwen Code"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/qwen-code.png" alt="Qwen Code" height="34"></a>
+  <a href="https://charm.land/crush" title="Crush"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/crush.png" alt="Crush" height="34"></a>
+  <a href="https://dev.meta.ai/docs/muse-code" title="Muse Code"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/muse.png" alt="Muse Code" height="34"></a>
+  <a href="https://freebuff.com/" title="Freebuff"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/freebuff.png" alt="Freebuff" height="34"></a>
+  <a href="https://github.com/MiniMax-AI/minimax-code" title="MiniMax Code"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/minimax.png" alt="MiniMax Code" height="34"></a>
+<a href="https://devin.ai/cli" title="Devin CLI"><img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/agents/pills/devin.png" alt="Devin CLI" height="34"></a>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white" alt="FastAPI" />
   <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white" alt="Python" />
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat" alt="License" />
-  <a href="https://tokdash.github.io/"><img src="https://img.shields.io/badge/Website-tokdash.github.io-1E40AF?style=flat&logo=githubpages&logoColor=white" alt="Website" /></a>
-  <a href="https://tokdash.github.io/demo/"><img src="https://img.shields.io/badge/Live%20Demo-tokdash.github.io%2Fdemo-F59E0B?style=flat&logo=githubpages&logoColor=white" alt="Live Demo" /></a>
-  <a href="https://github.com/JingbiaoMei/Tokdash/actions/workflows/ci.yml"><img src="https://github.com/JingbiaoMei/Tokdash/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
-  <a href="https://pypi.org/project/tokdash/"><img src="https://img.shields.io/pypi/v/tokdash?style=flat" alt="PyPI" /></a>
+  <a href="https://token-dashboard.github.io/"><img src="https://img.shields.io/badge/Website-token-dashboard.github.io-1E40AF?style=flat&logo=githubpages&logoColor=white" alt="Website" /></a>
+  <a href="https://token-dashboard.github.io/demo/"><img src="https://img.shields.io/badge/Live%20Demo-token-dashboard.github.io%2Fdemo-F59E0B?style=flat&logo=githubpages&logoColor=white" alt="Live Demo" /></a>
+  <a href="https://github.com/TimothyNguyen/token-dashboard/actions/workflows/ci.yml"><img src="https://github.com/TimothyNguyen/token-dashboard/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://pypi.org/project/token-dashboard/"><img src="https://img.shields.io/pypi/v/token-dashboard?style=flat" alt="PyPI" /></a>
 </p>
 
 <p align="center">
-  <b>설치 없이 바로 체험 → <a href="https://tokdash.github.io/demo/">tokdash.github.io/demo</a></b>
+  <b>설치 없이 바로 체험 → <a href="https://token-dashboard.github.io/demo/">token_dashboard.github.io/demo</a></b>
 </p>
 
 > [!NOTE]
-> **여러 기계를 하나의 대시보드에서.** 설정에서 WSL, Mac 또는 다른 기기에서 실행 중인 Tokdash 인스턴스를 추가하세요. 모든 뷰는 선택한 것을 합산하고, Servers 탭은 기계를 나란히 비교하며, Quota 탭은 각 제공자의 윈도우 바와 리셋 카운트다운을 기계별로 묶어 보여줍니다. [원격 접근 →](docs/guides/REMOTE_ACCESS.md) · [쿼터 추적 →](#쿼터-추적-선택사항)
+> **여러 기계를 하나의 대시보드에서.** 설정에서 WSL, Mac 또는 다른 기기에서 실행 중인 TokenDashboard 인스턴스를 추가하세요. 모든 뷰는 선택한 것을 합산하고, Servers 탭은 기계를 나란히 비교하며, Quota 탭은 각 제공자의 윈도우 바와 리셋 카운트다운을 기계별로 묶어 보여줍니다. [원격 접근 →](docs/guides/REMOTE_ACCESS.md) · [쿼터 추적 →](#쿼터-추적-선택사항)
 >
 > **같은 저자의 다른 프로젝트: [Cosyncing](https://github.com/cosyncing/cosyncing).** 에이전트를 동기화하고 제어하세요 — CLI에서 GUI까지, 데스크톱에서 휴대폰까지. Cosyncing은 여러분 자신의 네트워크에서 코딩 에이전트를 동기화합니다.
 
@@ -81,15 +81,15 @@
 ## 빠른 시작
 
 ```bash
-pipx install tokdash
-tokdash setup
+pipx install token-dashboard
+token-dashboard setup
 ```
 
-끝입니다. `tokdash setup`이 런타임을 감지하고, 필요하면 관리형 런타임을 설치한 뒤
+끝입니다. `token-dashboard setup`이 런타임을 감지하고, 필요하면 관리형 런타임을 설치한 뒤
 로컬 서비스를 등록하고 대시보드 주소 —— `http://127.0.0.1:55423` —— 를
 출력합니다. 전체 옵션, 첫 실행 안내, 업데이트 방법은
 [설치 및 실행](#설치-및-실행)에 있습니다. 먼저 둘러보고 싶다면
-[라이브 데모](https://tokdash.github.io/demo/)가 실제 UI로 동작합니다.
+[라이브 데모](https://token-dashboard.github.io/demo/)가 실제 UI로 동작합니다.
 
 ## 하나의 패키지, 네 가지 뷰
 
@@ -100,7 +100,7 @@ tokdash setup
 | 뷰 | 무엇인가 | 이런 경우에 사용하세요 |
 |---|---|---|
 | **[WebUI](#webui)** | 전체 대시보드: Overview, Sessions, Stats, Report, Quota, Servers | 전체 조감, 차트, 드릴다운이 필요할 때 |
-| **[TUI](#터미널-대시보드-tui)** | `tokdash tui` — 터미널에서 7개 패널: Overview, Sessions, Stats, Report, Speed, Quota, Pricing | 터미널에 거주하며 브라우저 없이 수치가 필요할 때 |
+| **[TUI](#터미널-대시보드-tui)** | `token-dashboard tui` — 터미널에서 7개 패널: Overview, Sessions, Stats, Report, Speed, Quota, Pricing | 터미널에 거주하며 브라우저 없이 수치가 필요할 때 |
 | **[Companion](#companion-상태표-앱)** | 네이티브 메뉴 막대(macOS) / 알림 영역(Windows) 앱 | 대시보드를 닫아둔 채 하루 종일 오늘의 지출과 쿼터를 눈에 담고 싶을 때 |
 | **[상태줄](#상태줄)** | 에이전트 상태줄 안의 라이브 토큰/비용 항목 | 비용 티커를 정확히 타이핑하는 그 자리에 두고 싶을 때 |
 
@@ -109,25 +109,25 @@ tokdash setup
 대시보드는 로컬 FastAPI 앱이 제공하는 단일 페이지로, 정확한 입력 / 캐시 / 출력
 토큰 내역, 도구별·모델별 표, 기여 히트맵, 주/월/년 **Report**, 리셋 카운트다운이
 있는 제공자별 **Quota** 윈도우, 여러 기계를 합치고 비교하는 **Servers** 탭을
-담습니다. 스크린샷을 클릭하면 [라이브 데모](https://tokdash.github.io/demo/)가 열립니다.
+담습니다. 스크린샷을 클릭하면 [라이브 데모](https://token-dashboard.github.io/demo/)가 열립니다.
 
 <table>
   <tr>
     <td align="center">
       <b>개요</b><br />
-      <a href="https://tokdash.github.io/demo/">
+      <a href="https://token-dashboard.github.io/demo/">
         <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/demo-overview-en-dark.png" />
-          <img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/demo-overview-en-light.png" alt="Tokdash overview dashboard - click for live demo" width="470" />
+          <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/demo-overview-en-dark.png" />
+          <img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/demo-overview-en-light.png" alt="TokenDashboard overview dashboard - click for live demo" width="470" />
         </picture>
       </a>
     </td>
     <td align="center">
       <b>사용 리포트</b><br />
-      <a href="https://tokdash.github.io/demo/">
+      <a href="https://token-dashboard.github.io/demo/">
         <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/demo-report-en-dark.png" />
-          <img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/demo-report-en-light.png" alt="Tokdash usage report - click for live demo" width="470" />
+          <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/demo-report-en-dark.png" />
+          <img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/demo-report-en-light.png" alt="TokenDashboard usage report - click for live demo" width="470" />
         </picture>
       </a>
     </td>
@@ -135,19 +135,19 @@ tokdash setup
   <tr>
     <td align="center">
       <b>쿼터 추적</b><br />
-      <a href="https://tokdash.github.io/demo/">
+      <a href="https://token-dashboard.github.io/demo/">
         <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/demo-quota-en-dark.png" />
-          <img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/demo-quota-en-light.png" alt="Tokdash quota tracking - click for live demo" width="470" />
+          <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/demo-quota-en-dark.png" />
+          <img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/demo-quota-en-light.png" alt="TokenDashboard quota tracking - click for live demo" width="470" />
         </picture>
       </a>
     </td>
     <td align="center">
       <b>여러 서버, 하나의 합계</b><br />
-      <a href="https://tokdash.github.io/demo/">
+      <a href="https://token-dashboard.github.io/demo/">
         <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/demo-servers-en-dark.png" />
-          <img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/demo-servers-en-light.png" alt="Tokdash Servers tab comparing machines - click for live demo" width="470" />
+          <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/demo-servers-en-dark.png" />
+          <img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/demo-servers-en-light.png" alt="TokenDashboard Servers tab comparing machines - click for live demo" width="470" />
         </picture>
       </a>
     </td>
@@ -158,24 +158,24 @@ tokdash setup
 
 ### 터미널 대시보드 (TUI)
 
-터미널에 그대로 남겠다면? `tokdash tui`는 브라우저 없이 **7개 패널** —— **Overview**, **Sessions**, **Stats**, **Report**, **Speed**, **Quota**, **Pricing** —— 을 열고, 동일한 로컬 인덱스를 읽습니다(옆에서 `tokdash serve`가 실행
+터미널에 그대로 남겠다면? `token-dashboard tui`는 브라우저 없이 **7개 패널** —— **Overview**, **Sessions**, **Stats**, **Report**, **Speed**, **Quota**, **Pricing** —— 을 열고, 동일한 로컬 인덱스를 읽습니다(옆에서 `token-dashboard serve`가 실행
 중이면 디스크의 공유 데이터베이스도 함께 읽습니다). `F1`–`F7`로 패널을 이동하고, `v`로 목록에서 고릅니다.
 
 <table>
   <tr>
     <td align="center">
       <b>TUI — Overview</b><br />
-      <img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/demo-tui-overview.png" alt="tokdash tui Overview tab" width="470" />
+      <img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/demo-tui-overview.png" alt="token-dashboard tui Overview tab" width="470" />
     </td>
     <td align="center">
       <b>TUI — Quota</b><br />
-      <img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/demo-tui-quota.png" alt="tokdash tui Quota tab" width="470" />
+      <img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/demo-tui-quota.png" alt="token-dashboard tui Quota tab" width="470" />
     </td>
   </tr>
 </table>
 
 ```bash
-tokdash tui
+token-dashboard tui
 ```
 
 <details>
@@ -212,13 +212,13 @@ tokdash tui
 파이프나 스크립트로 쓸 수 있는 일회성 리포트:
 
 ```bash
-tokdash report --period week
+token-dashboard report --period week
 ```
 
 기간은 위치 인자가 아니라 플래그입니다. 허용 값: `today` (기본), `week`,
 `month`, `year`, `all`, 일수 숫자, 또는 `Nd/Nw/Nm/Ny` 축약형. `week`, `month`,
-`year`는 웹 Report 탭이 표시하는 달력 기준 윈도우와 동일합니다. `tokdash report`는
-`tokdash export`와 동일한 규칙에 따라 `--json`, `--pretty`, `--output <file>`도
+`year`는 웹 Report 탭이 표시하는 달력 기준 윈도우와 동일합니다. `token-dashboard report`는
+`token-dashboard export`와 동일한 규칙에 따라 `--json`, `--pretty`, `--output <file>`도
 받습니다.
 
 </details>
@@ -226,7 +226,7 @@ tokdash report --period week
 ### Companion 상태표 앱
 
 macOS용 네이티브 메뉴 막대 앱이자 Windows용 알림 영역 앱으로 동작하는 선택적
-앱입니다. 대시보드를 열어두지 않고도 Tokdash 서비스를 컴팩트한 읽기 전용 뷰로
+앱입니다. 대시보드를 열어두지 않고도 TokenDashboard 서비스를 컴팩트한 읽기 전용 뷰로
  확인할 수 있습니다.
 
 <table>
@@ -234,15 +234,15 @@ macOS용 네이티브 메뉴 막대 앱이자 Windows용 알림 영역 앱으로
     <td align="center">
       <a href="https://apps.microsoft.com/detail/9ppnmpdq8b52">
         <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/companion/demo-mac-dark.png" />
-          <img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/companion/demo-mac-light.png" alt="Tokdash Companion Status Bar App on macOS" width="300" />
+          <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/companion/demo-mac-dark.png" />
+          <img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/companion/demo-mac-light.png" alt="TokenDashboard Companion Status Bar App on macOS" width="300" />
         </picture>
       </a>
     </td>
     <td align="center">
       <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/companion/demo-win-dark.png" />
-        <img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/companion/demo-win-light.png" alt="Tokdash Companion Status Bar App on Windows" width="300" />
+        <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/companion/demo-win-dark.png" />
+        <img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/companion/demo-win-light.png" alt="TokenDashboard Companion Status Bar App on Windows" width="300" />
       </picture>
     </td>
   </tr>
@@ -258,12 +258,12 @@ macOS용 네이티브 메뉴 막대 앱이자 Windows용 알림 영역 앱으로
   <a href="https://apps.microsoft.com/detail/9ppnmpdq8b52?mode=direct">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://get.microsoft.com/images/en-us%20light.svg" />
-      <img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Get Tokdash Companion from the Microsoft Store" width="200" />
+      <img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Get TokenDashboard Companion from the Microsoft Store" width="200" />
     </picture>
   </a>
 </p>
 
-**직접 다운로드** — [최신 companion 릴리스](https://github.com/JingbiaoMei/Tokdash/releases?q=companion-v):
+**직접 다운로드** — [최신 companion 릴리스](https://github.com/TimothyNguyen/token-dashboard/releases?q=companion-v):
 유니버설 DMG(`arm64` + `x86_64`, macOS 14 이상)와 셀프컨테인드 포트어블 ZIP
 (`x64`, Windows 11; Windows on Arm은 x64 에뮬레이션으로 사용 가능).
 
@@ -271,13 +271,13 @@ macOS용 네이티브 메뉴 막대 앱이자 Windows용 알림 영역 앱으로
 <summary>표시되는 내용과 설정 방식</summary>
 
 - 오늘의 비용, 토큰, 메시지, 월 누적 사용량
-- 여러 Tokdash 엔드포인트의 합계와 서버별 그룹 쿼터
+- 여러 TokenDashboard 엔드포인트의 합계와 서버별 그룹 쿼터
 - Codex, Claude, Kimi, MiniMax, Antigravity, Grok, Z.ai 쿼터 윈도우
 - 상대적 리셋 시간과 선택적 저쿼터 알림
 - 시스템 언어 감지 및 English, 简体中文, 日本語, 한국어, Español, Português
 - 텔레메트리, 자격 증명 탐색, 포트 스캔, 직접 로그 파싱 없음
 
-설정: **Tokdash 1.5.2 이상**([설치 및 실행](#설치-및-실행))을 실행하고 Companion을
+설정: **TokenDashboard 1.5.2 이상**([설치 및 실행](#설치-및-실행))을 실행하고 Companion을
 설치하면 기본적으로 `http://127.0.0.1:55423`에 연결됩니다 — 설정에서 프라이빗
 Tailscale Serve URL을 포함해 명시적 엔드포인트를 추가, 테스트, 이름 붙이기,
 제거할 수 있습니다. Companion은 사용자가 구성한 엔드포인트에만 접촉하며, 저쿼터
@@ -301,7 +301,7 @@ Tailscale Serve URL을 포함해 명시적 엔드포인트를 추가, 테스트,
 있습니다:
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/JingbiaoMei/Tokdash/main/docs/assets/demo-statusline.png" alt="Tokdash statusline integration example" width="900" />
+  <img src="https://raw.githubusercontent.com/TimothyNguyen/token-dashboard/main/docs/assets/demo-statusline.png" alt="TokenDashboard statusline integration example" width="900" />
 </p>
 
 완성된 템플릿(bash 및 PowerShell), 설치/구성, 엔드포인트 참조는
@@ -323,13 +323,13 @@ Tailscale Serve URL을 포함해 명시적 엔드포인트를 추가, 테스트,
 권장되는 격리 설치:
 
 ```bash
-pipx install tokdash
+pipx install token-dashboard
 ```
 
 pipx를 사용하지 않는다면:
 
 ```bash
-python3 -m pip install --user tokdash
+python3 -m pip install --user token-dashboard
 ```
 
 ### 첫 실행
@@ -337,7 +337,7 @@ python3 -m pip install --user tokdash
 온보딩 마법사를 실행하세요:
 
 ```bash
-tokdash setup
+token-dashboard setup
 ```
 
 마법사는 플랫폼이 지원하는 경우 되돌릴 수 있는 사용자 수준 백그라운드 서비스를
@@ -346,69 +346,69 @@ tokdash setup
 localhost 우선 기본값을 사용하며, 로컬 서비스에 `sudo`가 필요 없고, 나중에
 `--purge`로 언설치하지 않는 한 사용량 히스토리를 유지합니다.
 
-에이전트, 스크립트, 번들에서 비대화형으로 설정하려면 `tokdash setup --auto --json`을
-실행하세요. 설정이 무엇을 바꿀지 미리 보려면 `tokdash setup --dry-run`을 실행하세요.
+에이전트, 스크립트, 번들에서 비대화형으로 설정하려면 `token-dashboard setup --auto --json`을
+실행하세요. 설정이 무엇을 바꿀지 미리 보려면 `token-dashboard setup --dry-run`을 실행하세요.
 모든 네트워크 인터페이스에 쓰기 비활성화 상태로 대시보드를 명시적으로 노출하려면
-`tokdash setup --bind 0.0.0.0`을 실행하세요. 먼저 [원격 접근
+`token-dashboard setup --bind 0.0.0.0`을 실행하세요. 먼저 [원격 접근
 가이드](docs/guides/REMOTE_ACCESS.md)를 검토하세요.
 
 그다음 설치를 확인하세요:
 
 ```bash
-tokdash doctor
+token-dashboard doctor
 ```
 
 `doctor`는 런타임, 백그라운드 서비스, 설정된 포트, 데이터 경로, 업데이트 확인
-상태를 점검합니다. 자동화에는 `tokdash doctor --json`을 사용하세요.
+상태를 점검합니다. 자동화에는 `token-dashboard doctor --json`을 사용하세요.
 
 ### 업데이트 또는 제거
 
 ```bash
-tokdash update       # 관리 대상 런타임을 업그레이드하고 가능하면 서비스를 재시작
-tokdash uninstall    # setup이 만든 것만 정확히 되돌림. 기본적으로 사용량 히스토리 유지
+token-dashboard update       # 관리 대상 런타임을 업그레이드하고 가능하면 서비스를 재시작
+token-dashboard uninstall    # setup이 만든 것만 정확히 되돌림. 기본적으로 사용량 히스토리 유지
 ```
 
-`update`는 Tokdash가 안전하게 관리할 수 있는 설치 방식만 구동합니다. 런타임이
-Tokdash가 소유하지 않는 패키지 매니저로 설치된 경우, 그 환경을 건드리지 않고
+`update`는 TokenDashboard가 안전하게 관리할 수 있는 설치 방식만 구동합니다. 런타임이
+TokenDashboard가 소유하지 않는 패키지 매니저로 설치된 경우, 그 환경을 건드리지 않고
 정확한 수동 안내를 표시합니다.
 
 <details>
 <summary>기존 설치: v1.0 이전에서 마이그레이션</summary>
 
-온보딩 플로우 이전부터 Tokdash를 설치한 경우, 먼저 업그레이드하세요:
+온보딩 플로우 이전부터 TokenDashboard를 설치한 경우, 먼저 업그레이드하세요:
 
 ```bash
-pipx upgrade tokdash
-# 또는: python3 -m pip install --user -U tokdash
+pipx upgrade token-dashboard
+# 또는: python3 -m pip install --user -U token-dashboard
 ```
 
-그다음 백그라운드 서비스 관리를 Tokdash에 맡기려면 `tokdash doctor`와
-`tokdash setup`을 실행하세요. 이미 손으로 쓴 systemd나 launchd 서비스가 있으면
-setup은 그것을 **묵시적으로 교체하지 않습니다**: 마커가 없는 `tokdash.service` /
+그다음 백그라운드 서비스 관리를 TokenDashboard에 맡기려면 `token-dashboard doctor`와
+`token-dashboard setup`을 실행하세요. 이미 손으로 쓴 systemd나 launchd 서비스가 있으면
+setup은 그것을 **묵시적으로 교체하지 않습니다**: 마커가 없는 `token_dashboard.service` /
 plist 파일은 기본적으로 거부합니다. 그 서비스를 계속 직접 관리하거나, setup 전에
-제거하거나, `tokdash setup --dry-run`을 확인한 뒤 `tokdash setup --force`를
+제거하거나, `token-dashboard setup --dry-run`을 확인한 뒤 `token-dashboard setup --force`를
 실행하세요. `--force`는 포트 `55423`을 차지하고 있지만 새 `/health` 지문을 노출하지
-않는 1.0 이전 서비스도 처리합니다: 기존 `tokdash.service`를 다시 작성하고
-재시작합니다. 서비스 생성을 건너뛰려면 `tokdash setup --no-service`를 사용하세요.
+않는 1.0 이전 서비스도 처리합니다: 기존 `token_dashboard.service`를 다시 작성하고
+재시작합니다. 서비스 생성을 건너뛰려면 `token-dashboard setup --no-service`를 사용하세요.
 
 현재 설정이 conda/시스템/사용자 pip 인터프리터를 사용하고 있고, 향후 업그레이드를
-`tokdash update`가 관리하게 하려면 서비스를 Tokdash의 setup 소유 venv로
+`token-dashboard update`가 관리하게 하려면 서비스를 TokenDashboard의 setup 소유 venv로
 마이그레이션하세요:
 
 ```bash
-# 곧 실행할 tokdash 명령을 업그레이드. 예:
-python3 -m pip install --user -U tokdash
+# 곧 실행할 token-dashboard 명령을 업그레이드. 예:
+python3 -m pip install --user -U token-dashboard
 # 또는, conda base 설치인 경우:
-conda run -n base python -m pip install -U tokdash
-tokdash setup --runtime venv --force
-tokdash doctor
+conda run -n base python -m pip install -U token-dashboard
+token-dashboard setup --runtime venv --force
+token-dashboard doctor
 ```
 
-이로써 사용량 히스토리는 `~/.tokdash` 아래에 유지되고, 사용자 서비스는
-`~/.tokdash/runtime/python-venv/bin/python -m tokdash`를 실행하도록 다시
-작성되며, 이후 `tokdash update`가 해당 관리 venv를 업그레이드하고 서비스를
-재시작하게 됩니다. pipx로 설치했다면 pipx 런타임을 그대로 유지한 채 `tokdash
-update`나 `pipx upgrade tokdash`로 업그레이드해도 됩니다.
+이로써 사용량 히스토리는 `~/.token-dashboard` 아래에 유지되고, 사용자 서비스는
+`~/.token-dashboard/runtime/python-venv/bin/python -m token-dashboard`를 실행하도록 다시
+작성되며, 이후 `token-dashboard update`가 해당 관리 venv를 업그레이드하고 서비스를
+재시작하게 됩니다. pipx로 설치했다면 pipx 런타임을 그대로 유지한 채 `token-dashboard
+update`나 `pipx upgrade token-dashboard`로 업그레이드해도 됩니다.
 
 </details>
 
@@ -417,13 +417,13 @@ update`나 `pipx upgrade tokdash`로 업그레이드해도 됩니다.
 일회성 포어그라운드 프로세스만 필요할 때:
 
 ```bash
-tokdash serve
+token-dashboard serve
 ```
 
-`http://127.0.0.1:55423`을 엽니다. 기본 포트가 사용 중이면 `tokdash serve --port
-<port>`를 사용하세요. 기본적으로 `tokdash serve`는 시작 시 브라우저에서
+`http://127.0.0.1:55423`을 엽니다. 기본 포트가 사용 중이면 `token-dashboard serve --port
+<port>`를 사용하세요. 기본적으로 `token-dashboard serve`는 시작 시 브라우저에서
 대시보드를 한 번 엽니다. 끄려면 `--no-open`을 넘기세요. 명령어를 붙이지 않은
-`tokdash`는 명령 헬프를 출력하고 종료하기만 합니다 — 더 이상 몰래 `tokdash serve`를
+`token-dashboard`는 명령 헬프를 출력하고 종료하기만 합니다 — 더 이상 몰래 `token-dashboard serve`를
 시작하지 않습니다.
 
 온보딩 전체 상세 — 런타임 선택, WSL/systemd 동작, macOS launchd, Tailscale,
@@ -439,15 +439,15 @@ Tailscale Serve, SSH 포워딩, 명시적 네트워크 바인딩을 통한 원�
 - **기여 캘린더**: Tokens/Cost/Messages 지표가 있는 2D 히트맵 + 3D 등각 뷰
 - **Report 탭**: 본인 에이전트 활동을 주 / 월 / 연초 누적 기준으로 정리한 보고서. 상세 단계별로 공유 가능한 카드를 제공하며, 내보낼 때마다 밝은 색과 어두운 색 PNG 두 장을 함께 씁니다
 - **Quota 탭**: 아홉 제공자의 구독 윈도우 바와 리셋 카운트다운. Codex 윈도우는 로컬 로그로 바로 동작하며, 그 외 대다수 소스에는 옵트인 [라이브 폴링](#쿼터-추적-선택사항)이 필요합니다
-- **터미널 대시보드** *[신규]*: `tokdash tui` — 브라우저 없이 터미널에서 Overview, Sessions, Stats, Report, Speed, Quota, Pricing
+- **터미널 대시보드** *[신규]*: `token-dashboard tui` — 브라우저 없이 터미널에서 Overview, Sessions, Stats, Report, Speed, Quota, Pricing
 - **Companion 상태표 앱**: macOS 메뉴 막대나 Windows 알림 영역에서 지출과 구독 쿼터 확인 — Windows는 [Microsoft Store](https://apps.microsoft.com/detail/9ppnmpdq8b52) 제공
 - **상태줄 통합**: Claude Code의 상태줄(또는 로컬 HTTP 엔드포인트에 도달할 수 있는 어떤 에이전트든)에 실시간 토큰 사용량 표시기
-- **멀티 서버 뷰**: 설정에서 WSL, macOS, 기타 Tokdash 서버를 추가. 임의의 선택 사용량을 합치되 쿼터는 머신별로 그룹화. [원격 접근](docs/guides/REMOTE_ACCESS.md) 참조.
+- **멀티 서버 뷰**: 설정에서 WSL, macOS, 기타 TokenDashboard 서버를 추가. 임의의 선택 사용량을 합치되 쿼터는 머신별로 그룹화. [원격 접근](docs/guides/REMOTE_ACCESS.md) 참조.
 - **테마와 앱 마감**: 17가지 스타일 테마, 라이트/다크 모드, PWA 설치 지원, 6개 언어 UI
 
 ## 지원 클라이언트
 
-Tokdash는 **27개 지원 에이전트**의 로컬 세션 로그를 읽습니다 — 위의 픽토그램
+TokenDashboard는 **27개 지원 에이전트**의 로컬 세션 로그를 읽습니다 — 위의 픽토그램
 행이 이름들을 보여줍니다. 전체 매트릭스(사용량·비용 / Session Explorer
 커버리지, 클라이언트별 데이터 경로, 오버라이드, 소스별 계상 노트)은
 **[지원 클라이언트](docs/reference/SUPPORTED_CLIENTS.md)**에 있습니다.
@@ -458,7 +458,7 @@ Quota 탭은 **아홉 제공자**의 구독 이용률 윈도우와 리셋 카운
 Codex의 5시간/주간 윈도우는 로컬 로그로 바로 동작합니다(추정치로만 여기세요).
 정확한 Codex 소비량과 그 외 모든 제공자 — Claude Code, Antigravity, MiniMax,
 Kimi Code, Grok, Z.ai, OpenCode Go, Command Code — 는 **옵트인 라이브 폴링**에서
-나옵니다: Tokdash는 CLI가 이미 가진 로그인으로 각 제공자 자신의 쿼터
+나옵니다: TokenDashboard는 CLI가 이미 가진 로그인으로 각 제공자 자신의 쿼터
 엔드포인트를 호출합니다. 기본값은 꺼짐, 제공자별 동의, 결과는 로컬 데이터베이스에
 저장됩니다.
 
@@ -467,14 +467,14 @@ Kimi Code, Grok, Z.ai, OpenCode Go, Command Code — 는 **옵트인 라이브 �
 
 ## 비용 정확도 안내
 
-토큰 수는 각 클라이언트가 로컬에 로그하는 내용에 따라 달라집니다. 비용은 기본적으로 번들된 가격 데이터베이스(`src/tokdash/pricing_db.json`)에서, 있으면 저장된 대시보드 가격 오버라이드(`<data_dir>/pricing_db.json`)에서 계산됩니다. 어느 쪽이든 실제 제공자 가격보다 늦을 수 있습니다 — 추정치로 쓰고, 중요하면 청구 출처와 대조하세요.
+토큰 수는 각 클라이언트가 로컬에 로그하는 내용에 따라 달라집니다. 비용은 기본적으로 번들된 가격 데이터베이스(`src/token_dashboard/pricing_db.json`)에서, 있으면 저장된 대시보드 가격 오버라이드(`<data_dir>/pricing_db.json`)에서 계산됩니다. 어느 쪽이든 실제 제공자 가격보다 늦을 수 있습니다 — 추정치로 쓰고, 중요하면 청구 출처와 대조하세요.
 
 ## 히스토리 보존
 
 > [!IMPORTANT]
-> **히스토리를 보존하세요.** Claude Code와 Gemini CLI는 기본적으로 약 30일 이전의 로컬 세션을 삭제하므로, Tokdash의 이전 달들이 조용히 줄어듭니다.
+> **히스토리를 보존하세요.** Claude Code와 Gemini CLI는 기본적으로 약 30일 이전의 로컬 세션을 삭제하므로, TokenDashboard의 이전 달들이 조용히 줄어듭니다.
 
-Tokdash는 각 클라이언트의 **로컬** 세션 로그를 읽으며, 로컬 SQLite 인덱스는
+TokenDashboard는 각 클라이언트의 **로컬** 세션 로그를 읽으며, 로컬 SQLite 인덱스는
 인덱싱되기 전에 삭제된 로그를 되찾을 수 없습니다. 기본적으로 오래된 세션을 삭제하는
 지원 클라이언트는 두 곳뿐이고, 둘 다 한 줄로 수정됩니다:
 

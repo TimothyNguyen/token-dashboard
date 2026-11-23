@@ -127,7 +127,7 @@ _ALL_LOADED = (
     "globalThis.Chart = function Chart() {};\n"
     "globalThis.THREE = {};\n"
     "globalThis.flatpickr = function flatpickr() {};\n"
-    "window.__tokdashFlatpickrCssLoaded = true;\n"
+    "window.__tokenDashboardFlatpickrCssLoaded = true;\n"
 )
 
 
@@ -357,7 +357,7 @@ def test_flatpickr_stylesheet_failure_is_actually_detectable(tmp_path: Path) -> 
     every normal load, and a check that cannot fire misses the failure.
     """
     onload = _flatpickr_css_onload(_source())
-    loaded_setup = _ALL_LOADED.replace("window.__tokdashFlatpickrCssLoaded = true;\n", "")
+    loaded_setup = _ALL_LOADED.replace("window.__tokenDashboardFlatpickrCssLoaded = true;\n", "")
 
     loaded = _run_banner(tmp_path, "flatpickr_css_loaded", loaded_setup + onload + ";\n")
     failed = _run_banner(tmp_path, "flatpickr_css_failed", loaded_setup)
@@ -386,7 +386,7 @@ def test_a_failed_date_picker_is_disabled_rather_than_left_dead(tmp_path: Path) 
     no_css = _run_banner(
         tmp_path,
         "picker_no_css",
-        setup + _ALL_LOADED.replace("window.__tokdashFlatpickrCssLoaded = true;\n", ""),
+        setup + _ALL_LOADED.replace("window.__tokenDashboardFlatpickrCssLoaded = true;\n", ""),
     )
     no_script = _run_banner(
         tmp_path,
@@ -397,7 +397,7 @@ def test_a_failed_date_picker_is_disabled_rather_than_left_dead(tmp_path: Path) 
 
     for name, out in (("stylesheet", no_css), ("script", no_script)):
         assert out["threw"] is None, f"missing {name}: the banner threw {out['threw']}"
-        assert "tokdash-datepicker-unavailable" in out["htmlClasses"], (
+        assert "token-dashboard-datepicker-unavailable" in out["htmlClasses"], (
             f"missing {name}: the calendar must be hidden"
         )
         assert out["trigger"] == {
@@ -410,7 +410,7 @@ def test_a_failed_date_picker_is_disabled_rather_than_left_dead(tmp_path: Path) 
     assert healthy["trigger"] == {"disabled": False, "haspopup": "dialog", "title": None}
 
     rule = re.search(
-        r"\.tokdash-datepicker-unavailable\s+\.flatpickr-calendar\s*\{([^}]*)\}", _source()
+        r"\.token-dashboard-datepicker-unavailable\s+\.flatpickr-calendar\s*\{([^}]*)\}", _source()
     )
     assert rule and re.search(r"display:\s*none", rule.group(1)), (
         "the unavailable class must actually hide the calendar"
@@ -491,7 +491,7 @@ def test_one_failed_notice_cannot_silence_the_others(tmp_path: Path) -> None:
     setup = (
         "function t(key) { return 'T:' + key; }\n"
         "globalThis.flatpickr = function flatpickr() {};\n"
-        "window.__tokdashFlatpickrCssLoaded = true;\n"
+        "window.__tokenDashboardFlatpickrCssLoaded = true;\n"
         "createFailures = 1;\n"
     )
     out = _run_banner(tmp_path, "isolated_notices", setup)

@@ -78,11 +78,11 @@ jobs:
           dotnet --info
 
       - name: Restore locked dependencies
-        run: dotnet restore companion/windows/TokdashCompanion.slnx --locked-mode
+        run: dotnet restore companion/windows/TokenDashboardCompanion.slnx --locked-mode
 
       - name: Release tests
         run: >
-          dotnet test companion/windows/TokdashCompanion.slnx
+          dotnet test companion/windows/TokenDashboardCompanion.slnx
           --configuration Release --no-restore
 
       - name: Exercise unsigned portable ZIP packaging
@@ -90,7 +90,7 @@ jobs:
         run: >
           companion/scripts/build_windows_release.ps1
           -SkipTests
-          -OutputDirectory "${{ runner.temp }}/tokdash-companion-windows"
+          -OutputDirectory "${{ runner.temp }}/token-dashboard-companion-windows"
 
       # CI intentionally uploads nothing. Packaging output dies with the runner,
       # avoiding temporary artifact storage entirely.
@@ -124,8 +124,8 @@ jobs:
       - name: Release tests with warnings as errors
         run: |
           xcodebuild \
-            -project companion/macos/TokdashCompanion.xcodeproj \
-            -scheme TokdashCompanion \
+            -project companion/macos/TokenDashboardCompanion.xcodeproj \
+            -scheme TokenDashboardCompanion \
             -configuration Release \
             -destination "platform=macOS" \
             CODE_SIGNING_ALLOWED=NO \
@@ -154,7 +154,7 @@ jobs:
 
       - name: Exercise universal DMG packaging
         env:
-          COMPANION_OUTPUT_DIR: ${{ runner.temp }}/tokdash-companion-macos
+          COMPANION_OUTPUT_DIR: ${{ runner.temp }}/token-dashboard-companion-macos
         run: bash companion/scripts/build_macos_release.sh
 
       # CI intentionally uploads nothing. Packaging output dies with the runner,

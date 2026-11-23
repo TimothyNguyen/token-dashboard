@@ -22,9 +22,9 @@ textual = pytest.importorskip("textual", reason="the TUI tests need textual")
 
 from textual.widgets import Button, DataTable  # noqa: E402
 
-from tokdash.sessions import TOOL_LABELS  # noqa: E402
-from tokdash.tui import views  # noqa: E402
-from tokdash.tui.formatting import EM_DASH  # noqa: E402
+from token_dashboard.sessions import TOOL_LABELS  # noqa: E402
+from token_dashboard.tui import views  # noqa: E402
+from token_dashboard.tui.formatting import EM_DASH  # noqa: E402
 
 import support.tui as fx  # noqa: E402
 from support.tui import lit, press, rows_of, settle, visible  # noqa: E402,F401

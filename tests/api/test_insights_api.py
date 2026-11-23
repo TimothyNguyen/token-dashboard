@@ -9,9 +9,9 @@ from datetime import date, datetime, timedelta
 
 import pytest
 
-import tokdash.compute as compute
-import tokdash.dev_fixtures as dev_fixtures
-import tokdash.insights as insights
+import token_dashboard.compute as compute
+import token_dashboard.dev_fixtures as dev_fixtures
+import token_dashboard.insights as insights
 
 
 # --------------------------------------------------------------------------

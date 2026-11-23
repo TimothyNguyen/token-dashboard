@@ -30,7 +30,7 @@ from pathlib import Path
 
 import pytest
 
-import tokdash  # type: ignore[import-untyped]
+import token_dashboard  # type: ignore[import-untyped]
 
 from support.frontend import extract_i18n_literal, needs_node, run_node
 from support.i18n_profile import (
@@ -41,7 +41,7 @@ from support.i18n_profile import (
 )
 
 
-INDEX_HTML = Path(tokdash.__file__).parent / "static" / "index.html"
+INDEX_HTML = Path(token_dashboard.__file__).parent / "static" / "index.html"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 # HTML elements that never have a closing tag.

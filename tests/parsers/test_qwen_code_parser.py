@@ -4,9 +4,9 @@ cache-inclusive Gemini prompt split, the source-global uuid dedup behind
 import json
 from pathlib import Path
 
-from tokdash import clientpaths
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import (
+from token_dashboard import clientpaths
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import (
     BaseParser,
     QwenCodeParser,
     _sig_cache,

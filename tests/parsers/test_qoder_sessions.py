@@ -19,9 +19,9 @@ from fastapi import HTTPException
 
 from test_qoder_ide_parser import CHAT_MESSAGE_DDL, CN_ROOT, INTL_ROOT, DB_SUFFIX
 
-from tokdash import api, sessions
-from tokdash.pricing import PricingDatabase
-from tokdash.sessions import (
+from token_dashboard import api, sessions
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sessions import (
     SESSION_TOOLS,
     QoderReadError,
     _qoder_sessions,
@@ -29,7 +29,7 @@ from tokdash.sessions import (
     get_sessions_data,
     reload_pricing_db,
 )
-from tokdash.sources.coding_tools import BaseParser, QoderIdeParser, ZCodeSnapshotError
+from token_dashboard.sources.coding_tools import BaseParser, QoderIdeParser, ZCodeSnapshotError
 
 BASE = 1_787_000_000_000  # ~2026-08-17T03:53Z
 
@@ -65,7 +65,7 @@ def _clean_caches():
 def _setup(monkeypatch, tmp_path, root: Path) -> None:
     """Point QODER_IDE_DATA_DIR at root with a known pricing override."""
     monkeypatch.setenv("QODER_IDE_DATA_DIR", str(root))
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(tmp_path / "data-home"))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path / "data-home"))
     override = PricingDatabase().override_path()
     override.parent.mkdir(parents=True, exist_ok=True)
     override.write_text(

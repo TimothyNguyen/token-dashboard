@@ -21,13 +21,13 @@ import pytest
 
 pytest.importorskip("fastapi")
 
-import tokdash.api as api
+import token_dashboard.api as api
 
 
 def _drain_compute_waiters(timeout: float = 10.0) -> None:
     """Let a test's queued recompute stop counting as a waiter before the next starts.
 
-    The compute-cap handoff hands the key lock to a `tokdash-cache-refresh` daemon,
+    The compute-cap handoff hands the key lock to a `token-dashboard-cache-refresh` daemon,
     so a test can now end while one is still parked for a slot — and a parked daemon
     holds a `_compute_waiters` increment that the counter assertions further down read
     as a leak. It is released the moment the test frees the slot, so this is normally
@@ -42,7 +42,7 @@ def _drain_compute_waiters(timeout: float = 10.0) -> None:
 
 @pytest.fixture(autouse=True)
 def _reset(monkeypatch):
-    monkeypatch.setenv("TOKDASH_WARM_ON_START", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_WARM_ON_START", "0")
     api._clear_cache()
     yield
     _drain_compute_waiters()
@@ -391,22 +391,22 @@ def test_a_quota_lowers_the_resulting_concurrency(monkeypatch):
 
 
 def _cgroup_tree(tmp_path, root_cpu_max: str, leaf_cpu_max: str | None = None):
-    """A fake cgroup v2 root, with the process in /system.slice/tokdash.service."""
+    """A fake cgroup v2 root, with the process in /system.slice/token_dashboard.service."""
     root = tmp_path / "cgroup"
-    leaf = root / "system.slice" / "tokdash.service"
+    leaf = root / "system.slice" / "token_dashboard.service"
     leaf.mkdir(parents=True)
     (root / "cpu.max").write_text(root_cpu_max, encoding="utf-8")
     if leaf_cpu_max is not None:
         (leaf / "cpu.max").write_text(leaf_cpu_max, encoding="utf-8")
     proc = tmp_path / "self-cgroup"
-    proc.write_text("0::/system.slice/tokdash.service\n", encoding="utf-8")
+    proc.write_text("0::/system.slice/token_dashboard.service\n", encoding="utf-8")
     return root, proc
 
 
 def test_a_quota_on_the_processes_own_subcgroup_is_found(tmp_path):
     """The systemd CPUQuota= case: the root says "max", the unit's own cgroup caps it.
 
-    `tokdash setup` installs a systemd unit, so this is a real deployment shape, not a
+    `token_dashboard setup` installs a systemd unit, so this is a real deployment shape, not a
     hypothetical — reading only the root would miss it entirely.
     """
     root, proc = _cgroup_tree(tmp_path, "max 100000\n", "400000 100000\n")
@@ -438,14 +438,14 @@ def test_a_v1_quota_on_the_processes_own_subcgroup_is_found(tmp_path):
     """v1 has the same sub-cgroup shape, so the walk must apply there too."""
     missing = tmp_path / "absent"
     base = tmp_path / "cpu"
-    unit = base / "system.slice" / "tokdash.service"
+    unit = base / "system.slice" / "token_dashboard.service"
     unit.mkdir(parents=True)
     (base / "cpu.cfs_quota_us").write_text("-1\n", encoding="utf-8")  # root unlimited
     (base / "cpu.cfs_period_us").write_text("100000\n", encoding="utf-8")
     (unit / "cpu.cfs_quota_us").write_text("300000\n", encoding="utf-8")
     (unit / "cpu.cfs_period_us").write_text("100000\n", encoding="utf-8")
     proc = tmp_path / "self-cgroup"
-    proc.write_text("4:cpu,cpuacct:/system.slice/tokdash.service\n", encoding="utf-8")
+    proc.write_text("4:cpu,cpuacct:/system.slice/token_dashboard.service\n", encoding="utf-8")
 
     assert api._cgroup_cpu_quota(missing, proc, base) == 3
 
@@ -467,7 +467,7 @@ def test_the_waiter_allowance_is_derived_from_the_concurrency():
     AnyIO's pool — the failure the compute cap exists to prevent.
 
     Checked as a function of an explicit budget rather than against the imported
-    constants: those depend on the ambient machine and on whatever TOKDASH_* the runner
+    constants: those depend on the ambient machine and on whatever TOKEN_DASHBOARD_* the runner
     exports, so an assertion over them passes under a wrong formula too.
     """
     assert api._default_max_waiters(2, 32) == 30
@@ -478,31 +478,31 @@ def test_the_waiter_allowance_is_derived_from_the_concurrency():
 
 
 def test_the_wait_budget_rejects_infinity_and_clamps(monkeypatch):
-    monkeypatch.setenv("TOKDASH_COMPUTE_WAIT_SECONDS", "inf")
-    assert api._bounded_float_env("TOKDASH_COMPUTE_WAIT_SECONDS", 15.0, maximum=120.0) == 15.0
-    monkeypatch.setenv("TOKDASH_COMPUTE_WAIT_SECONDS", "nan")
-    assert api._bounded_float_env("TOKDASH_COMPUTE_WAIT_SECONDS", 15.0, maximum=120.0) == 15.0
-    monkeypatch.setenv("TOKDASH_COMPUTE_WAIT_SECONDS", "9999")
-    assert api._bounded_float_env("TOKDASH_COMPUTE_WAIT_SECONDS", 15.0, maximum=120.0) == 120.0
-    monkeypatch.setenv("TOKDASH_COMPUTE_WAIT_SECONDS", "2.5")
-    assert api._bounded_float_env("TOKDASH_COMPUTE_WAIT_SECONDS", 15.0, maximum=120.0) == 2.5
+    monkeypatch.setenv("TOKEN_DASHBOARD_COMPUTE_WAIT_SECONDS", "inf")
+    assert api._bounded_float_env("TOKEN_DASHBOARD_COMPUTE_WAIT_SECONDS", 15.0, maximum=120.0) == 15.0
+    monkeypatch.setenv("TOKEN_DASHBOARD_COMPUTE_WAIT_SECONDS", "nan")
+    assert api._bounded_float_env("TOKEN_DASHBOARD_COMPUTE_WAIT_SECONDS", 15.0, maximum=120.0) == 15.0
+    monkeypatch.setenv("TOKEN_DASHBOARD_COMPUTE_WAIT_SECONDS", "9999")
+    assert api._bounded_float_env("TOKEN_DASHBOARD_COMPUTE_WAIT_SECONDS", 15.0, maximum=120.0) == 120.0
+    monkeypatch.setenv("TOKEN_DASHBOARD_COMPUTE_WAIT_SECONDS", "2.5")
+    assert api._bounded_float_env("TOKEN_DASHBOARD_COMPUTE_WAIT_SECONDS", 15.0, maximum=120.0) == 2.5
 
 
 def test_the_daily_warm_minute_honours_zero_and_rejects_out_of_range(monkeypatch):
     """Midnight-exactly is a legitimate setting, and a bad value must not wrap."""
-    monkeypatch.setenv("TOKDASH_DAILY_WARM_MINUTE", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_DAILY_WARM_MINUTE", "0")
     assert api._daily_warm_minute() == 0
-    monkeypatch.setenv("TOKDASH_DAILY_WARM_MINUTE", "1445")
+    monkeypatch.setenv("TOKEN_DASHBOARD_DAILY_WARM_MINUTE", "1445")
     assert api._daily_warm_minute() == 5, "1445 must not wrap to 00:05's neighbour"
-    monkeypatch.setenv("TOKDASH_DAILY_WARM_MINUTE", "90")
+    monkeypatch.setenv("TOKEN_DASHBOARD_DAILY_WARM_MINUTE", "90")
     assert api._daily_warm_minute() == 90
-    monkeypatch.setenv("TOKDASH_DAILY_WARM_MINUTE", "-1")
+    monkeypatch.setenv("TOKEN_DASHBOARD_DAILY_WARM_MINUTE", "-1")
     assert api._daily_warm_minute() == 5
 
 
 def test_an_explicit_env_override_still_wins(monkeypatch):
-    monkeypatch.setenv("TOKDASH_COMPUTE_CONCURRENCY", "3")
-    assert api._positive_int_env("TOKDASH_COMPUTE_CONCURRENCY", api._default_compute_concurrency()) == 3
+    monkeypatch.setenv("TOKEN_DASHBOARD_COMPUTE_CONCURRENCY", "3")
+    assert api._positive_int_env("TOKEN_DASHBOARD_COMPUTE_CONCURRENCY", api._default_compute_concurrency()) == 3
 
 
 # --- the scheduled warm -------------------------------------------------------
@@ -763,4 +763,4 @@ def test_a_testclient_block_leaves_no_warm_thread_running():
     with TestClient(api.app) as client:
         client.get("/health")
     leaked = {t.name for t in threading.enumerate()} - before
-    assert not {name for name in leaked if name.startswith("tokdash-")}, leaked
+    assert not {name for name in leaked if name.startswith("token-dashboard-")}, leaked

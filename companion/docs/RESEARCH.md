@@ -84,9 +84,9 @@ surface.
 1. Windows notification-area flyout focus, light dismissal, multi-monitor placement, and
    DPI behavior.
 2. macOS popover layout under Liquid Glass with Reduce Transparency and Increase Contrast.
-3. Tokdash cold-cache latency and `503` backpressure when today/month requests start
+3. TokenDashboard cold-cache latency and `503` backpressure when today/month requests start
    together.
-4. Base URLs containing the Tailscale `/tokdash` path.
+4. Base URLs containing the Tailscale `/token-dashboard` path.
 5. Packaging and launch-at-login behavior under signed macOS and MSIX builds.
 
 ## Sources

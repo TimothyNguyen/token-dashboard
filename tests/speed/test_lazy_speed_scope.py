@@ -13,8 +13,8 @@ from pathlib import Path
 
 import pytest
 from test_lazy_speed_cache import corpus, build_requested
-from tokdash import speed_cache as cache, speed_worker, speed_native, session_speed, compute
-from tokdash.sources.coding_tools import CodingToolsUsageTracker, _sig_cache
+from token_dashboard import speed_cache as cache, speed_worker, speed_native, session_speed, compute
+from token_dashboard.sources.coding_tools import CodingToolsUsageTracker, _sig_cache
 
 WINDOW = {'from': '2026-09-01', 'to': '2026-09-28'}
 
@@ -26,7 +26,7 @@ def run_requested(job):
 
 
 def test_native_failed_member_does_not_poison_its_batch(corpus, monkeypatch):
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION', '1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION', '1')
     compute._sync_usage_store(CodingToolsUsageTracker())
     with sqlite3.connect(speed_native.paths()['opencode'][0]) as conn:
         conn.execute("UPDATE message SET session_id='A'")
@@ -71,7 +71,7 @@ def test_native_all_failure_applies_beyond_the_original_batch(corpus):
 
 @pytest.mark.parametrize('change', ['late_native_write', 'file_removal'])
 def test_final_validation_records_the_checked_input(corpus, monkeypatch, change):
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION', '1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION', '1')
     _, _, inventory = corpus
     compute._sync_usage_store(CodingToolsUsageTracker())
     db = speed_native.paths()['kilocode'][0]
@@ -102,7 +102,7 @@ def test_final_validation_records_the_checked_input(corpus, monkeypatch, change)
 
 
 def test_publication_failure_has_job_context_instead_of_last_input(corpus, monkeypatch):
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION', '1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION', '1')
     compute._sync_usage_store(CodingToolsUsageTracker())
     with monkeypatch.context() as patch:
         patch.setattr(cache, 'ensure_report_index', lambda conn: (_ for _ in ()).throw(sqlite3.OperationalError('publication unavailable')))
@@ -122,7 +122,7 @@ def test_publication_failure_has_job_context_instead_of_last_input(corpus, monke
 @pytest.mark.parametrize('changed', [False, True])
 def test_many_native_scopes_use_one_freshness_snapshot(corpus, monkeypatch, changed):
     from output_speed_expansion_fixtures import codex_call
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION', '1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION', '1')
     _, _, inventory = corpus
     compute._sync_usage_store(CodingToolsUsageTracker())
     build_requested(dict(WINDOW, source=''))
@@ -158,7 +158,7 @@ def test_many_native_scopes_use_one_freshness_snapshot(corpus, monkeypatch, chan
 
 
 def test_native_batch_rechecks_changes_between_sessions(corpus, monkeypatch):
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION', '1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION', '1')
     compute._sync_usage_store(CodingToolsUsageTracker())
     db = speed_native.paths()['opencode'][0]
     with sqlite3.connect(db) as conn:
@@ -181,7 +181,7 @@ def test_native_batch_rechecks_changes_between_sessions(corpus, monkeypatch):
 
 
 def test_an_unrelated_source_can_build_after_codex_read_failure(corpus, monkeypatch):
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION', '1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION', '1')
     compute._sync_usage_store(CodingToolsUsageTracker())
     request = {'from': '2026-09-01', 'to': '2026-09-28', 'source': 'codex'}
     build_requested(request)
@@ -197,7 +197,7 @@ def test_an_unrelated_source_can_build_after_codex_read_failure(corpus, monkeypa
 
 
 def test_ready_and_unindexed_sessions_are_isolated_from_another_source_failure(corpus,monkeypatch):
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION','1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION','1')
     compute._sync_usage_store(CodingToolsUsageTracker())
     request={'from':'2026-09-01','to':'2026-09-28','source':'opencode','session_id':'s'}
     build_requested(request)
@@ -213,7 +213,7 @@ def test_ready_and_unindexed_sessions_are_isolated_from_another_source_failure(c
 
 def test_failed_file_does_not_block_other_sessions_and_changed_signature_permits_retry(corpus,monkeypatch):
     root,_,inventory=corpus
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION','1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION','1')
     store,_=compute._sync_usage_store(CodingToolsUsageTracker())
     owner=inventory['codex_file']
     request={'from':'2026-09-01','to':'2026-09-28','source':'codex','session_id':'bench-codex'}

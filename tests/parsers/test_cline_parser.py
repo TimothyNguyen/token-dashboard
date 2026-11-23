@@ -5,9 +5,9 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from tokdash import clientpaths
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import BaseParser, ClineParser, _sig_cache
+from token_dashboard import clientpaths
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import BaseParser, ClineParser, _sig_cache
 
 TS_A = 1_700_000_000_000
 TS_B = 1_700_010_000_000

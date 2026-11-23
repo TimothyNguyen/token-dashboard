@@ -17,7 +17,7 @@ _src = str(Path(__file__).resolve().parent.parent / "src")
 if _src not in sys.path:
     sys.path.insert(0, _src)
 
-from tokdash.sources import openclaw as O  # noqa: E402
+from token_dashboard.sources import openclaw as O  # noqa: E402
 
 WINDOWS = [("today", 1), ("7d", 7), ("30d", 30), ("365d", 365)]
 

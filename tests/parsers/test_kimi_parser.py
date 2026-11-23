@@ -5,8 +5,8 @@ Covers parsing of Kimi session files in both legacy and current formats.
 from datetime import datetime, timezone
 from pathlib import Path
 
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import KimiParser
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import KimiParser
 
 
 def _isolate_home(monkeypatch, tmp_path):

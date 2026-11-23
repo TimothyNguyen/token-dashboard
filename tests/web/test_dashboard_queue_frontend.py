@@ -364,7 +364,7 @@ async function main() {
     await settle();
     out.after = cardWithRenders();
     out.urls = activeTimeFetches().map((entry) => entry.url);
-    out.stored = storedPrefs['tokdash-show-codex-review-sessions'] ?? null;
+    out.stored = storedPrefs['token-dashboard-show-codex-review-sessions'] ?? null;
   }
 
   if (scenario === 'a-late-reply-cannot-overwrite-a-newer-range') {

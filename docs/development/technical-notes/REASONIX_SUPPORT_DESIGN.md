@@ -15,7 +15,7 @@ model list is user-defined, not a fixed vendor lineup.
 
 ## Goal and non-goals
 
-Add Reasonix as a local Tokdash source with:
+Add Reasonix as a local TokenDashboard source with:
 
 - per-request provider token usage in Overview and Stats, from the daily stats logs;
 - per-session rows and drill-down in Session Explorer, from the per-project session logs;
@@ -42,13 +42,13 @@ The source key is `reasonix`. The display label is `Reasonix`.
 
 | File | Status |
 |---|---|
-| `src/tokdash/clientpaths.py` | ✅ `reasonix_home()` (`$REASONIX_HOME` else `~/.reasonix`, blank counts as unset, relative resolved), `reasonix_stats_dir()`, `reasonix_projects_dir()` |
-| `src/tokdash/sources/coding_tools.py` | ✅ `ReasonixParser` (stats JSONL) with F1-F4 applied, registered in `CodingToolsUsageTracker.parsers`, `--sources` default updated |
-| `src/tokdash/sessions.py` | ✅ `SESSION_TOOLS` / `TOOL_LABELS` / parser version v2 / signatures (sidecar `.meta` included) / `lru_cache` loaders and their `reload_pricing_db` teardown / persistent-store branch. Turns are zero-token by design (F6) |
-| `src/tokdash/cli.py` | ✅ `_sync_usage_database()` warm-up |
-| `src/tokdash/static/index.html` | ✅ full brand registration plus the known-limitation note (en/zh) under the panel header |
+| `src/token_dashboard/clientpaths.py` | ✅ `reasonix_home()` (`$REASONIX_HOME` else `~/.reasonix`, blank counts as unset, relative resolved), `reasonix_stats_dir()`, `reasonix_projects_dir()` |
+| `src/token_dashboard/sources/coding_tools.py` | ✅ `ReasonixParser` (stats JSONL) with F1-F4 applied, registered in `CodingToolsUsageTracker.parsers`, `--sources` default updated |
+| `src/token_dashboard/sessions.py` | ✅ `SESSION_TOOLS` / `TOOL_LABELS` / parser version v2 / signatures (sidecar `.meta` included) / `lru_cache` loaders and their `reload_pricing_db` teardown / persistent-store branch. Turns are zero-token by design (F6) |
+| `src/token_dashboard/cli.py` | ✅ `_sync_usage_database()` warm-up |
+| `src/token_dashboard/static/index.html` | ✅ full brand registration plus the known-limitation note (en/zh) under the panel header |
 | `tests/parsers/test_reasonix_parser.py`, `tests/parsers/test_reasonix_sessions.py` | ✅ present, untracked |
-| `src/tokdash/static/icons/agents/reasonix.svg` | ✅ present, mirrored to `docs/assets/agents/` with a generated pill |
+| `src/token_dashboard/static/icons/agents/reasonix.svg` | ✅ present, mirrored to `docs/assets/agents/` with a generated pill |
 | README / README_CN / SUPPORTED_CLIENTS / pill / changelog | ✅ landed |
 | this design doc | ✅ |
 
@@ -60,7 +60,7 @@ The source key is `reasonix`. The display label is `Reasonix`.
 
 - `config.toml` — `config_version = 6`; `[[providers]]` blocks (`name`, `kind`, `models`,
   `api_key_env`, `context_window`);
-- `.env` — provider API keys; **never read by Tokdash**;
+- `.env` — provider API keys; **never read by TokenDashboard**;
 - `stats/YYYY-MM-DD.jsonl` — per-request usage log (see below);
 - `projects/<project-key>/sessions/…` — session logs (see below);
 - `state/` — keyring migration state; never read;
@@ -68,9 +68,9 @@ The source key is `reasonix`. The display label is `Reasonix`.
 
 Config resolution is `flag > ./reasonix.toml > <Reasonix home>/config.toml > built-in defaults`.
 Whether `<Reasonix home>` itself honors a native `REASONIX_HOME` environment variable is not yet
-verified (§Recon R3). Tokdash resolves `$REASONIX_HOME` first and otherwise uses
+verified (§Recon R3). TokenDashboard resolves `$REASONIX_HOME` first and otherwise uses
 `Path.home() / ".reasonix"`; the design doc must state accurately which side owns the override
-(dsh's `DSH_HOME` is dsh-native; `PI_AGENT_DIR` is Tokdash-side — Reasonix lands in one of
+(dsh's `DSH_HOME` is dsh-native; `PI_AGENT_DIR` is TokenDashboard-side — Reasonix lands in one of
 those two camps after R3).
 
 ### Stats log — the only explicit usage record
@@ -99,7 +99,7 @@ Field inventory:
 | `total` | `prompt + completion` | redundant, do not parse for accounting |
 | `requests` | request count | always 1 in observed rows |
 | `usage_source` | how usage was measured | observed `executor` |
-| `cost_*` / `display_*` / `incomplete_reason` | Reasonix's own pricing status | **ignore** — Tokdash prices with its own DB. `incomplete_reason: "no_price"` corroborates models absent from any price table (e.g. self-hosted vLLM models) |
+| `cost_*` / `display_*` / `incomplete_reason` | Reasonix's own pricing status | **ignore** — TokenDashboard prices with its own DB. `incomplete_reason: "no_price"` corroborates models absent from any price table (e.g. self-hosted vLLM models) |
 
 The stats row carries **no session id** and **no turn id**.
 
@@ -107,12 +107,12 @@ The stats row carries **no session id** and **no turn id**.
 
 `~/.reasonix/projects/<project-key>/sessions/` with one file cluster per session. `<project-key>`
 is the absolute workspace path with `/` replaced by `-` (observed:
-`-mnt-h-Developing-Agent-Tokdash_Project-tokdash`; underscores preserved). The key is lossy, so
-Tokdash must not decode the project from it — the system prompt carries the authoritative cwd.
+`-mnt-h-Developing-Agent-TokenDashboard_Project-token-dashboard`; underscores preserved). The key is lossy, so
+TokenDashboard must not decode the project from it — the system prompt carries the authoritative cwd.
 
 Per session `<id>` (e.g. `20260815-220524.345805130-qwen3.8-27B-FP8`):
 
-| File | Role | Tokdash use |
+| File | Role | TokenDashboard use |
 |---|---|---|
 | `<id>.jsonl` | conversation log | **parse**: roles `system` / `user` / `assistant` / `tool` |
 | `<id>.jsonl.meta` | session metadata | **parse**: `id`, `created_at`, `updated_at`, `model` (`provider/model`), `preview`, `turns`, `schema_version: 2`, `writer_id`, `content_digest`, `revision` |
@@ -140,9 +140,9 @@ per-request usage (R2), it changes the per-session attribution decision.
 
 ## Usage accounting
 
-### Field mapping (stats → Tokdash entry)
+### Field mapping (stats → TokenDashboard entry)
 
-Tokdash's canonical buckets are disjoint: `input` is *uncached* input, `cacheRead` is cached
+TokenDashboard's canonical buckets are disjoint: `input` is *uncached* input, `cacheRead` is cached
 input. Reasonix's `prompt` already includes `cache_hit`, so the mapping must split it:
 
 ```text
@@ -177,7 +177,7 @@ Rules:
 
 Observed `ts` values carry 9 fractional-second digits and an explicit offset
 (`2026-08-15T12:24:35.556495944+01:00`). The local runtime (Python 3.12.3) parses them, but
-Tokdash supports Python 3.10+, where `datetime.fromisoformat` rejects fractions longer than six
+TokenDashboard supports Python 3.10+, where `datetime.fromisoformat` rejects fractions longer than six
 digits. **Fix F2:** truncate the fractional part to six digits before parsing. The existing
 parser test already uses a 9-digit fixture — keep it; it is the regression guard.
 
@@ -269,8 +269,8 @@ add it in a follow-up with a `_parse_reasonix_session_file` version bump rather 
    single row (`R | R`) read the same as a copy and count once, while two byte-identical rows inside
    one file stay two requests. The store parses one file per call (`compute._collect_parser_file`),
    so a counter spanning files gave a copy two ids it then collapsed to one row, and the DB-off view
-   billed it twice; that divergence is [#149](https://github.com/JingbiaoMei/Tokdash/issues/149).
-5. **F5** — `reasonix.svg` is in `src/tokdash/static/icons/agents/` and `docs/assets/agents/`, and
+   billed it twice; that divergence is [#149](https://github.com/TimothyNguyen/token-dashboard/issues/149).
+5. **F5** — `reasonix.svg` is in `src/token_dashboard/static/icons/agents/` and `docs/assets/agents/`, and
    `scripts/make_agent_pills.py` carries the `("reasonix", "Reasonix", "reasonix.svg")` row.
 6. **F6** — the zero-token session contract is stated in the `_parse_reasonix_session_file`
    docstring, surfaced in the dashboard panel copy, and `schema_version` from `.meta` gates the

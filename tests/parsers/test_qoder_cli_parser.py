@@ -8,13 +8,13 @@ from pathlib import Path
 
 import pytest
 
-from tokdash.pricing import PricingDatabase
-from tokdash.sources.coding_tools import (
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sources.coding_tools import (
     BaseParser,
     QoderCliParser,
     qoder_cli_unattributed_warning_reset,
 )
-from tokdash.usage_store import (
+from token_dashboard.usage_store import (
     UsageEntryStore,
     build_source_signature,
     public_usage_entry,
@@ -149,7 +149,7 @@ def test_interactive_fixture(monkeypatch, tmp_path):
     assert e2["input"] == 23321
     assert abs(e1["cost"] - 0.6484133714285715 * RATE) < 1e-15
     assert abs(e2["cost"] - 0.48029068 * RATE) < 1e-15
-    from tokdash.sources.coding_tools import _qoder_cli_iso_ms
+    from token_dashboard.sources.coding_tools import _qoder_cli_iso_ms
 
     assert e1["timestamp"] == _qoder_cli_iso_ms("2026-08-21T12:15:25.492Z")
     # the all-zero segment events change nothing (verified against the live
@@ -496,7 +496,7 @@ def test_free_request_on_every_read_path(monkeypatch, tmp_path):
     trip, the production aggregate_entries SQL path, and the Stats
     contribution query -- while a credits-absent twin is priced.
     """
-    from tokdash.compute import parse_entries_json
+    from token_dashboard.compute import parse_entries_json
 
     root = tmp_path / "root"
     _write_lines(root / "projects" / "p" / "aaaaaaaa-bbbb.jsonl", [
@@ -599,8 +599,8 @@ def test_invalid_window_falls_back_to_unset(monkeypatch, tmp_path, window):
 
 
 def test_cli_parser_identity(monkeypatch, tmp_path):
-    from tokdash.sources.coding_tools import QoderIdeParser
-    from tokdash.usage_store import USAGE_ENTRY_FORMAT_VERSION
+    from token_dashboard.sources.coding_tools import QoderIdeParser
+    from token_dashboard.usage_store import USAGE_ENTRY_FORMAT_VERSION
 
     parser = _parser(monkeypatch, tmp_path, [])
     assert parser.persistent_parser_version == 2
@@ -613,7 +613,7 @@ def test_cli_parser_identity(monkeypatch, tmp_path):
 
 
 def test_tracker_registers_qoder_sources():
-    from tokdash.sources.coding_tools import (
+    from token_dashboard.sources.coding_tools import (
         CodingToolsUsageTracker,
         QoderIdeParser,
     )
@@ -651,7 +651,7 @@ def _cfg_line(key, window, display="x"):
 
 
 def test_window_table_reads_qoder_run_logs(monkeypatch, tmp_path):
-    from tokdash.sources.coding_tools import qoder_cli_window_table
+    from token_dashboard.sources.coding_tools import qoder_cli_window_table
 
     root = tmp_path / "root"
     _run_log(root, "2026-09-24T17-29-24-649+01-00-a-p1",
@@ -711,7 +711,7 @@ def test_unattributed_billed_model_is_named(monkeypatch, tmp_path, caplog):
                  [_t_line("X", "2026-08-21T12:00:00.000Z", model="qmodel_38max",
                           credits=2.0, ratio=0.05)])
     caplog.clear()
-    with caplog.at_level(logging.WARNING, logger="tokdash.sources.coding_tools"):
+    with caplog.at_level(logging.WARNING, logger="token_dashboard.sources.coding_tools"):
         assert _parser(monkeypatch, tmp_path, [root]).collect(None, None) == []
     assert "qmodel_38max" in caplog.text
 
@@ -724,13 +724,13 @@ def test_free_records_do_not_raise_the_warning(monkeypatch, tmp_path, caplog):
                  [_t_line("X", "2026-08-21T12:00:00.000Z", model="qmodel_38max",
                           credits=0.0, billable=False, ratio=0.05)])
     caplog.clear()
-    with caplog.at_level(logging.WARNING, logger="tokdash.sources.coding_tools"):
+    with caplog.at_level(logging.WARNING, logger="token_dashboard.sources.coding_tools"):
         _parser(monkeypatch, tmp_path, [root]).collect(None, None)
     assert "no attributable tokens" not in caplog.text
 
 
 def test_malformed_run_logs_are_ignored(monkeypatch, tmp_path):
-    from tokdash.sources.coding_tools import qoder_cli_window_table
+    from token_dashboard.sources.coding_tools import qoder_cli_window_table
 
     root = tmp_path / "root"
     _run_log(root, "2026-09-24T17-29-24-649+01-00-a-p1",
@@ -743,7 +743,7 @@ def test_malformed_run_logs_are_ignored(monkeypatch, tmp_path):
 
 
 def test_latest_run_wins(monkeypatch, tmp_path):
-    from tokdash.sources.coding_tools import qoder_cli_window_table
+    from token_dashboard.sources.coding_tools import qoder_cli_window_table
 
     root = tmp_path / "root"
     _run_log(root, "2026-09-24T17-29-24-649+01-00-a-p1", _cfg_line("qfmodel", 180000) + "\n")
@@ -754,7 +754,7 @@ def test_latest_run_wins(monkeypatch, tmp_path):
 def test_run_logs_are_never_usage_files(monkeypatch, tmp_path):
     """The run log feeds the window table only; it must never reach the
     candidate builders, which read JSONL."""
-    from tokdash.sources.coding_tools import qoder_cli_discovered_files
+    from token_dashboard.sources.coding_tools import qoder_cli_discovered_files
 
     root = tmp_path / "root"
     log = _run_log(root, "2026-09-24T17-29-24-649+01-00-a-p1", _cfg_line("qfmodel", 180000) + "\n")
@@ -879,7 +879,7 @@ def test_dst_fall_back_orders_runs_by_utc_instant(monkeypatch, tmp_path):
     instant picks the newer window.
     """
     import os
-    from tokdash.sources.coding_tools import qoder_cli_run_log_files, qoder_cli_window_table
+    from token_dashboard.sources.coding_tools import qoder_cli_run_log_files, qoder_cli_window_table
 
     root = tmp_path / "root"
     earlier = _run_log(root, "2026-10-25T02-30-00-000+02-00-a-p1",
@@ -901,7 +901,7 @@ def test_dst_fall_back_orders_runs_by_utc_instant(monkeypatch, tmp_path):
 
 def test_unreadable_run_id_falls_back_to_mtime(monkeypatch, tmp_path):
     """An id we cannot parse still lands in mtime order, not an arbitrary slot."""
-    from tokdash.sources.coding_tools import qoder_cli_run_log_files
+    from token_dashboard.sources.coding_tools import qoder_cli_run_log_files
 
     root = tmp_path / "root"
     _run_log(root, "not-a-timestamp-a-p1", _cfg_line("qfmodel", 180000) + "\n")
@@ -940,7 +940,7 @@ def test_unchanged_run_logs_are_not_re_read(monkeypatch, tmp_path):
     fix, and the scan counter is the direct evidence of it.
     """
     import os
-    from tokdash.sources import coding_tools as ct
+    from token_dashboard.sources import coding_tools as ct
 
     root = tmp_path / "root"
     live = _run_log(root, "2026-09-24T17-29-24-649+01-00-a-p1",
@@ -978,7 +978,7 @@ def test_a_large_log_corpus_does_not_thrash_the_memo(monkeypatch, tmp_path):
     size. 300 is above the old cap; the promise is about ANY count.
     """
     import os
-    from tokdash.sources import coding_tools as ct
+    from token_dashboard.sources import coding_tools as ct
 
     root = tmp_path / "big"
     for i in range(300):
@@ -1004,7 +1004,7 @@ def test_a_large_log_corpus_does_not_thrash_the_memo(monkeypatch, tmp_path):
 
 def test_pruned_run_logs_leave_the_memo(monkeypatch, tmp_path):
     """Qoder prunes run logs; the memo cannot outgrow the corpus it mirrors."""
-    from tokdash.sources import coding_tools as ct
+    from token_dashboard.sources import coding_tools as ct
 
     root = tmp_path / "root"
     kept = _run_log(root, "2026-09-24T17-29-24-649+01-00-a-p1",
@@ -1029,7 +1029,7 @@ def test_prompt_text_cannot_become_a_context_window(monkeypatch, tmp_path):
     quotes "max_input_tokens" as the window -- and every token count divided by
     that window would look like a measurement.
     """
-    from tokdash.sources.coding_tools import qoder_cli_window_table
+    from token_dashboard.sources.coding_tools import qoder_cli_window_table
 
     root = tmp_path / "root"
     _run_log(root, "2026-09-24T17-29-24-649+01-00-a-p1",
@@ -1121,7 +1121,7 @@ def test_no_ratio_record_is_not_advised_the_window_override(monkeypatch, tmp_pat
     # override supplies a multiplier to a record that has nothing to multiply.
     _run_log(root, "2026-09-24T17-29-24-649+01-00-a-p1", _cfg_line("qfmodel", 180000) + "\n")
     caplog.clear()
-    with caplog.at_level(logging.WARNING, logger="tokdash.sources.coding_tools"):
+    with caplog.at_level(logging.WARNING, logger="token_dashboard.sources.coding_tools"):
         assert _parser(monkeypatch, tmp_path, [root]).collect(None, None) == []
     text = caplog.text
     assert "unheard-of-model" in text and "QODER_CLI_CONTEXT_WINDOW=<size>" in text
@@ -1145,7 +1145,7 @@ def test_invalid_window_warning_does_not_claim_auto_only_recovery(monkeypatch, t
     parser = _parser(monkeypatch, tmp_path, [])
     monkeypatch.setenv("QODER_CLI_CONTEXT_WINDOW", "0")
     caplog.clear()
-    with caplog.at_level(logging.WARNING, logger="tokdash.sources.coding_tools"):
+    with caplog.at_level(logging.WARNING, logger="token_dashboard.sources.coding_tools"):
         assert parser.runtime_config_signature()["context_window"] is None
     assert "auto-only" not in caplog.text
     assert "evidenced window" in caplog.text
@@ -1190,7 +1190,7 @@ def test_absent_config_cannot_borrow_a_window_from_the_prompt(monkeypatch, tmp_p
     had -- and every later zero-filled record for that model key recovers
     ratio x that borrowed number, which reads as a measurement.
     """
-    from tokdash.sources.coding_tools import qoder_cli_window_table
+    from token_dashboard.sources.coding_tools import qoder_cli_window_table
 
     root = tmp_path / "root"
     _run_log(root, "2026-09-24T17-29-24-649+01-00-a-p1",
@@ -1213,7 +1213,7 @@ def test_config_object_after_a_space_is_still_evidence(monkeypatch, tmp_path):
     raw_decode does not skip leading whitespace the way json.loads does, so
     decoding has to start at the brace rather than at the gap before it.
     """
-    from tokdash.sources.coding_tools import qoder_cli_window_table
+    from token_dashboard.sources.coding_tools import qoder_cli_window_table
 
     root = tmp_path / "root"
     _run_log(root, "2026-09-24T17-29-24-649+01-00-a-p1",
@@ -1231,7 +1231,7 @@ def test_hostile_payloads_cost_their_line_not_the_file(monkeypatch, tmp_path):
     scan, through the cache signature and into the dashboard request, which is
     the opposite of the contract on qoder_cli_window_table().
     """
-    from tokdash.sources.coding_tools import qoder_cli_window_table
+    from token_dashboard.sources.coding_tools import qoder_cli_window_table
 
     root = tmp_path / "root"
     _run_log(root, "2026-09-24T17-29-24-649+01-00-a-p1",
@@ -1256,7 +1256,7 @@ def test_absurd_windows_are_not_evidence_from_any_source(monkeypatch, tmp_path):
     5e28 "input tokens". Refusing it costs the record the named warning;
     trusting it costs the dashboard its numbers.
     """
-    from tokdash.sources.coding_tools import (
+    from token_dashboard.sources.coding_tools import (
         qoder_cli_runtime_config,
         qoder_cli_window_table,
     )
@@ -1323,7 +1323,7 @@ def test_unattributed_warning_speaks_once_per_cause(monkeypatch, tmp_path, caplo
                                  credits=2.0, ratio=0.05)])
     parser = _parser(monkeypatch, tmp_path, [root])
     caplog.clear()
-    with caplog.at_level(logging.WARNING, logger="tokdash.sources.coding_tools"):
+    with caplog.at_level(logging.WARNING, logger="token_dashboard.sources.coding_tools"):
         for _ in range(4):
             assert parser.collect(None, None) == []
             os.utime(path, ns=(time.time_ns() + 10 ** 9, time.time_ns() + 10 ** 9))
@@ -1339,8 +1339,8 @@ def test_merged_window_table_is_read_under_the_lock(monkeypatch, tmp_path):
     and hand back an empty table for a signature the caller just vouched for,
     so a hit that acquires the lock zero times is reading it unguarded.
     """
-    from tokdash.sources import coding_tools
-    from tokdash.sources.coding_tools import qoder_cli_window_table
+    from token_dashboard.sources import coding_tools
+    from token_dashboard.sources.coding_tools import qoder_cli_window_table
 
     root = tmp_path / "root"
     _run_log(root, "2026-09-24T17-29-24-649+01-00-a-p1", _cfg_line("qfmodel", 180000) + "\n")

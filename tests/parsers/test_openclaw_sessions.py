@@ -27,17 +27,17 @@ from pathlib import Path
 import pytest
 from zstandard import BLOCKSIZE_MAX, FRAME_HEADER, ZstdCompressor
 
-import tokdash.sessions as sessions
-from tokdash.pricing import PricingDatabase
-from tokdash.sessions import (
+import token_dashboard.sessions as sessions
+from token_dashboard.pricing import PricingDatabase
+from token_dashboard.sessions import (
     SESSION_TOOLS,
     TOOL_LABELS,
     _raw_sessions_for_tool,
     get_sessions_data,
     reload_pricing_db,
 )
-from tokdash.sources import openclaw
-from tokdash.usage_store import UsageEntryStore
+from token_dashboard.sources import openclaw
+from token_dashboard.usage_store import UsageEntryStore
 
 RATES = {
     "p1/oc-model": {"input": 2.0, "output": 4.0, "cache_read": 0.2, "cache_write": 2.0},
@@ -67,7 +67,7 @@ def _dt_from_ms(ms: int) -> datetime:
 def _clear_caches() -> None:
     openclaw._ENTRY_CACHE.clear()
     sessions._load_openclaw_sessions.cache_clear()
-    from tokdash import api
+    from token_dashboard import api
 
     api._clear_cache()
 
@@ -76,11 +76,11 @@ def _clear_caches() -> None:
 def _isolate(tmp_path, monkeypatch):
     # NEVER let a test read the real ~/.openclaw: one env pin per test is
     # sufficient because openclaw_home() reads it on each call (unlike the
-    # import-time _SIG_TTL in the qwen suite). TOKDASH_DATA_DIR isolates the
+    # import-time _SIG_TTL in the qwen suite). TOKEN_DASHBOARD_DATA_DIR isolates the
     # persistent usage store, and reload_pricing_db() re-anchors the pricing
     # singleton on both sides of every test.
     monkeypatch.setenv("OPENCLAW_HOME", str(tmp_path))
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(tmp_path / "data"))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(tmp_path / "data"))
     reload_pricing_db()
     _clear_caches()
     yield
@@ -235,7 +235,7 @@ class _Lock:
 
 
 def test_two_agents_three_sessions_exact_parity(monkeypatch, tmp_path):
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     a = _sessions_dir(tmp_path, "alpha")
     _write_jsonl(a / "s1.jsonl", [
         _hdr("s1"),
@@ -281,7 +281,7 @@ def test_two_agents_three_sessions_exact_parity(monkeypatch, tmp_path):
 def test_parity_property_randomized(monkeypatch, tmp_path):
     """The release gate: live parse vs Sessions harness over the same fixture
     corpus, store off, WorkBuddy sum formula, five seeds."""
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     _pricing(monkeypatch, tmp_path)
     for seed in range(5):
         rng = random.Random(seed)
@@ -364,7 +364,7 @@ def test_until_instant_residual_live_fallback_only(monkeypatch, tmp_path):
     the next-day-midnight until-instant are therefore counted by a live
     Overview pass and by NO Sessions window — a residual of the live fallback
     only, never a one-row effect. With the store on, both agree (test above)."""
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     _pricing(monkeypatch, tmp_path)
     a = _sessions_dir(tmp_path, "alpha")
     _write_jsonl(a / "s1.jsonl", [
@@ -394,7 +394,7 @@ def test_cache_write_folded_into_displayed_tokens_in(monkeypatch, tmp_path):
     """>0 cacheWrite must display folded into tokens_in (Overview's own
     mapping, openclaw.py:533-535) while the bill keeps the split. A harness
     passing tokens_in=input_raw displays fewer tokens than Overview."""
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     _pricing(monkeypatch, tmp_path)
     a = _sessions_dir(tmp_path, "alpha")
     _write_jsonl(a / "s1.jsonl", [
@@ -462,7 +462,7 @@ def test_user_content_blocks_become_preview(monkeypatch, tmp_path):
 
 
 def test_repeated_message_id_counted_once_in_both_views(monkeypatch, tmp_path):
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     _pricing(monkeypatch, tmp_path)
     a = _sessions_dir(tmp_path, "alpha")
     dup = _asst("dup-1", T_TODAY, inp=100, out=10)
@@ -556,7 +556,7 @@ def test_windows_path_agent_name_has_no_backslashes():
 
 
 def test_unresolved_model_falls_back_to_payload_cost_and_reprices(monkeypatch, tmp_path):
-    """Tokdash pricing wins; the source-recorded cost is the fallback only
+    """TokenDashboard pricing wins; the source-recorded cost is the fallback only
     when the model resolves to nothing (the split-cache-write-payload rule).
     Surviving a pricing-file edit is the reason the rule exists at all —
     repricing runs through _BILLING_RULES, not through the source."""
@@ -629,7 +629,7 @@ def test_shared_corpus_rows_stay_cost_free():
             row_keys = set(corpus.rows[0])
         return corpus
 
-    from tokdash.sources import openclaw as oc
+    from token_dashboard.sources import openclaw as oc
     _orig_parse_corpus = oc._parse_corpus
     home = Path(os.environ["OPENCLAW_HOME"])
     d = home / "agents" / "alpha" / "sessions"
@@ -795,7 +795,7 @@ def test_zstd_transcript_counts_in_store_and_sessions(monkeypatch, tmp_path, suf
     monkeypatch.setattr(openclaw, "parse_session_file", unexpected_parse)
     assert openclaw.collect_session_corpus(_dirs(tmp_path)) is corpus
     assert openclaw.get_session_usage(_dirs(tmp_path)) == usage
-    monkeypatch.setenv("TOKDASH_USAGE_DB", "0")
+    monkeypatch.setenv("TOKEN_DASHBOARD_USAGE_DB", "0")
     live = openclaw.get_session_usage(_dirs(tmp_path))
     assert live["total_tokens"] == usage["total_tokens"]
     assert live["total_messages"] == usage["total_messages"]
@@ -913,7 +913,7 @@ def test_zstd_failure_preserves_store_and_recovers(monkeypatch, tmp_path, caplog
     corpus = openclaw.collect_session_corpus(_dirs(tmp_path))
     assert corpus.failed == frozenset({str(archive)})
     assert openclaw.corpus_for_signature(corpus.signature) is None
-    with caplog.at_level(logging.WARNING, logger="tokdash.sources.openclaw"):
+    with caplog.at_level(logging.WARNING, logger="token_dashboard.sources.openclaw"):
         declined = openclaw._sync_openclaw_store(_dirs(tmp_path), PricingDatabase())
     assert _stored(declined) == before
     assert declined.source_signature("openclaw") == before_signature
@@ -1071,7 +1071,7 @@ def test_stored_corpus_survives_partial_sync(monkeypatch, tmp_path, caplog):
         _hdr("s3"), _asst("m3", T_TODAY + 1000, inp=300, out=30),
     ])
     lock = _Lock(monkeypatch, f1)
-    with caplog.at_level(logging.WARNING, logger="tokdash.sources.openclaw"):
+    with caplog.at_level(logging.WARNING, logger="token_dashboard.sources.openclaw"):
         store2 = openclaw._sync_openclaw_store(_dirs(tmp_path), PricingDatabase())
 
     assert _stored(store2) == (before_n, pytest.approx(before_cost)), "partial sync replaced stored rows"
@@ -1128,7 +1128,7 @@ def test_upgrade_path_parser_version_bump(monkeypatch, tmp_path, caplog):
     already corrupted matches its stored signature, collection never runs,
     and the under-billed store survives the upgrade. This test decides
     whether the fix can reach anyone."""
-    from tokdash.usage_store import build_source_signature
+    from token_dashboard.usage_store import build_source_signature
 
     assert openclaw.OPENCLAW_PARSER_VERSION == 2
     _pricing(monkeypatch, tmp_path)
@@ -1167,11 +1167,11 @@ def test_upgrade_path_parser_version_bump(monkeypatch, tmp_path, caplog):
     # survive untouched, the warning fires, and the stored signature stays
     # the old one so the next request retries.
     data2 = tmp_path / "data2"
-    monkeypatch.setenv("TOKDASH_DATA_DIR", str(data2))
+    monkeypatch.setenv("TOKEN_DASHBOARD_DATA_DIR", str(data2))
     openclaw._ENTRY_CACHE.clear()
     store2 = seed_corrupted_store()
     lock = _Lock(monkeypatch, f2)
-    with caplog.at_level(logging.WARNING, logger="tokdash.sources.openclaw"):
+    with caplog.at_level(logging.WARNING, logger="token_dashboard.sources.openclaw"):
         still = openclaw._sync_openclaw_store(_dirs(tmp_path), db)
     assert _stored(still) == _stored(store2) == (1, pytest.approx(
         db.get_cost("p1/oc-model", 100, 10, 0, 0)))
@@ -1201,7 +1201,7 @@ def test_route_serves_stale_partial_until_cache_cleared(monkeypatch, tmp_path):
     api._clear_cache(), and a test written with ?refresh=1 would pass only
     because the cache happened to expire. If the out-of-scope partial flag
     ever lands, this test must fail loudly."""
-    from tokdash import api
+    from token_dashboard import api
 
     _pricing(monkeypatch, tmp_path)
     a = _sessions_dir(tmp_path, "alpha")

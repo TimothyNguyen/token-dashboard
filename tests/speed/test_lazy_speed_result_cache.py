@@ -8,12 +8,12 @@ from contextlib import closing
 
 import pytest
 from test_lazy_speed_cache import corpus, build_requested
-from tokdash import speed_cache as cache, speed_worker, compute, speed_results
-from tokdash.sources.coding_tools import CodingToolsUsageTracker
+from token_dashboard import speed_cache as cache, speed_worker, compute, speed_results
+from token_dashboard.sources.coding_tools import CodingToolsUsageTracker
 
 
 def test_result_cache_revision_filters_and_live_failure_metadata(corpus,monkeypatch):
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION','1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION','1')
     compute._sync_usage_store(CodingToolsUsageTracker())
     request={'from':'2026-09-01','to':'2026-09-28','source':''}
     build_requested(request)
@@ -71,7 +71,7 @@ def test_result_cache_coalesces_identical_reads_and_never_caches_failures(monkey
 def test_recreated_database_instance_does_not_reuse_aggregate_snapshot(corpus,monkeypatch):
     import os
     import uuid
-    monkeypatch.setenv('TOKDASH_SPEED_CPU_FRACTION','1')
+    monkeypatch.setenv('TOKEN_DASHBOARD_SPEED_CPU_FRACTION','1')
     compute._sync_usage_store(CodingToolsUsageTracker())
     request={'from':'2026-09-01','to':'2026-09-28','source':''}
     build_requested(request)

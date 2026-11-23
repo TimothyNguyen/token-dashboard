@@ -174,7 +174,7 @@ def test_a_stored_bucket_id_reads_back_as_the_window_it_measures(tmp_path):
     The stored id is built in Python and taken apart in JavaScript, so the two are checked
     against each other here rather than each trusting its own arithmetic.
     """
-    from tokdash.sources.quota.claude import ClaudeProfile
+    from token_dashboard.sources.quota.claude import ClaudeProfile
 
     src = index_source()
     profiles = [ClaudeProfile("default", Path("."), True)] + [
